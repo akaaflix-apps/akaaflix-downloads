@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Most Xtream Codes panels serve player_api.php and streams over plain HTTP on custom ports,
+  so cleartext must be permitted for user-entered servers. HTTPS is always preferred: when the
+  user does not type a scheme the app tries https:// first and only falls back to http://.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

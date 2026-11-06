@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Akaa Flix Prime brand palette -->
+    <color name="akaa_background">#030812</color>
+    <color name="akaa_background_secondary">#071426</color>
+    <color name="akaa_primary_blue">#0878FF</color>
+    <color name="akaa_neon_purple">#9B19FF</color>
+    <color name="akaa_accent_red">#F01835</color>
+    <color name="akaa_text">#FFFFFF</color>
+    <color name="akaa_text_secondary">#AAB7CA</color>
+    <color name="akaa_gold">#FFC928</color>
+</resources>

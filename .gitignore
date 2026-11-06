@@ -1,0 +1,25 @@
+# Gradle / Android Studio
+.gradle/
+build/
+/app/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+!docs/**/*.apk
+
+# Signing material must never be committed
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# Kotlin compiler session data / Python caches
+.kotlin/
+__pycache__/
+*.pyc

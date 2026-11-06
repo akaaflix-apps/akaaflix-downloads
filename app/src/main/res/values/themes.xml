@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base app theme: Compose draws everything; this only sets window colors. -->
+    <style name="Theme.AkaaFlix" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/akaa_background</item>
+        <item name="android:colorBackground">@color/akaa_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/akaa_background</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23" xmlns:tools="http://schemas.android.com/tools">false</item>
+    </style>
+
+    <!-- Android 12+ system splash (and backport) shown while the process starts. -->
+    <style name="Theme.AkaaFlix.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/akaa_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="windowSplashScreenAnimationDuration">300</item>
+        <item name="postSplashScreenTheme">@style/Theme.AkaaFlix</item>
+    </style>
+</resources>

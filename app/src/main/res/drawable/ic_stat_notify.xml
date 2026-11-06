@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification small icon: white play symbol (status bar icons must be single-colour). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6.5,3.6C6.5,2.8 7.4,2.3 8.1,2.7L20.6,10.6C21.3,11 21.3,12 20.6,12.4L8.1,20.3C7.4,20.7 6.5,20.2 6.5,19.4Z M9.5,7.8L9.5,16.2L16.2,12Z"
+        android:fillType="evenOdd" />
+</vector>

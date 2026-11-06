@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Monochrome (themed) launcher icon layer for Android 13+: play symbol centred in the 108dp canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M42,35.5C42,33.6 44.1,32.4 45.7,33.4L74.4,51.5C75.9,52.4 75.9,54.6 74.4,55.5L45.7,73.6C44.1,74.6 42,73.4 42,71.5Z M48.5,45L48.5,62L62,53.5Z" />
+</vector>
