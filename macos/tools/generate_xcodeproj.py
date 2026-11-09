@@ -109,14 +109,16 @@ def walk(directory: Path, group: Group, rel: str):
             continue
         ref = file_ref(item_rel, item.name, ftype=ftype)
         group.children.append((ref, item.name))
+        in_app = rel == APP_DIR or rel.startswith(APP_DIR + "/")
+        in_tests = rel == TEST_DIR or rel.startswith(TEST_DIR + "/")
         if item.suffix == ".swift":
-            if rel.startswith(APP_DIR):
+            if in_app:
                 app_sources.append((item_rel, ref, item.name))
                 if rel.startswith(f"{APP_DIR}/Core"):
                     test_sources.append((item_rel, ref, item.name))
-            elif rel.startswith(TEST_DIR):
+            elif in_tests:
                 test_sources.append((item_rel, ref, item.name))
-        elif item.suffix in (".xcassets", ".txt") and rel.startswith(APP_DIR):
+        elif item.suffix in (".xcassets", ".txt") and in_app:
             app_resources.append((item_rel, ref, item.name))
 
 

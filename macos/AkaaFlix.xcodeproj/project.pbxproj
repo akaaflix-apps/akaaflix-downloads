@@ -34,7 +34,6 @@
 		5DECBE8FA8A4A4C255E05C5B /* UserDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF4A4C6E4344E646F992AA6 /* UserDataStore.swift */; };
 		5E2CB03ACC4130AD6E6D4B74 /* VLCPlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B346F4639DEE3732699BFB17 /* VLCPlaybackEngine.swift */; };
 		61F93BF2F264737BB724EE2E /* CategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D957819FB5E9C19755E38252 /* CategoryClassifier.swift */; };
-		66631D7F37061AB8E0578A51 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B8FC7AE6FC34B55207AE7 /* CoreTests.swift */; };
 		66982A7B703B21554EBABEB3 /* SQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC0AF39F3737F3633307BBA2 /* SQLite.swift */; };
 		6ACA6E5EAC3CC974CBE5024F /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1456B66014066F7109D60F95 /* PlayerView.swift */; };
 		7040714DFDF2BB4F907A1DA0 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377B63570897E7C3DC851FCF /* AppModel.swift */; };
@@ -67,6 +66,7 @@
 		DDDC7C930185164BECAEF682 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD83E7652D9F5389A3EDCC75 /* Models.swift */; };
 		DE945453479709DAA1FFA9C3 /* ContentText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559C69EFA9E59EA76C628A16 /* ContentText.swift */; };
 		DF168857D5619C1443E975EE /* LiveTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FEB2F3E13AC2B567570F78 /* LiveTVView.swift */; };
+		E5107D79C54BF3818A36CEFC /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B8FC7AE6FC34B55207AE7 /* CoreTests.swift */; };
 		E82212E64C4FEB5A2399C4E7 /* PlaylistsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AE6B4479B60ACC5C0C176 /* PlaylistsViews.swift */; };
 		F07FC4DB079E3FBE0868545A /* SettingsShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C882D4DBB044489236AB44 /* SettingsShell.swift */; };
 		F443B24E233F470CE6D944F5 /* LibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE7B4A347FC2783CFF45541 /* LibraryViews.swift */; };
@@ -550,7 +550,6 @@
 				337650E86BBC613053A2D073 /* QRScanner.swift in Sources */,
 				202933BE5C0894436A42A9AF /* SystemServices.swift in Sources */,
 				7AE92ACCBA87BC38A4C0A288 /* Theme.swift in Sources */,
-				66631D7F37061AB8E0578A51 /* CoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -574,6 +573,7 @@
 				143627A1A0DEC9C46C645963 /* UserDataStore.swift in Sources */,
 				A1544609AD817F4FC79EA93F /* XtreamClient.swift in Sources */,
 				7C9E64438F71AD71BABA7B72 /* XtreamParser.swift in Sources */,
+				E5107D79C54BF3818A36CEFC /* CoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
