@@ -1,2 +1,2 @@
-run: https://github.com/akaaflix-apps/akaaflix-downloads/actions/runs/42702340054
-commit: b85c30aac224f4e4f97d278329e9f5fc6c75da83
+run: https://github.com/akaaflix-apps/akaaflix-downloads/actions/runs/42705753811
+commit: ae0e32d95d351f38ad73d6d3bf18f964dc828f62

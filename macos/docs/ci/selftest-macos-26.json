@@ -1,112 +1,112 @@
 {
   "checks" : [
     {
-      "detail" : "window visible, data dir \/var\/folders\/h5\/t85nd63d71x27_8gl5gw3l_w0000gn\/T\/tmp.gVPSnQ8TEh",
+      "detail" : "window visible, data dir \/var\/folders\/h5\/t85nd63d71x27_8gl5gw3l_w0000gn\/T\/tmp.7d0m5PdVug",
       "name" : "Application startup",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.32130396366119385
+      "seconds" : 0.00020003318786621094
     },
     {
       "detail" : "arm64 slice on arm64 hardware",
       "name" : "Native architecture (no Rosetta)",
       "passed" : true,
       "required" : true,
-      "seconds" : 1.0013580322265625e-05
+      "seconds" : 2.300739288330078e-05
     },
     {
       "detail" : "account active, max connections 2",
       "name" : "Xtream Codes authentication",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.12181007862091064
+      "seconds" : 0.07443392276763916
     },
     {
       "detail" : "invalid credentials reported",
       "name" : "Wrong credentials are rejected",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.004615068435668945
+      "seconds" : 0.0050629377365112305
     },
     {
       "detail" : "12 channels, 12 movies, 8 series",
       "name" : "Catalog sync (live, movies, series)",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.25235307216644287
+      "seconds" : 0.2454390525817871
     },
     {
       "detail" : "favorites, progress and catalog survive reopening akaaflix.sqlite",
       "name" : "Database persistence (reopen from disk)",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.06247901916503906
+      "seconds" : 0.0078029632568359375
     },
     {
       "detail" : "playing as MPEG-TS · MPEG-TS ✓",
       "name" : "Live TV plays MPEG-TS first",
       "passed" : true,
       "required" : true,
-      "seconds" : 3.9992669820785522
+      "seconds" : 0.7211309671401978
     },
     {
       "detail" : "MPEG-TS ✕ → HLS ✓",
       "name" : "HLS fallback when MPEG-TS fails",
       "passed" : true,
       "required" : true,
-      "seconds" : 1.693761944770813
+      "seconds" : 0.9950590133666992
     },
     {
-      "detail" : "channel switch failed",
+      "detail" : "Sports One HD → Sports Three HD (channel up ×2), playing",
       "name" : "Live channel switching",
-      "passed" : false,
+      "passed" : true,
       "required" : true,
-      "seconds" : 0.6149349212646484
+      "seconds" : 1.5631849765777588
     },
     {
       "detail" : "2 audio tracks (switched), 1 subtitle track(s)",
       "name" : "Movie playback, audio tracks and subtitles",
       "passed" : true,
       "required" : true,
-      "seconds" : 4.9087830781936646
+      "seconds" : 4.819968938827515
     },
     {
       "detail" : "position 40s saved; 1 item(s) in Continue Watching",
       "name" : "Seek and Continue Watching",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.06054091453552246
+      "seconds" : 0.0369030237197876
     },
     {
       "detail" : "window did not enter full screen (CI display limitation possible)",
       "name" : "Full-screen mode",
       "passed" : false,
       "required" : false,
-      "seconds" : 6.117929100990295
+      "seconds" : 6.262036085128784
     },
     {
       "detail" : "advanced 50111 → 50112 after countdown",
       "name" : "Series playback and automatic next episode",
       "passed" : true,
       "required" : true,
-      "seconds" : 5.756560921669006
+      "seconds" : 10.50053596496582
     },
     {
       "detail" : "rendered at 1100×708",
       "name" : "Window resizing and small screens",
       "passed" : true,
       "required" : true,
-      "seconds" : 2.8042229413986206
+      "seconds" : 2.8449970483779907
     },
     {
       "detail" : "player released, database checkpointed",
       "name" : "Shutdown and resource cleanup",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.012102961540222168
+      "seconds" : 0.007773995399475098
     }
   ],
-  "durationSeconds" : 97.58097898960114,
+  "durationSeconds" : 151.7798889875412,
   "environment" : {
     "appVersion" : "4.0.7",
     "binaryArchitecture" : "arm64",
@@ -121,5 +121,5 @@
     "model" : "VirtualMac2,1",
     "rosetta" : "no"
   },
-  "passed" : false
+  "passed" : true
 }
