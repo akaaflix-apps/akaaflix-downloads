@@ -32,9 +32,14 @@ final class VLCPlaybackEngine: NSObject, PlaybackEngine, VLCMediaPlayerDelegate 
 
     deinit {
         player.delegate = nil
-        player.stop()
+        let p = player
+        VLCPlaybackEngine.stopQueue.async { p.stop() }
         if let b = aspectBuffer { free(b) }
     }
+
+    /// libVLC's stop is synchronous and can wait for the video output, which needs the main thread
+    /// (e.g. while a window leaves full screen). Stopping off the main thread avoids that deadlock.
+    private static let stopQueue = DispatchQueue(label: "com.akaaflix.vlc.stop", qos: .userInitiated)
 
     static func libraryOptions(_ c: EngineConfiguration) -> [String] {
         var o = ["--no-video-title-show", "--no-snapshot-preview", "--network-caching=\(c.networkCachingMs)"]
@@ -102,8 +107,9 @@ final class VLCPlaybackEngine: NSObject, PlaybackEngine, VLCMediaPlayerDelegate 
     func play() { player.play() }
     func pause() { if player.canPause { player.pause() } }
     func stop() {
-        player.stop()
         state = .stopped
+        let p = player
+        VLCPlaybackEngine.stopQueue.async { p.stop() }
     }
 
     // MARK: State

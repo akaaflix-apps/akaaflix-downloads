@@ -229,7 +229,6 @@ final class PlayerController: ObservableObject, PlaybackEngineDelegate {
     }
 
     func retry() {
-        engine.stop()
         start()
     }
 
@@ -430,7 +429,6 @@ final class PlayerController: ObservableObject, PlaybackEngineDelegate {
     func play(channel: Channel) {
         guard case .live(_, let list) = request else { return }
         persistProgress()
-        engine.stop()
         request = .live(channel, list: list)
         start()
     }
@@ -480,7 +478,6 @@ final class PlayerController: ObservableObject, PlaybackEngineDelegate {
     func play(episode: Episode) {
         guard case .episode(_, let s, _, _) = request else { return }
         persistProgress()
-        engine.stop()
         let progress = model?.activePlaylist.flatMap { model?.database.userData.progress($0.id, .episode, episode.id) }
         let resume = progress.flatMap { ContinueWatchingRules.resumePosition(position: $0.position, duration: $0.duration) }
         request = .episode(episode, series: s, details: seriesDetails, resumeAt: resume)
@@ -571,23 +568,30 @@ final class PlayerController: ObservableObject, PlaybackEngineDelegate {
         }
     }
 
+    /// The app's main window (key/main may be nil while another app is frontmost).
+    private var hostWindow: NSWindow? {
+        NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible && $0.styleMask.contains(.titled) && !($0 is NSPanel) })
+    }
+
     func toggleFullScreen() {
-        (NSApp.keyWindow ?? NSApp.mainWindow)?.toggleFullScreen(nil)
+        guard let window = hostWindow else { return }
+        if !window.isKeyWindow { window.makeKeyAndOrderFront(nil) }
+        window.toggleFullScreen(nil)
     }
 
     var isFullScreen: Bool {
-        (NSApp.keyWindow ?? NSApp.mainWindow)?.styleMask.contains(.fullScreen) ?? false
+        hostWindow?.styleMask.contains(.fullScreen) ?? false
     }
 
     /// "Pin" — keeps the window above other apps.
     func setFloating(_ on: Bool) {
         isFloating = on
-        (NSApp.mainWindow ?? NSApp.windows.first)?.level = on ? .floating : .normal
+        hostWindow?.level = on ? .floating : .normal
     }
 
     /// Mini player: shrinks the window to a floating 16:9 video.
     func toggleMini() {
-        guard let window = NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible }) else { return }
+        guard let window = hostWindow else { return }
         if isMini {
             isMini = false
             window.level = isFloating ? .floating : .normal
@@ -609,7 +613,7 @@ final class PlayerController: ObservableObject, PlaybackEngineDelegate {
     var playbackInfo: String {
         var parts: [String] = []
         if let f = activeFormat { parts.append(f.displayName) } else if current != nil && !request.isLive { parts.append(tr("ملف", "File")) }
-        if videoSize.width > 0 { parts.append("\(Int(videoSize.width))×\(Int(videoSize.height))") }
+        if videoSize.width > 0 { parts.append("\u{2066}\(Int(videoSize.width))×\(Int(videoSize.height))\u{2069}") }
         if let c = codec { parts.append(c) }
         parts.append(engine.name)
         parts.append(settings.hardwareDecoding == .software ? tr("فك ترميز برمجي", "Software decoding") : tr("تسريع عتادي", "Hardware decoding"))

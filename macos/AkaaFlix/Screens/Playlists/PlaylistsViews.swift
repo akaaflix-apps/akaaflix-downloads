@@ -213,7 +213,8 @@ struct PlaylistRow: View {
                         .background(Capsule().fill(Theme.purple.opacity(0.5)))
                         .overlay(Capsule().strokeBorder(Color(hex: 0xD04BFF), lineWidth: 1))
                     }
-                    Text(playlist.name).font(.system(size: 28, weight: .heavy)).foregroundColor(.white).lineLimit(1)
+                    Text(playlist.name).font(.system(size: 28, weight: .heavy)).foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.6)
+                        .layoutPriority(2)
                 }
                 HStack(spacing: 10) {
                     statusIcon
@@ -255,7 +256,7 @@ struct PlaylistRow: View {
             Text("\(count)").font(.system(size: 22, weight: .heavy)).monoDigits()
         }
         .foregroundColor(.white)
-        .frame(width: 112)
+        .frame(minWidth: 72, maxWidth: 112)
     }
 
     private func actionIcon(_ icon: String, _ accent: NeonAccent, _ action: @escaping () -> Void) -> some View {
@@ -298,6 +299,26 @@ struct PlaylistFormView: View {
     private var editing: Playlist? { playlistID.flatMap { id in model.playlists.first(where: { $0.id == id }) } }
 
     var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            formPanel.padding(.bottom, 12)
+        }
+        .onAppear(perform: loadFields)
+        .sheet(isPresented: $showQR) {
+            QRImportSheet { input in
+                name = input.name; username = input.username; password = input.password; url = input.url
+                showQR = false
+            } onCancel: { showQR = false }
+        }
+        .alert(isPresented: $confirmDelete) {
+            Alert(title: Text(tr("حذف القائمة؟", "Delete playlist?")),
+                  primaryButton: .destructive(Text(tr("حذف", "Delete"))) {
+                      if let p = editing { model.deletePlaylist(p); model.open(.settings(.playlists)) }
+                  },
+                  secondaryButton: .cancel(Text(tr("إلغاء", "Cancel"))))
+        }
+    }
+
+    private var formPanel: some View {
         NeonPanel(accent: .mixed, corner: 26, padding: 22) {
             VStack(spacing: 18) {
                 header
@@ -316,23 +337,8 @@ struct PlaylistFormView: View {
                     .foregroundColor(testOK ? Theme.green : Theme.redBright)
                     .contentDirection()
                 }
-                Spacer(minLength: 0)
                 buttons
             }
-        }
-        .onAppear(perform: loadFields)
-        .sheet(isPresented: $showQR) {
-            QRImportSheet { input in
-                name = input.name; username = input.username; password = input.password; url = input.url
-                showQR = false
-            } onCancel: { showQR = false }
-        }
-        .alert(isPresented: $confirmDelete) {
-            Alert(title: Text(tr("حذف القائمة؟", "Delete playlist?")),
-                  primaryButton: .destructive(Text(tr("حذف", "Delete"))) {
-                      if let p = editing { model.deletePlaylist(p); model.open(.settings(.playlists)) }
-                  },
-                  secondaryButton: .cancel(Text(tr("إلغاء", "Cancel"))))
         }
     }
 

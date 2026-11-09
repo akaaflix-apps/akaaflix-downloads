@@ -102,6 +102,8 @@ struct LiveTVView: View {
         .onAppear {
             vm.loadSidebar(model)
             vm.loadChannels(model)
+            // The approved design shows the selected channel already playing in the preview.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { autoStartPreview() }
         }
         .onDisappear { vm.stopPreview(model) }
         .onChange(of: model.catalogVersion) { _ in vm.loadSidebar(model); vm.loadChannels(model) }
@@ -214,6 +216,13 @@ struct LiveTVView: View {
         model.guarded(type: .live, id: String(c.id), categoryID: c.categoryID) { vm.select(c, model: model) }
     }
 
+    private func autoStartPreview() {
+        guard vm.preview == nil, model.player == nil, model.route == .live, !SelfTestRunner.isCapturing,
+              let c = vm.selected ?? vm.channels.first else { return }
+        if model.parentalContext().requiresPIN(type: .live, itemID: String(c.id), categoryID: c.categoryID) { return }
+        vm.select(c, model: model)
+    }
+
     private func openFull() {
         guard let p = vm.preview else { return }
         model.player = p
@@ -252,6 +261,7 @@ struct LiveTVView: View {
                 }
                 .aspectRatio(16 / 9, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .layoutPriority(1)
                 .onTapGesture(count: 2) { openFull() }
 
                 if let p = vm.preview, model.player !== p {
@@ -283,8 +293,9 @@ struct LiveTVView: View {
                     .background(RoundedRectangle(cornerRadius: 16).fill(Color.black.opacity(0.35)))
                     .contentDirection()
                 }
-                EPGListPanel(entries: Array((vm.preview?.epg ?? []).prefix(4)), compact: true)
-                Spacer(minLength: 0)
+                ScrollView(.vertical, showsIndicators: false) {
+                    EPGListPanel(entries: Array((vm.preview?.epg ?? []).prefix(4)), compact: true)
+                }
             }
         }
     }

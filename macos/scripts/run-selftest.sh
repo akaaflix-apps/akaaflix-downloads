@@ -19,11 +19,18 @@ DATA="$(mktemp -d)"
   --self-test-screenshots="$OUT/screenshots" \
   --self-test-fixtures="$ROOT/SelfTest/fixtures" > "$OUT/app.log" 2>&1 &
 APPPID=$!
-( sleep "${SELFTEST_TIMEOUT:-420}"; kill -9 $APPPID 2>/dev/null ) &
+( sleep "${SELFTEST_TIMEOUT:-420}"
+  echo "[self-test] TIMEOUT — sampling the app before killing it" >> "$OUT/app.log"
+  sample $APPPID 3 -file "$OUT/hang-sample.txt" >/dev/null 2>&1
+  kill -9 $APPPID 2>/dev/null ) &
 WATCH=$!
 wait $APPPID
 CODE=$?
 kill $WATCH 2>/dev/null || true
 grep "\[self-test\]" "$OUT/app.log" || tail -50 "$OUT/app.log"
+if [[ -f "$OUT/hang-sample.txt" ]]; then
+  echo "---- main thread at timeout ----"
+  awk '/com.apple.main-thread/{p=1} p{print; if (++n > 70) exit}' "$OUT/hang-sample.txt"
+fi
 echo "self-test exit code: $CODE"
 exit $CODE

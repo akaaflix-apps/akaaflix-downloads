@@ -223,7 +223,15 @@ struct HomeSideRail: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        VStack(spacing: 18) {
+        ScrollView(.vertical, showsIndicators: false) {
+            railItems
+        }
+        .frame(width: 76)
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color.black.opacity(0.35)))
+    }
+
+    private var railItems: some View {
+        VStack(spacing: 14) {
             railButton("person.crop.circle", tr("الحساب", "Account"), active: false) { model.open(.settings(.account)) }
             railButton("house", tr("الرئيسية", "Home"), active: true) { model.open(.home) }
             railButton("tv", tr("القنوات المباشرة", "Live TV"), active: false) { model.open(.live) }
@@ -232,12 +240,11 @@ struct HomeSideRail: View {
             railButton("heart", tr("المفضلة", "Favorites"), active: false) { model.open(.favorites) }
             railButton("arrow.down.to.line", tr("التنزيلات", "Downloads"), active: false) { model.open(.downloads) }
             railButton("clock", tr("السجل", "History"), active: false) { model.open(.history) }
-            Spacer(minLength: 0)
             railButton("arrow.right.square", tr("تبديل القائمة", "Switch playlist"), active: false) { model.open(.settings(.playlists)) }
+                .padding(.top, 12)
         }
-        .padding(.vertical, 18)
+        .padding(.vertical, 14)
         .frame(width: 76)
-        .background(RoundedRectangle(cornerRadius: 20).fill(Color.black.opacity(0.35)))
     }
 
     private func railButton(_ icon: String, _ help: String, active: Bool, action: @escaping () -> Void) -> some View {
@@ -245,7 +252,7 @@ struct HomeSideRail: View {
             Image(systemName: icon)
                 .font(.system(size: 26, weight: .regular))
                 .foregroundColor(.white)
-                .frame(width: 58, height: 58)
+                .frame(width: 56, height: 54)
                 .background(RoundedRectangle(cornerRadius: 16).fill(active ? Theme.redGradient : linear([Color.clear, Color.clear])))
                 .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(active ? Color(hex: 0xFF8080) : Color.clear, lineWidth: 1.5))
                 .shadow(color: active ? Theme.red : .clear, radius: 10)

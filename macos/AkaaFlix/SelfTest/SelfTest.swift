@@ -38,6 +38,9 @@ final class SelfTestRunner {
 
     let args: SelfTestArguments
     let model: AppModel
+    /// True while an off-screen design-size capture is being rendered (suppresses auto-play).
+    static var isCapturing = false
+    private var captureWindow: NSWindow?
     private var checks: [Check] = []
     private var environment: [String: String] = [:]
     private let started = Date()
@@ -94,20 +97,55 @@ final class SelfTestRunner {
         await MainActor.run { work() }
     }
 
-    private func snapshot(_ name: String) async {
+    /// Captures the current route. By default it renders at the approved design size (1670×940) in a
+    /// borderless window, because CI displays are smaller than the designs; `realWindow` captures the
+    /// actual app window instead (used for the small-window layout check).
+    private func snapshot(_ name: String, realWindow: Bool = false) async {
         guard let dir = args.screenshotDirectory else { return }
-        await onMain {
-            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.styleMask.contains(.titled) }),
-                  let view = window.contentView, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
-            view.cacheDisplay(in: view.bounds, to: rep)
-            if let data = rep.representation(using: .jpeg, properties: [.compressionFactor: 0.82]) {
-                try? data.write(to: dir.appendingPathComponent("\(name).jpg"))
+        await onMain { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true) }
+        if realWindow {
+            await onMain {
+                guard let window = NSApp.windows.first(where: { $0.isVisible && $0.styleMask.contains(.titled) }), let view = window.contentView else { return }
+                self.write(view, to: dir.appendingPathComponent("\(name).jpg"))
             }
+            return
+        }
+        await onMain {
+            SelfTestRunner.isCapturing = true
+            let size = NSSize(width: 1670, height: 940)
+            let host = NSHostingView(rootView: RootView().environmentObject(self.model).frame(width: size.width, height: size.height))
+            let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
+            window.isReleasedWhenClosed = false
+            window.appearance = NSAppearance(named: .darkAqua)
+            window.backgroundColor = NSColor.black
+            window.contentView = host
+            window.orderBack(nil)
+            self.captureWindow = window
+        }
+        await sleep(2.5)
+        await onMain {
+            if let view = self.captureWindow?.contentView {
+                view.layoutSubtreeIfNeeded()
+                self.write(view, to: dir.appendingPathComponent("\(name).jpg"))
+            }
+            self.captureWindow?.orderOut(nil)
+            self.captureWindow?.contentView = nil
+            self.captureWindow = nil
+            SelfTestRunner.isCapturing = false
+        }
+        await sleep(0.3)
+    }
+
+    private func write(_ view: NSView, to url: URL) {
+        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+        view.cacheDisplay(in: view.bounds, to: rep)
+        if let data = rep.representation(using: .jpeg, properties: [.compressionFactor: 0.82]) {
+            try? data.write(to: url)
         }
     }
 
     private func navigate(_ route: Route, settle: Double = 2.5, shot: String? = nil) async {
+        log("→ \(route)")
         await onMain { self.model.route = route }
         await sleep(settle)
         if let s = shot { await snapshot(s) }
@@ -234,18 +272,19 @@ final class SelfTestRunner {
         await snapshot("03-live-player")
 
         await record("Live channel switching") {
-            let before = await onMain { self.model.player?.currentChannel?.id }
-            await onMain {
-                if let c = try? self.model.database.catalog.channel(playlistID: p.id, id: 1),
-                   let list = try? self.model.database.catalog.channels(playlistID: p.id, filter: BrowseFilter()) {
-                    self.model.play(.live(c, list: list))
-                    self.model.player?.switchChannel(by: 1)
-                }
+            let list = try model.database.catalog.channels(playlistID: p.id, filter: BrowseFilter())
+            guard list.count >= 3, let start = list.first(where: { $0.id == 1 }) else { throw fail("not enough channels") }
+            await onMain { self.model.play(.live(start, list: list)) }
+            guard await waitFor(25, { self.model.player?.confirmedAt != nil && self.model.player?.currentChannel?.id == start.id }) else {
+                throw fail("first channel did not start")
             }
-            let ok = await waitFor(25) { self.model.player?.confirmedAt != nil }
-            let after = await onMain { self.model.player?.currentChannel?.id }
-            guard ok, after != nil, after != before || before == nil else { throw fail("channel switch failed") }
-            return "switched to channel \(after ?? 0)"
+            let startIndex = list.firstIndex(where: { $0.id == start.id }) ?? 0
+            let expected = list[(startIndex + 2) % list.count]
+            await onMain { self.model.player?.switchChannel(by: 1); self.model.player?.switchChannel(by: 1) }
+            let ok = await waitFor(30) { self.model.player?.currentChannel?.id == expected.id && self.model.player?.confirmedAt != nil }
+            let now = await onMain { self.model.player?.currentChannel?.name ?? "?" }
+            guard ok else { throw fail("expected \(expected.name), now \(now)") }
+            return "\(start.name) → \(expected.name) (channel up ×2), playing"
         }
         await onMain { self.model.closePlayer() }
 
@@ -301,7 +340,9 @@ final class SelfTestRunner {
             guard entered else { throw fail("window did not enter full screen (CI display limitation possible)") }
             return "entered and left full screen"
         }
+        log("closing player after full-screen check")
         await onMain { self.model.closePlayer() }
+        log("player closed")
 
         await navigate(.series, settle: 3, shot: "07-series")
         if let s = try? model.database.catalog.series(playlistID: p.id, id: 501) {
@@ -343,7 +384,7 @@ final class SelfTestRunner {
                 self.model.route = .movies
             }
             await sleep(2)
-            await snapshot("18-movies-1100x680")
+            await snapshot("18-movies-1100x680", realWindow: true)
             let size = await onMain { NSApp.windows.first(where: { $0.styleMask.contains(.titled) })?.frame.size ?? .zero }
             guard size.width >= 1099 else { throw fail("window did not resize (\(size))") }
             return "rendered at \(Int(size.width))×\(Int(size.height))"

@@ -46,8 +46,10 @@ struct MainShell: View {
                     .padding(.top, 10)
                     .padding(.bottom, 8)
             }
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // A screen taller than the window must never push the top bar out of view.
+            GeometryReader { geo in
+                content.frame(width: geo.size.width, height: geo.size.height)
+            }
         }
     }
 

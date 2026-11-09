@@ -54,20 +54,23 @@ struct SeriesDetailsView: View {
                     .clipped()
                     .overlay(linear([Color.black.opacity(0.35), .clear, Theme.background.opacity(0.85), Theme.background]))
                     .overlay(linear([.clear, Color.black.opacity(0.25), Color.black.opacity(0.75)], .leading, .trailing))
-                VStack(spacing: 18) {
-                    header
-                    HStack(alignment: .bottom) {
-                        watchedPill
-                        Spacer()
-                        infoBlock.frame(maxWidth: 860)
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 18) {
+                        header
+                        HStack(alignment: .bottom) {
+                            watchedPill
+                            Spacer()
+                            infoBlock.frame(maxWidth: 860)
+                        }
+                        .padding(.horizontal, 40)
+                        HStack(alignment: .top, spacing: 26) {
+                            detailsPanel.frame(width: max(520, geo.size.width * 0.36))
+                            episodesPanel
+                        }
+                        .frame(height: max(400, geo.size.height * 0.46))
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 24)
                     }
-                    .padding(.horizontal, 40)
-                    HStack(alignment: .top, spacing: 26) {
-                        detailsPanel.frame(width: max(520, geo.size.width * 0.36))
-                        episodesPanel
-                    }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 24)
                 }
             }
         }

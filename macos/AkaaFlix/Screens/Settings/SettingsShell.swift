@@ -21,7 +21,7 @@ struct SettingsShell: View {
                     case .about:
                         HStack(alignment: .top, spacing: 18) {
                             AboutHeroPanel().frame(width: 520)
-                            AboutView()
+                            ScrollView(.vertical, showsIndicators: false) { AboutView().padding(.bottom, 20) }
                         }
                     default:
                         HStack(alignment: .top, spacing: 18) {
@@ -46,17 +46,29 @@ struct SettingsNav: View {
     let selected: SettingsSection
 
     var body: some View {
-        VStack(spacing: 12) {
+        GeometryReader { geo in
+            let count = CGFloat(SettingsSection.allCases.count)
+            let spacing: CGFloat = geo.size.height < 700 ? 8 : 12
+            let itemHeight = max(40, min(70, (geo.size.height - 28 - spacing * (count - 1)) / count))
+            items(itemHeight: itemHeight, spacing: spacing)
+        }
+        .background(RoundedRectangle(cornerRadius: 24).fill(Color.black.opacity(0.35)))
+        .contentDirection()
+    }
+
+    private func items(itemHeight: CGFloat, spacing: CGFloat) -> some View {
+        let scale = itemHeight / 70
+        return VStack(spacing: spacing) {
             ForEach(SettingsSection.allCases, id: \.self) { s in
                 Button(action: { model.open(.settings(s)) }) {
                     HStack(spacing: 14) {
-                        Image(systemName: s.systemImage).font(.system(size: 28, weight: .regular)).frame(width: 40)
-                        Text(s.title).font(.system(size: 21, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                        Image(systemName: s.systemImage).font(.system(size: 28 * max(0.75, scale), weight: .regular)).frame(width: 40)
+                        Text(s.title).font(.system(size: 21 * max(0.8, scale), weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
                         Spacer()
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 22)
-                    .frame(height: 70)
+                    .frame(height: itemHeight)
                     .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(s == selected ? Theme.redGradient : Theme.darkPill))
                     .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(s == selected ? Color(hex: 0xFF8080) : Color.white.opacity(0.12), lineWidth: s == selected ? 2 : 1))
                     .shadow(color: s == selected ? Theme.red.opacity(0.8) : .black.opacity(0.4), radius: s == selected ? 14 : 4)
@@ -67,8 +79,6 @@ struct SettingsNav: View {
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 24).fill(Color.black.opacity(0.35)))
-        .contentDirection()
     }
 }
 
@@ -99,7 +109,7 @@ struct SettingsHeroPanel: View {
             radial([Theme.blue.opacity(0.4), .clear], center: UnitPoint(x: 0.9, y: 0.35), end: 240)
             VStack(spacing: 18) {
                 Spacer()
-                Image(art).resizable().aspectRatio(contentMode: .fit).frame(maxWidth: 400)
+                Image(art).resizable().aspectRatio(contentMode: .fit).frame(maxWidth: 400).layoutPriority(-1)
                 Text(title).font(.system(size: 50, weight: .heavy)).foregroundColor(.white).shadow(color: .black, radius: 6)
                 Text(subtitle).font(.system(size: 21, weight: .semibold)).foregroundColor(.white.opacity(0.92)).multilineTextAlignment(.center)
                 Capsule().fill(linear([.clear, Theme.redBright, .clear], .leading, .trailing)).frame(width: 220, height: 3).shadow(color: Theme.red, radius: 6)

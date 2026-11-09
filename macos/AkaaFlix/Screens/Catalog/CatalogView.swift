@@ -173,7 +173,7 @@ struct CatalogView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 96)
-                .opacity(0.95)
+                .blendMode(.screen)
             Spacer()
             HStack(spacing: 12) {
                 Image(systemName: isMovies ? "film" : "square.stack.3d.up").font(.system(size: 26))
@@ -220,8 +220,10 @@ struct CatalogView: View {
                         GroupRow(title: tr("إضافة مجموعة", "Add Group"), systemImage: "plus") { showNewGroup = true }
                         GroupRow(title: isMovies ? tr("كل الأفلام", "All Movies") : tr("كل المسلسلات", "All Series"), systemImage: isMovies ? "film" : "tv",
                                  count: isMovies ? nil : vm.totalCount, isSelected: vm.selection == .all) { choose(.all) }
-                        GroupRow(title: isMovies ? tr("أفلام جديدة", "New Movies") : tr("مسلسلات جديدة", "New Series"), systemImage: "flame.fill", iconColor: Color(hex: 0xFF8A00),
-                                 isSelected: vm.selection == .recent) { choose(.recent) }
+                        if !providerHasNewCategory {
+                            GroupRow(title: isMovies ? tr("أفلام جديدة", "New Movies") : tr("مسلسلات جديدة", "New Series"), systemImage: "flame.fill", iconColor: Color(hex: 0xFF8A00),
+                                     isSelected: vm.selection == .recent) { choose(.recent) }
+                        }
                         ForEach(vm.groups) { g in
                             GroupRow(title: g.name, systemImage: "folder", isSelected: vm.selection == .group(g.id)) { choose(.group(g.id)) }
                         }
@@ -244,6 +246,14 @@ struct CatalogView: View {
     private func choose(_ s: BrowseSelection) {
         vm.selection = s
         vm.load(model)
+    }
+
+    /// The provider already has a "new" category (e.g. "أفلام جديدة") — don't show a second one.
+    private var providerHasNewCategory: Bool {
+        vm.categories.contains { c in
+            let n = ContentText.normalize(c.name)
+            return n.contains("جديد") || n.contains(" new") || n.hasPrefix("new")
+        }
     }
 
     // MARK: Grid
