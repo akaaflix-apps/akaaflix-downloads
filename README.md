@@ -7,6 +7,11 @@ series with Media3 ExoPlayer. The interface is Arabic-first (RTL) with full Engl
 > Akaa Flix Prime does not ship any channels or content. Users sign in with the Xtream Codes details
 > from their own IPTV provider and should only connect to services they are authorised to use.
 
+> **Akaa Flix for macOS** — a native Universal (Apple Silicon + Intel) macOS app built from the
+> approved Akaa Flix designs lives in [`macos/`](macos/README.md): macOS 11 Big Sur → macOS 26 Tahoe,
+> VLCKit playback with the fixed MPEG-TS → HLS live priority, Universal DMG, compatibility report in
+> [`macos/docs/COMPATIBILITY_REPORT.md`](macos/docs/COMPATIBILITY_REPORT.md).
+
 | Phone (Arabic, RTL) | Android TV (10-foot UI) |
 |---|---|
 | ![Home on phone](docs/screenshots/phone-02-home.jpg) | ![Home on TV](docs/screenshots/tv-02-home.jpg) |
