@@ -1,0 +1,42 @@
+// Akaa Flix — settings shared by every configuration of the app target.
+// NOTE: "//" starts a comment in .xcconfig files, so URLs are written without a scheme.
+
+PRODUCT_NAME = Akaa Flix
+PRODUCT_MODULE_NAME = AkaaFlix
+PRODUCT_BUNDLE_IDENTIFIER = com.akaaflix.mac
+MARKETING_VERSION = 4.0.7
+CURRENT_PROJECT_VERSION = 407
+
+SDKROOT = macosx
+MACOSX_DEPLOYMENT_TARGET = 11.0
+SWIFT_VERSION = 5.0
+
+INFOPLIST_FILE = AkaaFlix/Info.plist
+GENERATE_INFOPLIST_FILE = NO
+CODE_SIGN_ENTITLEMENTS = AkaaFlix/AkaaFlix.entitlements
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+COMBINE_HIDPI_IMAGES = YES
+
+// VLCKit 3.x universal xcframework (fetched by scripts/fetch-vlckit.sh into Vendor/)
+FRAMEWORK_SEARCH_PATHS = $(inherited) $(PROJECT_DIR)/Vendor
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks
+OTHER_LDFLAGS = $(inherited) -liconv
+
+// Signing: ad-hoc by default; Developer ID values come from Signing.xcconfig (Release) or CI.
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+DEVELOPMENT_TEAM =
+ENABLE_HARDENED_RUNTIME = YES
+
+CLANG_ENABLE_MODULES = YES
+CLANG_ENABLE_OBJC_ARC = YES
+ENABLE_USER_SCRIPT_SANDBOXING = NO
+SWIFT_EMIT_LOC_STRINGS = NO
+DEAD_CODE_STRIPPING = YES
+
+// Values shown on the About screen (override in Signing.xcconfig or on the xcodebuild command line).
+AKAAFLIX_WEBSITE = www.akaaflix.com
+AKAAFLIX_SUPPORT_EMAIL = support@akaaflix.com
+AKAAFLIX_DEVELOPER = Akaa Team
+AKAAFLIX_SUPPORT_WHATSAPP =

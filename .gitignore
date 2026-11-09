@@ -23,3 +23,11 @@ signing.properties
 .kotlin/
 __pycache__/
 *.pyc
+
+# macOS app (Xcode)
+macos/Vendor/
+macos/build/
+macos/Config/Signing.xcconfig
+**/xcuserdata/
+*.xcuserstate
+DerivedData/

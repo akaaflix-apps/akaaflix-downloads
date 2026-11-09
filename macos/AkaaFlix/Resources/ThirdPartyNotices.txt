@@ -1,0 +1,21 @@
+Akaa Flix for macOS — Third-party notices
+==========================================
+
+Akaa Flix embeds the following open-source component:
+
+VLCKit 3.7.3 (includes libVLC and its plug-ins)
+  Copyright (C) VideoLAN and the VLCKit / VLC authors
+  Licence: GNU Lesser General Public License, version 2.1 or later (LGPL-2.1+)
+  Source:  https://code.videolan.org/videolan/VLCKit
+  Binary:  https://download.videolan.org/pub/cocoapods/prod/VLCKit-3.7.3-319ed2c0-79128878.tar.xz
+           (SHA-256 019afdae4e2e2d0f3ac325fac8f7ba0af25dca70b9d157df7d60db88e0be8e5d)
+
+VLCKit is dynamically linked as an unmodified, separately replaceable framework at
+"Akaa Flix.app/Contents/Frameworks/VLCKit.framework". You may replace it with your own
+compatible build (library validation is relaxed for this purpose). The full LGPL-2.1 text is
+available at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html and in the VLCKit
+binary package (COPYING.txt). The corresponding source code is available from the URL above;
+on request we will provide the exact source used for this build.
+
+All other code in Akaa Flix uses only Apple system frameworks (SwiftUI, AppKit, AVFoundation,
+CoreImage, SQLite3, Security, UserNotifications).

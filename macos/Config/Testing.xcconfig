@@ -1,0 +1,9 @@
+// Testing: used by the scheme's Test action and by QA builds.
+#include "Base.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = com.akaaflix.mac.testing
+ONLY_ACTIVE_ARCH = YES
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG TESTING
+ENABLE_TESTABILITY = YES

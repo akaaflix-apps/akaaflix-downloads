@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>ar</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ar</string>
+		<string>en</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>Akaa Flix</string>
+	<key>CFBundleDisplayName</key>
+	<string>Akaa Flix</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.entertainment</string>
+	<key>LSArchitecturePriority</key>
+	<array>
+		<string>arm64</string>
+		<string>x86_64</string>
+	</array>
+	<key>LSRequiresNativeExecution</key>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 Akaa Flix</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Akaa Flix uses the camera only to scan a playlist QR code. يستخدم Akaa Flix الكاميرا فقط لمسح رمز QR الخاص بالقائمة.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Akaa Flix connects to IPTV servers that may be on your local network. يتصل Akaa Flix بسيرفرات IPTV التي قد تكون على شبكتك المحلية.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>AKWebsite</key>
+	<string>$(AKAAFLIX_WEBSITE)</string>
+	<key>AKSupportEmail</key>
+	<string>$(AKAAFLIX_SUPPORT_EMAIL)</string>
+	<key>AKDeveloper</key>
+	<string>$(AKAAFLIX_DEVELOPER)</string>
+	<key>AKSupportWhatsApp</key>
+	<string>$(AKAAFLIX_SUPPORT_WHATSAPP)</string>
+</dict>
+</plist>

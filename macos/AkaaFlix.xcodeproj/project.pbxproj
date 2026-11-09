@@ -1,0 +1,783 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		085C811D78DB786B260B9258 /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854851CF86CA963DAEF6D598 /* Services.swift */; };
+		0D8E83996967CE819DC359C5 /* StreamPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1168986CF32AC79C5DF7D15 /* StreamPolicy.swift */; };
+		10782134C7141F8A38436834 /* LenientJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD902781CB1D25A60B442FF3 /* LenientJSON.swift */; };
+		12C0F97E6414666B59751E0D /* StreamPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1168986CF32AC79C5DF7D15 /* StreamPolicy.swift */; };
+		1375FECBF7EF2D53D9775E0E /* Neon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1879C1EE2F613356B47CAECF /* Neon.swift */; };
+		141917365C165491800BF5F0 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D922A670CFAB844358F63C /* Settings.swift */; };
+		143627A1A0DEC9C46C645963 /* UserDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF4A4C6E4344E646F992AA6 /* UserDataStore.swift */; };
+		15B3BCA5C813A6848A30FFDD /* SelfTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480E816D33934E992B7FB64E /* SelfTest.swift */; };
+		168EAE96F6739CBA9C4F2A2D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1917C59CCCEFA0C09C99CBD7 /* Assets.xcassets */; };
+		17B4A7EB86B003ADB7ED66F5 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D922A670CFAB844358F63C /* Settings.swift */; };
+		1BD6EBE01A8FFBF4C017E46D /* AppDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1601CFA73F479C8A24DB5E86 /* AppDatabase.swift */; };
+		1E51C7723049F9BAF5F06AEC /* PlaylistLinkParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1005A8E319D896751C3C9A1 /* PlaylistLinkParser.swift */; };
+		202933BE5C0894436A42A9AF /* SystemServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C28FC63807DA6E0C1EFAD2 /* SystemServices.swift */; };
+		284EA60A4538F5F6715AA52C /* SQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC0AF39F3737F3633307BBA2 /* SQLite.swift */; };
+		337650E86BBC613053A2D073 /* QRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9053526F34FD1DFA2CC149E /* QRScanner.swift */; };
+		38372CC1BBB8067DAB4C12C4 /* PlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC23AA9486C91FFBBAC4D17A /* PlaybackEngine.swift */; };
+		386C779567183886AAF95142 /* PinHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBB4F23E9F6B872DD26F7B /* PinHasher.swift */; };
+		3A2FE36BA682E12E36AD3F3B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD83E7652D9F5389A3EDCC75 /* Models.swift */; };
+		3CF0016819FB0B33609E3694 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3B2DF8A53D83861FFC9171 /* DownloadManager.swift */; };
+		3EB91FF51137B3CD00AC6483 /* AppDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1601CFA73F479C8A24DB5E86 /* AppDatabase.swift */; };
+		4A3A96E7670CD9F4031287A0 /* SeriesDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB234410EDA15943A7588417 /* SeriesDetailsView.swift */; };
+		4D3A747980D92C95330CB3C9 /* Cards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBD1B2D3D984C98A4A40047 /* Cards.swift */; };
+		5417B0DA3F8D09DDEFBB7B48 /* VideoSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217E8EFA94BC2AAF8E1EB1AF /* VideoSurface.swift */; };
+		553D35A7561C4E6005ADA9E9 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68304168BA54BD90F72B3FD5 /* AboutView.swift */; };
+		5DECBE8FA8A4A4C255E05C5B /* UserDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF4A4C6E4344E646F992AA6 /* UserDataStore.swift */; };
+		5E2CB03ACC4130AD6E6D4B74 /* VLCPlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B346F4639DEE3732699BFB17 /* VLCPlaybackEngine.swift */; };
+		61F93BF2F264737BB724EE2E /* CategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D957819FB5E9C19755E38252 /* CategoryClassifier.swift */; };
+		66631D7F37061AB8E0578A51 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B8FC7AE6FC34B55207AE7 /* CoreTests.swift */; };
+		66982A7B703B21554EBABEB3 /* SQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC0AF39F3737F3633307BBA2 /* SQLite.swift */; };
+		6ACA6E5EAC3CC974CBE5024F /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1456B66014066F7109D60F95 /* PlayerView.swift */; };
+		7040714DFDF2BB4F907A1DA0 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377B63570897E7C3DC851FCF /* AppModel.swift */; };
+		75C68A9854E71AF31A6A3240 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 105606C8F03EF8FE128ED167 /* ImageLoader.swift */; };
+		77B3000719B11AEC8137FA07 /* PinHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FBB4F23E9F6B872DD26F7B /* PinHasher.swift */; };
+		7820398658A8886295761BCC /* AVPlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8414D6BD9CF74F54120FE984 /* AVPlaybackEngine.swift */; };
+		7AE92ACCBA87BC38A4C0A288 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86EE8E1E50EB73DE7613127 /* Theme.swift */; };
+		7C9E64438F71AD71BABA7B72 /* XtreamParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A138F0A5E385C33A401453E /* XtreamParser.swift */; };
+		7CDC2509802A275633D09F49 /* XtreamClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03FD791DDEB0D61B376C3112 /* XtreamClient.swift */; };
+		90E6DD3FE2B2745C6D19C162 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8585D08F496EAADE454E9D23 /* CatalogView.swift */; };
+		949555092BF64FC86B6A109E /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = EEC59D9C3A3BA047C3B688B6 /* ThirdPartyNotices.txt */; };
+		9E2C4711524EFB761171A418 /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66CC5D8BF296BB19F1540172 /* CatalogStore.swift */; };
+		A1544609AD817F4FC79EA93F /* XtreamClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03FD791DDEB0D61B376C3112 /* XtreamClient.swift */; };
+		ADBA9958426CE7D501CF990A /* MovieDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48ADA75DA3EE4515DF382600 /* MovieDetailsView.swift */; };
+		AF4875D95A38EDFDABBD5EF5 /* ServerURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6333B49B886C8722B756FF9B /* ServerURL.swift */; };
+		B0F3A86C8F08B871B93BB7CA /* PlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1523B4CDDD2EC42F3ACDB4F /* PlayerController.swift */; };
+		B3E38CD9651E425BB716F7BA /* ContentText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559C69EFA9E59EA76C628A16 /* ContentText.swift */; };
+		BBE90E79493DBD6C493438D9 /* PlaylistLinkParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1005A8E319D896751C3C9A1 /* PlaylistLinkParser.swift */; };
+		BD3FABDC82457F9C6E20E63D /* LenientJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD902781CB1D25A60B442FF3 /* LenientJSON.swift */; };
+		BF8602A47EB622AB30E6DFD4 /* Controls.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7AE5C433E7487742CC942A5 /* Controls.swift */; };
+		C1C802B408CA375B8B486C52 /* SettingsSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = A203199F490E397CEA260DBC /* SettingsSections.swift */; };
+		C5E97A578483FE93E4514F92 /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66CC5D8BF296BB19F1540172 /* CatalogStore.swift */; };
+		C6BDE9C12CBA1A9379455D42 /* VLCKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BA5AA5B4E12CF1CE318D3196 /* VLCKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C80549FC31C359EBEF43CF74 /* CategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D957819FB5E9C19755E38252 /* CategoryClassifier.swift */; };
+		C9D254333A3B1FF049973F7A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BCAC1EA9C5EE995EFF6551 /* RootView.swift */; };
+		D088C8C6953B994484AD9A1E /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854851CF86CA963DAEF6D598 /* Services.swift */; };
+		D16B1CAE64869E6E56B9595E /* AkaaFlixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB952E6DEE57BABA2B116BC /* AkaaFlixApp.swift */; };
+		DAE843B1AC017E60B87E765E /* ServerURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6333B49B886C8722B756FF9B /* ServerURL.swift */; };
+		DD65566EB54DE29166FF3401 /* VLCKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5AA5B4E12CF1CE318D3196 /* VLCKit.xcframework */; };
+		DDDC7C930185164BECAEF682 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD83E7652D9F5389A3EDCC75 /* Models.swift */; };
+		DE945453479709DAA1FFA9C3 /* ContentText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559C69EFA9E59EA76C628A16 /* ContentText.swift */; };
+		DF168857D5619C1443E975EE /* LiveTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FEB2F3E13AC2B567570F78 /* LiveTVView.swift */; };
+		E82212E64C4FEB5A2399C4E7 /* PlaylistsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AE6B4479B60ACC5C0C176 /* PlaylistsViews.swift */; };
+		F07FC4DB079E3FBE0868545A /* SettingsShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C882D4DBB044489236AB44 /* SettingsShell.swift */; };
+		F443B24E233F470CE6D944F5 /* LibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE7B4A347FC2783CFF45541 /* LibraryViews.swift */; };
+		F9AC0585D161274B9E78D957 /* XtreamParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A138F0A5E385C33A401453E /* XtreamParser.swift */; };
+		FED934F92FDCB3F10DC1DA64 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20E4C00AA89F6BA7D1F336D /* HomeView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		496AF46EC2762DDF91F78F13 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C6BDE9C12CBA1A9379455D42 /* VLCKit.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		03FD791DDEB0D61B376C3112 /* XtreamClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamClient.swift; sourceTree = "<group>"; };
+		0C989B914EB3A37D8F7C94E3 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		105606C8F03EF8FE128ED167 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
+		1456B66014066F7109D60F95 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		15061E8D4DA276F4D0053565 /* Akaa Flix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Akaa Flix.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1601CFA73F479C8A24DB5E86 /* AppDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDatabase.swift; sourceTree = "<group>"; };
+		1879C1EE2F613356B47CAECF /* Neon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Neon.swift; sourceTree = "<group>"; };
+		1917C59CCCEFA0C09C99CBD7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1DE7B4A347FC2783CFF45541 /* LibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViews.swift; sourceTree = "<group>"; };
+		217E8EFA94BC2AAF8E1EB1AF /* VideoSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSurface.swift; sourceTree = "<group>"; };
+		33E9687330FED0E063B81803 /* Signing.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.example.xcconfig; sourceTree = "<group>"; };
+		377B63570897E7C3DC851FCF /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		3EBD1B2D3D984C98A4A40047 /* Cards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cards.swift; sourceTree = "<group>"; };
+		43FEB2F3E13AC2B567570F78 /* LiveTVView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVView.swift; sourceTree = "<group>"; };
+		480E816D33934E992B7FB64E /* SelfTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfTest.swift; sourceTree = "<group>"; };
+		48ADA75DA3EE4515DF382600 /* MovieDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsView.swift; sourceTree = "<group>"; };
+		4A138F0A5E385C33A401453E /* XtreamParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamParser.swift; sourceTree = "<group>"; };
+		4F5AE6B4479B60ACC5C0C176 /* PlaylistsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsViews.swift; sourceTree = "<group>"; };
+		559C69EFA9E59EA76C628A16 /* ContentText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentText.swift; sourceTree = "<group>"; };
+		561FE1E35A370B6F2C8DB118 /* Development.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Development.xcconfig; sourceTree = "<group>"; };
+		5A3B2DF8A53D83861FFC9171 /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
+		6333B49B886C8722B756FF9B /* ServerURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerURL.swift; sourceTree = "<group>"; };
+		66CC5D8BF296BB19F1540172 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
+		68304168BA54BD90F72B3FD5 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		7BB952E6DEE57BABA2B116BC /* AkaaFlixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AkaaFlixApp.swift; sourceTree = "<group>"; };
+		7FF4A4C6E4344E646F992AA6 /* UserDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDataStore.swift; sourceTree = "<group>"; };
+		8414D6BD9CF74F54120FE984 /* AVPlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlaybackEngine.swift; sourceTree = "<group>"; };
+		854851CF86CA963DAEF6D598 /* Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
+		8585D08F496EAADE454E9D23 /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
+		87D922A670CFAB844358F63C /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8B0C2F0715E3E8A56E446B74 /* AkaaFlixTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AkaaFlixTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		91C28FC63807DA6E0C1EFAD2 /* SystemServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemServices.swift; sourceTree = "<group>"; };
+		A1168986CF32AC79C5DF7D15 /* StreamPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamPolicy.swift; sourceTree = "<group>"; };
+		A1523B4CDDD2EC42F3ACDB4F /* PlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerController.swift; sourceTree = "<group>"; };
+		A203199F490E397CEA260DBC /* SettingsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSections.swift; sourceTree = "<group>"; };
+		A20E4C00AA89F6BA7D1F336D /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AB234410EDA15943A7588417 /* SeriesDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesDetailsView.swift; sourceTree = "<group>"; };
+		B0FBB4F23E9F6B872DD26F7B /* PinHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinHasher.swift; sourceTree = "<group>"; };
+		B346F4639DEE3732699BFB17 /* VLCPlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VLCPlaybackEngine.swift; sourceTree = "<group>"; };
+		BA5AA5B4E12CF1CE318D3196 /* VLCKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = VLCKit.xcframework; path = Vendor/VLCKit.xcframework; sourceTree = SOURCE_ROOT; };
+		BD83E7652D9F5389A3EDCC75 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		BF2B8FC7AE6FC34B55207AE7 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
+		C1005A8E319D896751C3C9A1 /* PlaylistLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistLinkParser.swift; sourceTree = "<group>"; };
+		C42648646A28ED38F812B86A /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		C9053526F34FD1DFA2CC149E /* QRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanner.swift; sourceTree = "<group>"; };
+		CD902781CB1D25A60B442FF3 /* LenientJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LenientJSON.swift; sourceTree = "<group>"; };
+		D86EE8E1E50EB73DE7613127 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		D8D25C203FC22E755E8A8670 /* Testing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Testing.xcconfig; sourceTree = "<group>"; };
+		D957819FB5E9C19755E38252 /* CategoryClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryClassifier.swift; sourceTree = "<group>"; };
+		DC0AF39F3737F3633307BBA2 /* SQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLite.swift; sourceTree = "<group>"; };
+		E0BCAC1EA9C5EE995EFF6551 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		E5C882D4DBB044489236AB44 /* SettingsShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsShell.swift; sourceTree = "<group>"; };
+		E7AE5C433E7487742CC942A5 /* Controls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controls.swift; sourceTree = "<group>"; };
+		EEC59D9C3A3BA047C3B688B6 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
+		F9493041D0D8A89D47E482E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FB43B9D0F368E96B5BC6600A /* AkaaFlix.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AkaaFlix.entitlements; sourceTree = "<group>"; };
+		FC23AA9486C91FFBBAC4D17A /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackEngine.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		54AB89D79F92BD2966E41BD8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6EFAB1ECC0D092E20FE51FCD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD65566EB54DE29166FF3401 /* VLCKit.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		218E9EB3CB46E5B2C146478B /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		26236C29038A252B6868B593 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
+		2F3A6B1E78F896718625FF06 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				15061E8D4DA276F4D0053565 /* Akaa Flix.app */,
+				8B0C2F0715E3E8A56E446B74 /* AkaaFlixTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		38DE1F3504599A06B31ECC72 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				3EBD1B2D3D984C98A4A40047 /* Cards.swift */,
+				E7AE5C433E7487742CC942A5 /* Controls.swift */,
+				1879C1EE2F613356B47CAECF /* Neon.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		41B9ABB1DC6D30CB7A00583D /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				F0D2B462672FDA50A7C66DDF /* About */,
+				BFFDA06ABA79A00FCF6E1855 /* Catalog */,
+				6F5A94887D6E9170F6C39674 /* Details */,
+				A2A92604C06783E8818E227E /* Home */,
+				A750D539816BE45963FEF447 /* Library */,
+				D37E80DE77E3622DBF50719D /* Live */,
+				218E9EB3CB46E5B2C146478B /* Onboarding */,
+				C94684E19D1CEFBB7DEFDB20 /* Playlists */,
+				26236C29038A252B6868B593 /* Search */,
+				71E8DC1ACDF3D458F06C6DAF /* Settings */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		4719D4DAE1DCC21D823FA1AB /* App */ = {
+			isa = PBXGroup;
+			children = (
+				7BB952E6DEE57BABA2B116BC /* AkaaFlixApp.swift */,
+				377B63570897E7C3DC851FCF /* AppModel.swift */,
+				E0BCAC1EA9C5EE995EFF6551 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		50F3A51980ADECACE670A33A /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				1601CFA73F479C8A24DB5E86 /* AppDatabase.swift */,
+				66CC5D8BF296BB19F1540172 /* CatalogStore.swift */,
+				D957819FB5E9C19755E38252 /* CategoryClassifier.swift */,
+				559C69EFA9E59EA76C628A16 /* ContentText.swift */,
+				CD902781CB1D25A60B442FF3 /* LenientJSON.swift */,
+				BD83E7652D9F5389A3EDCC75 /* Models.swift */,
+				B0FBB4F23E9F6B872DD26F7B /* PinHasher.swift */,
+				C1005A8E319D896751C3C9A1 /* PlaylistLinkParser.swift */,
+				6333B49B886C8722B756FF9B /* ServerURL.swift */,
+				854851CF86CA963DAEF6D598 /* Services.swift */,
+				87D922A670CFAB844358F63C /* Settings.swift */,
+				DC0AF39F3737F3633307BBA2 /* SQLite.swift */,
+				A1168986CF32AC79C5DF7D15 /* StreamPolicy.swift */,
+				7FF4A4C6E4344E646F992AA6 /* UserDataStore.swift */,
+				03FD791DDEB0D61B376C3112 /* XtreamClient.swift */,
+				4A138F0A5E385C33A401453E /* XtreamParser.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		518DA81DB9B99529C0C0AEBE /*  */ = {
+			isa = PBXGroup;
+			children = (
+				F45ED3ECDE7D413102A29B2C /* AkaaFlix */,
+				C6E360B4239AC23278781D41 /* AkaaFlixTests */,
+				BD13AA3ACFF3D0C2ED6E4720 /* Config */,
+				B687106895D06AA330DAFED5 /* Frameworks */,
+				2F3A6B1E78F896718625FF06 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6A2B5937BD46BE375B69161F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1917C59CCCEFA0C09C99CBD7 /* Assets.xcassets */,
+				EEC59D9C3A3BA047C3B688B6 /* ThirdPartyNotices.txt */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		6F5A94887D6E9170F6C39674 /* Details */ = {
+			isa = PBXGroup;
+			children = (
+				48ADA75DA3EE4515DF382600 /* MovieDetailsView.swift */,
+				AB234410EDA15943A7588417 /* SeriesDetailsView.swift */,
+			);
+			path = Details;
+			sourceTree = "<group>";
+		};
+		6F62BDDA280E46CCCED501E9 /* SelfTest */ = {
+			isa = PBXGroup;
+			children = (
+				480E816D33934E992B7FB64E /* SelfTest.swift */,
+			);
+			path = SelfTest;
+			sourceTree = "<group>";
+		};
+		71E8DC1ACDF3D458F06C6DAF /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				A203199F490E397CEA260DBC /* SettingsSections.swift */,
+				E5C882D4DBB044489236AB44 /* SettingsShell.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		8E41024AF5CC003667F7AB0F /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				D86EE8E1E50EB73DE7613127 /* Theme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		972ECAF244AFB4D8B4684685 /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				8414D6BD9CF74F54120FE984 /* AVPlaybackEngine.swift */,
+				FC23AA9486C91FFBBAC4D17A /* PlaybackEngine.swift */,
+				A1523B4CDDD2EC42F3ACDB4F /* PlayerController.swift */,
+				1456B66014066F7109D60F95 /* PlayerView.swift */,
+				217E8EFA94BC2AAF8E1EB1AF /* VideoSurface.swift */,
+				B346F4639DEE3732699BFB17 /* VLCPlaybackEngine.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		A2A92604C06783E8818E227E /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A20E4C00AA89F6BA7D1F336D /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		A750D539816BE45963FEF447 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				1DE7B4A347FC2783CFF45541 /* LibraryViews.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		AF263630F3A3AF31A1B4CD2B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				5A3B2DF8A53D83861FFC9171 /* DownloadManager.swift */,
+				105606C8F03EF8FE128ED167 /* ImageLoader.swift */,
+				C9053526F34FD1DFA2CC149E /* QRScanner.swift */,
+				91C28FC63807DA6E0C1EFAD2 /* SystemServices.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B687106895D06AA330DAFED5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BA5AA5B4E12CF1CE318D3196 /* VLCKit.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BD13AA3ACFF3D0C2ED6E4720 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				561FE1E35A370B6F2C8DB118 /* Development.xcconfig */,
+				D8D25C203FC22E755E8A8670 /* Testing.xcconfig */,
+				C42648646A28ED38F812B86A /* Release.xcconfig */,
+				0C989B914EB3A37D8F7C94E3 /* Base.xcconfig */,
+				33E9687330FED0E063B81803 /* Signing.example.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		BFFDA06ABA79A00FCF6E1855 /* Catalog */ = {
+			isa = PBXGroup;
+			children = (
+				8585D08F496EAADE454E9D23 /* CatalogView.swift */,
+			);
+			path = Catalog;
+			sourceTree = "<group>";
+		};
+		C6E360B4239AC23278781D41 /* AkaaFlixTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B8FC7AE6FC34B55207AE7 /* CoreTests.swift */,
+			);
+			path = AkaaFlixTests;
+			sourceTree = "<group>";
+		};
+		C94684E19D1CEFBB7DEFDB20 /* Playlists */ = {
+			isa = PBXGroup;
+			children = (
+				4F5AE6B4479B60ACC5C0C176 /* PlaylistsViews.swift */,
+			);
+			path = Playlists;
+			sourceTree = "<group>";
+		};
+		D37E80DE77E3622DBF50719D /* Live */ = {
+			isa = PBXGroup;
+			children = (
+				43FEB2F3E13AC2B567570F78 /* LiveTVView.swift */,
+			);
+			path = Live;
+			sourceTree = "<group>";
+		};
+		F0D2B462672FDA50A7C66DDF /* About */ = {
+			isa = PBXGroup;
+			children = (
+				68304168BA54BD90F72B3FD5 /* AboutView.swift */,
+			);
+			path = About;
+			sourceTree = "<group>";
+		};
+		F45ED3ECDE7D413102A29B2C /* AkaaFlix */ = {
+			isa = PBXGroup;
+			children = (
+				4719D4DAE1DCC21D823FA1AB /* App */,
+				38DE1F3504599A06B31ECC72 /* Components */,
+				50F3A51980ADECACE670A33A /* Core */,
+				972ECAF244AFB4D8B4684685 /* Player */,
+				6A2B5937BD46BE375B69161F /* Resources */,
+				41B9ABB1DC6D30CB7A00583D /* Screens */,
+				6F62BDDA280E46CCCED501E9 /* SelfTest */,
+				AF263630F3A3AF31A1B4CD2B /* Services */,
+				8E41024AF5CC003667F7AB0F /* Theme */,
+				FB43B9D0F368E96B5BC6600A /* AkaaFlix.entitlements */,
+				F9493041D0D8A89D47E482E1 /* Info.plist */,
+			);
+			path = AkaaFlix;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A700229C3AC2DAE057FE5B27 /* AkaaFlixTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F471B4923D46E58DCE40A0E /* Build configuration list for PBXNativeTarget "AkaaFlixTests" */;
+			buildPhases = (
+				BDA9E329ACCE0E746140CA84 /* Sources */,
+				54AB89D79F92BD2966E41BD8 /* Frameworks */,
+				25B7C02526925672442B0E39 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AkaaFlixTests;
+			productName = AkaaFlixTests;
+			productReference = 8B0C2F0715E3E8A56E446B74 /* AkaaFlixTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E3435DDA2687639586BF0B70 /* Akaa Flix */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D97B77EAD2380603A3F2A82 /* Build configuration list for PBXNativeTarget "Akaa Flix" */;
+			buildPhases = (
+				4821909E9BF9E73E471FEA84 /* Sources */,
+				6EFAB1ECC0D092E20FE51FCD /* Frameworks */,
+				F667297ED3AB90EAC07798D4 /* Resources */,
+				496AF46EC2762DDF91F78F13 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Akaa Flix";
+			productName = "Akaa Flix";
+			productReference = 15061E8D4DA276F4D0053565 /* Akaa Flix.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					E3435DDA2687639586BF0B70 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A700229C3AC2DAE057FE5B27 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 1F4E3D13C2320EDA50221924 /* Build configuration list for PBXProject "AkaaFlix" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ar;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ar,
+				en,
+				Base,
+			);
+			mainGroup = 518DA81DB9B99529C0C0AEBE;
+			productRefGroup = 2F3A6B1E78F896718625FF06 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E3435DDA2687639586BF0B70 /* Akaa Flix */,
+				A700229C3AC2DAE057FE5B27 /* AkaaFlixTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		25B7C02526925672442B0E39 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F667297ED3AB90EAC07798D4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				168EAE96F6739CBA9C4F2A2D /* Assets.xcassets in Resources */,
+				949555092BF64FC86B6A109E /* ThirdPartyNotices.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4821909E9BF9E73E471FEA84 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D16B1CAE64869E6E56B9595E /* AkaaFlixApp.swift in Sources */,
+				7040714DFDF2BB4F907A1DA0 /* AppModel.swift in Sources */,
+				C9D254333A3B1FF049973F7A /* RootView.swift in Sources */,
+				4D3A747980D92C95330CB3C9 /* Cards.swift in Sources */,
+				BF8602A47EB622AB30E6DFD4 /* Controls.swift in Sources */,
+				1375FECBF7EF2D53D9775E0E /* Neon.swift in Sources */,
+				3EB91FF51137B3CD00AC6483 /* AppDatabase.swift in Sources */,
+				9E2C4711524EFB761171A418 /* CatalogStore.swift in Sources */,
+				61F93BF2F264737BB724EE2E /* CategoryClassifier.swift in Sources */,
+				B3E38CD9651E425BB716F7BA /* ContentText.swift in Sources */,
+				10782134C7141F8A38436834 /* LenientJSON.swift in Sources */,
+				3A2FE36BA682E12E36AD3F3B /* Models.swift in Sources */,
+				386C779567183886AAF95142 /* PinHasher.swift in Sources */,
+				1E51C7723049F9BAF5F06AEC /* PlaylistLinkParser.swift in Sources */,
+				AF4875D95A38EDFDABBD5EF5 /* ServerURL.swift in Sources */,
+				085C811D78DB786B260B9258 /* Services.swift in Sources */,
+				17B4A7EB86B003ADB7ED66F5 /* Settings.swift in Sources */,
+				284EA60A4538F5F6715AA52C /* SQLite.swift in Sources */,
+				0D8E83996967CE819DC359C5 /* StreamPolicy.swift in Sources */,
+				5DECBE8FA8A4A4C255E05C5B /* UserDataStore.swift in Sources */,
+				7CDC2509802A275633D09F49 /* XtreamClient.swift in Sources */,
+				F9AC0585D161274B9E78D957 /* XtreamParser.swift in Sources */,
+				7820398658A8886295761BCC /* AVPlaybackEngine.swift in Sources */,
+				38372CC1BBB8067DAB4C12C4 /* PlaybackEngine.swift in Sources */,
+				B0F3A86C8F08B871B93BB7CA /* PlayerController.swift in Sources */,
+				6ACA6E5EAC3CC974CBE5024F /* PlayerView.swift in Sources */,
+				5417B0DA3F8D09DDEFBB7B48 /* VideoSurface.swift in Sources */,
+				5E2CB03ACC4130AD6E6D4B74 /* VLCPlaybackEngine.swift in Sources */,
+				553D35A7561C4E6005ADA9E9 /* AboutView.swift in Sources */,
+				90E6DD3FE2B2745C6D19C162 /* CatalogView.swift in Sources */,
+				ADBA9958426CE7D501CF990A /* MovieDetailsView.swift in Sources */,
+				4A3A96E7670CD9F4031287A0 /* SeriesDetailsView.swift in Sources */,
+				FED934F92FDCB3F10DC1DA64 /* HomeView.swift in Sources */,
+				F443B24E233F470CE6D944F5 /* LibraryViews.swift in Sources */,
+				DF168857D5619C1443E975EE /* LiveTVView.swift in Sources */,
+				E82212E64C4FEB5A2399C4E7 /* PlaylistsViews.swift in Sources */,
+				C1C802B408CA375B8B486C52 /* SettingsSections.swift in Sources */,
+				F07FC4DB079E3FBE0868545A /* SettingsShell.swift in Sources */,
+				15B3BCA5C813A6848A30FFDD /* SelfTest.swift in Sources */,
+				3CF0016819FB0B33609E3694 /* DownloadManager.swift in Sources */,
+				75C68A9854E71AF31A6A3240 /* ImageLoader.swift in Sources */,
+				337650E86BBC613053A2D073 /* QRScanner.swift in Sources */,
+				202933BE5C0894436A42A9AF /* SystemServices.swift in Sources */,
+				7AE92ACCBA87BC38A4C0A288 /* Theme.swift in Sources */,
+				66631D7F37061AB8E0578A51 /* CoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BDA9E329ACCE0E746140CA84 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1BD6EBE01A8FFBF4C017E46D /* AppDatabase.swift in Sources */,
+				C5E97A578483FE93E4514F92 /* CatalogStore.swift in Sources */,
+				C80549FC31C359EBEF43CF74 /* CategoryClassifier.swift in Sources */,
+				DE945453479709DAA1FFA9C3 /* ContentText.swift in Sources */,
+				BD3FABDC82457F9C6E20E63D /* LenientJSON.swift in Sources */,
+				DDDC7C930185164BECAEF682 /* Models.swift in Sources */,
+				77B3000719B11AEC8137FA07 /* PinHasher.swift in Sources */,
+				BBE90E79493DBD6C493438D9 /* PlaylistLinkParser.swift in Sources */,
+				DAE843B1AC017E60B87E765E /* ServerURL.swift in Sources */,
+				D088C8C6953B994484AD9A1E /* Services.swift in Sources */,
+				141917365C165491800BF5F0 /* Settings.swift in Sources */,
+				66982A7B703B21554EBABEB3 /* SQLite.swift in Sources */,
+				12C0F97E6414666B59751E0D /* StreamPolicy.swift in Sources */,
+				143627A1A0DEC9C46C645963 /* UserDataStore.swift in Sources */,
+				A1544609AD817F4FC79EA93F /* XtreamClient.swift in Sources */,
+				7C9E64438F71AD71BABA7B72 /* XtreamParser.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		17718F6F32916E8835B077B9 /* Testing */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 407;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 4.0.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akaaflix.mac.tests;
+				PRODUCT_NAME = AkaaFlixTests;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG TESTING";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Testing;
+		};
+		2761849A6D0E26CA4E1817A1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C42648646A28ED38F812B86A /* Release.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		3B9DBBBF25E35C4FAE79C30C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "arm64 x86_64";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 407;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 4.0.7;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akaaflix.mac.tests;
+				PRODUCT_NAME = AkaaFlixTests;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		5E90EA30F4EE89E31381A65D /* Development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 561FE1E35A370B6F2C8DB118 /* Development.xcconfig */;
+			buildSettings = {
+			};
+			name = Development;
+		};
+		98DBFC312169747F47D673D6 /* Testing */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D8D25C203FC22E755E8A8670 /* Testing.xcconfig */;
+			buildSettings = {
+			};
+			name = Testing;
+		};
+		995DD1B18A6E32777C9E6C9E /* Testing */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Testing;
+		};
+		B92DA9BFC956CED07751BEC9 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 407;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 4.0.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akaaflix.mac.tests;
+				PRODUCT_NAME = AkaaFlixTests;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Development;
+		};
+		C28449456A5A705A7479770B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DDD45995EAFAA5621D4A5727 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Development;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0F471B4923D46E58DCE40A0E /* Build configuration list for PBXNativeTarget "AkaaFlixTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B92DA9BFC956CED07751BEC9 /* Development */,
+				17718F6F32916E8835B077B9 /* Testing */,
+				3B9DBBBF25E35C4FAE79C30C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1D97B77EAD2380603A3F2A82 /* Build configuration list for PBXNativeTarget "Akaa Flix" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E90EA30F4EE89E31381A65D /* Development */,
+				98DBFC312169747F47D673D6 /* Testing */,
+				2761849A6D0E26CA4E1817A1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1F4E3D13C2320EDA50221924 /* Build configuration list for PBXProject "AkaaFlix" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDD45995EAFAA5621D4A5727 /* Development */,
+				995DD1B18A6E32777C9E6C9E /* Testing */,
+				C28449456A5A705A7479770B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}

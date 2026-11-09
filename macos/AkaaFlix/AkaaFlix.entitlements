@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Hardened Runtime exceptions (Developer ID / notarization compatible). -->
+	<!-- VLCKit is LGPL-2.1: library validation is relaxed so users can relink/replace the
+	     embedded VLCKit.framework, and so ad-hoc signed builds can load it. -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+	<!-- QR code scanning for importing playlists. -->
+	<key>com.apple.security.device.camera</key>
+	<true/>
+</dict>
+</plist>

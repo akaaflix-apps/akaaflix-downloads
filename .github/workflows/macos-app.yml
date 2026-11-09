@@ -1,0 +1,210 @@
+name: Akaa Flix macOS (Universal)
+
+on:
+  push:
+    branches: [ "claude/admiring-johnson-5a5f2o" ]
+    paths: [ "macos/**", ".github/workflows/macos-app.yml" ]
+  pull_request:
+    paths: [ "macos/**", ".github/workflows/macos-app.yml" ]
+  workflow_dispatch:
+
+concurrency:
+  group: macos-app-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: macos
+
+jobs:
+  build:
+    name: Build Universal (Xcode 16.4, macOS 15)
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+      MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          sw_vers; uname -m; xcodebuild -version; swift --version
+          mkdir -p build
+
+      - name: Cache VLCKit
+        uses: actions/cache@v4
+        with:
+          path: macos/Vendor
+          key: vlckit-3.7.3-019afdae
+
+      - name: Fetch VLCKit (pinned SHA-256)
+        run: scripts/fetch-vlckit.sh
+
+      - name: Project is up to date with the generator
+        run: |
+          python3 tools/generate_xcodeproj.py
+          git diff --exit-code -- AkaaFlix.xcodeproj || (echo "::error::Run python3 macos/tools/generate_xcodeproj.py and commit"; exit 1)
+
+      - name: Unit tests (Testing configuration)
+        run: |
+          set -o pipefail
+          xcodebuild -project AkaaFlix.xcodeproj -scheme "Akaa Flix" -configuration Testing \
+            -destination "platform=macOS,arch=arm64" -derivedDataPath build/DerivedData test > build/test.log 2>&1 || true
+          grep -E "error:|Test Case.*(passed|failed)|Executed|BUILD|TEST (SUCCEEDED|FAILED)" build/test.log | head -400 || true
+          grep -q "TEST SUCCEEDED" build/test.log
+
+      - name: Build Development configuration
+        run: |
+          xcodebuild -project AkaaFlix.xcodeproj -scheme "Akaa Flix" -configuration Development \
+            -destination "platform=macOS,arch=arm64" -derivedDataPath build/DerivedData build > build/dev.log 2>&1 || true
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" build/dev.log | head -200 || true
+          grep -q "BUILD SUCCEEDED" build/dev.log
+
+      - name: Import Developer ID certificate (only when secrets are configured)
+        if: env.MACOS_CERT_P12_BASE64 != ''
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          security create-keychain -p "" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "" "$KEYCHAIN"
+          echo "$MACOS_CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -P "$MACOS_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN"
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | grep 'Developer ID Application' | head -1 | sed -E 's/.*"(.*)"/\1/')"
+          echo "AKAAFLIX_SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Build Release (Universal arm64 + x86_64)
+        run: |
+          EXTRA=()
+          if [[ -n "${AKAAFLIX_SIGN_IDENTITY:-}" ]]; then
+            EXTRA=(CODE_SIGN_IDENTITY="$AKAAFLIX_SIGN_IDENTITY" DEVELOPMENT_TEAM="$APPLE_TEAM_ID" OTHER_CODE_SIGN_FLAGS="--timestamp")
+          fi
+          scripts/build.sh Release "${EXTRA[@]}" > build/release.log 2>&1 || true
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)|✅|❌|Built:" build/release.log | head -200 || true
+          grep -q "BUILD SUCCEEDED" build/release.log
+
+      - name: Verify Universal binary, minimum macOS and signature
+        run: |
+          scripts/verify-universal.sh "build/Release/Akaa Flix.app" build/verification.md
+          cat build/verification.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create DMG
+        run: |
+          scripts/make-dmg.sh "build/Release/Akaa Flix.app" build/dmg Universal
+          ditto -c -k --keepParent "build/Release/Akaa Flix.app" "build/dmg/AkaaFlix-4.0.7-Universal-app.zip"
+
+      - name: Notarize (only when Apple credentials are configured)
+        if: env.AKAAFLIX_SIGN_IDENTITY != '' && env.APPLE_ID != ''
+        run: scripts/notarize.sh build/dmg/AkaaFlix-4.0.7-Universal.dmg
+
+      - name: Signing status
+        run: |
+          if [[ -n "${AKAAFLIX_SIGN_IDENTITY:-}" && -n "${APPLE_ID:-}" ]]; then
+            echo "Signed with Developer ID and notarized." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ Ad-hoc signed, NOT notarized (no Developer ID secrets configured). See macos/docs/INSTALL.md." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AkaaFlix-4.0.7-Universal
+          path: |
+            macos/build/dmg/*
+            macos/build/verification.md
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-logs
+          path: macos/build/*.log
+          retention-days: 7
+
+  build-xcode26:
+    name: Build Universal (Xcode 26, macOS 26)
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: macos/Vendor
+          key: vlckit-3.7.3-019afdae
+      - name: Build Release with the newest Xcode
+        run: |
+          xcodebuild -version
+          scripts/build.sh Release > build-26.log 2>&1 || true
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)|✅|❌" build-26.log | head -200 || true
+          grep -q "BUILD SUCCEEDED" build-26.log
+
+  selftest:
+    name: Install + self-test (${{ matrix.label }})
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            label: macOS 15 · Apple Silicon (arm64)
+          - runner: macos-15-intel
+            label: macOS 15 · Intel (x86_64)
+          - runner: macos-26
+            label: macOS 26 · Apple Silicon (arm64)
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: AkaaFlix-4.0.7-Universal
+          path: macos/dist
+      - name: Install from DMG
+        run: |
+          sw_vers; uname -m; sysctl -n machdep.cpu.brand_string
+          ls -R dist | head
+          hdiutil attach dist/dmg/AkaaFlix-4.0.7-Universal.dmg -mountpoint /tmp/akaaflix-dmg -nobrowse
+          ls -la /tmp/akaaflix-dmg
+          rm -rf "$HOME/Applications/Akaa Flix.app"; mkdir -p "$HOME/Applications"
+          ditto "/tmp/akaaflix-dmg/Akaa Flix.app" "$HOME/Applications/Akaa Flix.app"
+          hdiutil detach /tmp/akaaflix-dmg
+          codesign --verify --deep --strict "$HOME/Applications/Akaa Flix.app" && echo "signature OK"
+          lipo -info "$HOME/Applications/Akaa Flix.app/Contents/MacOS/Akaa Flix"
+          spctl --assess --type execute -v "$HOME/Applications/Akaa Flix.app" || echo "Gatekeeper: not notarized (expected for ad-hoc builds)"
+      - name: Run end-to-end self-test against the mock Xtream server
+        run: |
+          SELFTEST_TIMEOUT=600 scripts/run-selftest.sh "$HOME/Applications/Akaa Flix.app" build/selftest
+      - name: Summary
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          label = os.environ.get("LABEL", "")
+          p = "build/selftest/report.json"
+          if not os.path.exists(p):
+              print(f"### {label}\n\n❌ no report produced")
+              raise SystemExit
+          r = json.load(open(p))
+          e = r["environment"]
+          print(f"### {label}\n")
+          print(f"macOS {e.get('macOS')} ({e.get('macOSName')}) · {e.get('model')} · {e.get('cpu')} · binary slice **{e.get('binaryArchitecture')}** · Rosetta: {e.get('rosetta')} · {e.get('engine')} {e.get('engineVersion')}\n")
+          print("| Check | Result | Detail |\n|---|---|---|")
+          for c in r["checks"]:
+              mark = "✅" if c["passed"] else ("❌" if c["required"] else "⚠️")
+              print(f"| {c['name']} | {mark} | {c['detail'].replace('|', '/')} |")
+          print()
+          PY
+        env:
+          LABEL: ${{ matrix.label }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selftest-${{ matrix.runner }}
+          path: macos/build/selftest
+          retention-days: 30
