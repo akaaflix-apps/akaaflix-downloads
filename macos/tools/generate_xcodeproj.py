@@ -212,6 +212,7 @@ def main():
     }
     test_common = {
         "PRODUCT_NAME": "AkaaFlixTests",
+        "ENABLE_TESTING_SEARCH_PATHS": "YES",
         "PRODUCT_BUNDLE_IDENTIFIER": "com.akaaflix.mac.tests",
         "GENERATE_INFOPLIST_FILE": "YES",
         "MACOSX_DEPLOYMENT_TARGET": "11.0",
