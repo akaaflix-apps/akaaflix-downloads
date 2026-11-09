@@ -167,20 +167,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		218E9EB3CB46E5B2C146478B /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Onboarding;
-			sourceTree = "<group>";
-		};
-		26236C29038A252B6868B593 /* Search */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Search;
-			sourceTree = "<group>";
-		};
 		2F3A6B1E78F896718625FF06 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -209,9 +195,7 @@
 				A2A92604C06783E8818E227E /* Home */,
 				A750D539816BE45963FEF447 /* Library */,
 				D37E80DE77E3622DBF50719D /* Live */,
-				218E9EB3CB46E5B2C146478B /* Onboarding */,
 				C94684E19D1CEFBB7DEFDB20 /* Playlists */,
-				26236C29038A252B6868B593 /* Search */,
 				71E8DC1ACDF3D458F06C6DAF /* Settings */,
 			);
 			path = Screens;

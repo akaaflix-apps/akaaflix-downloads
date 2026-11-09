@@ -100,8 +100,9 @@ def walk(directory: Path, group: Group, rel: str):
         if item.is_dir() and item.suffix != ".xcassets":
             g = Group(item_rel, path=item.name)
             walk(item, g, item_rel)
-            g.emit()
-            group.children.append((g.id, item.name))
+            if g.children:  # git does not track empty folders; keep the project identical everywhere
+                g.emit()
+                group.children.append((g.id, item.name))
             continue
         ftype = FILE_TYPES.get(item.suffix)
         if not ftype:
