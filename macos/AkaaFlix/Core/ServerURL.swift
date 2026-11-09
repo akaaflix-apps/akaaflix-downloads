@@ -27,6 +27,7 @@ enum ServerURL {
         guard isPlausibleHost(bareHost) else { return nil }
         if let port = comps.port, !(1...65535).contains(port) { return nil }
         comps.scheme = comps.scheme?.lowercased()
+        if !host.contains(":") { comps.host = host.lowercased() }   // DNS names are case-insensitive
         comps.query = nil
         comps.fragment = nil
         comps.user = nil
