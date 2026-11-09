@@ -129,7 +129,7 @@ struct DropdownButton<Value: Hashable>: View {
                 Image(systemName: "chevron.down").font(.system(size: 13, weight: .bold))
                 Spacer(minLength: 4)
                 if let icon = leadingIcon { Image(systemName: icon).font(.system(size: 14)) }
-                Text(currentLabel).font(.system(size: 15, weight: .bold)).lineLimit(1)
+                Text(currentLabel).font(.system(size: 15, weight: .bold)).lineLimit(1).minimumScaleFactor(0.6)
                 Spacer(minLength: 4)
             }
             .foregroundColor(.white)

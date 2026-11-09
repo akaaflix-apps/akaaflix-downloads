@@ -3,9 +3,9 @@ name: Akaa Flix macOS (Universal)
 on:
   push:
     branches: [ "claude/admiring-johnson-5a5f2o" ]
-    paths: [ "macos/**", ".github/workflows/macos-app.yml" ]
+    paths: [ "macos/**", "!macos/docs/**", "!macos/**/*.md", ".github/workflows/macos-app.yml" ]
   pull_request:
-    paths: [ "macos/**", ".github/workflows/macos-app.yml" ]
+    paths: [ "macos/**", "!macos/docs/**", "!macos/**/*.md", ".github/workflows/macos-app.yml" ]
   workflow_dispatch:
 
 concurrency:

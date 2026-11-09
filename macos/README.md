@@ -18,6 +18,28 @@ natively on every Apple Silicon Mac (M1 … M5 and later) and on Intel Macs, fro
 | Live stream priority | **1. MPEG-TS (.ts) → 2. HLS (.m3u8)** — fixed, not user-editable |
 | Languages | Arabic (default, right-to-left reading) and English |
 
+## Screenshots
+
+Captured automatically by the self-test on a GitHub macOS runner (design size 1670×940, mock
+data and generated artwork — real posters and channel logos come from the user's playlist;
+video areas are black because the off-screen capture cannot read the video layer).
+
+| Home | Live TV |
+|---|---|
+| ![Home](docs/screenshots/01-home.jpg) | ![Live TV](docs/screenshots/02-live-tv.jpg) |
+| **Movies** | **Movie details** |
+| ![Movies](docs/screenshots/04-movies.jpg) | ![Movie details](docs/screenshots/05-movie-details.jpg) |
+| **Movie player** | **Series details** |
+| ![Movie player](docs/screenshots/06-movie-player.jpg) | ![Series details](docs/screenshots/08-series-details.jpg) |
+| **Series player** | **Settings · Player (fixed MPEG-TS → HLS)** |
+| ![Series player](docs/screenshots/09-series-player.jpg) | ![Player settings](docs/screenshots/11-settings-player.jpg) |
+| **Playlist management** | **Add playlist** |
+| ![Playlists](docs/screenshots/12-playlists.jpg) | ![Add playlist](docs/screenshots/13-add-playlist.jpg) |
+| **Edit playlist** | **About** |
+| ![Edit playlist](docs/screenshots/14-edit-playlist.jpg) | ![About](docs/screenshots/15-about.jpg) |
+| **Minimum window (1100×680)** | **English** |
+| ![Small window](docs/screenshots/18-movies-1100x680.jpg) | ![English](docs/screenshots/17-home-english.jpg) |
+
 ## Features
 
 - **Playlists:** Xtream Codes only — add / edit / test / refresh / duplicate / delete / enable,

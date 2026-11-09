@@ -213,6 +213,7 @@ struct PlaylistRow: View {
                         .padding(.horizontal, 10).padding(.vertical, 4)
                         .background(Capsule().fill(Theme.purple.opacity(0.5)))
                         .overlay(Capsule().strokeBorder(Color(hex: 0xD04BFF), lineWidth: 1))
+                        .fixedSize()
                     }
                     Text(playlist.name).font(.system(size: 28, weight: .heavy)).foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.6)
                         .layoutPriority(2)
