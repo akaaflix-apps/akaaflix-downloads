@@ -167,7 +167,7 @@ struct LiveTVView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "tv").font(.system(size: 28))
                     Text(tr("القنوات", "Channels")).font(.system(size: 26, weight: .heavy))
-                    Text("(\(vm.channels.count))").font(.system(size: 22, weight: .bold)).monospacedDigit()
+                    Text("(\(vm.channels.count))").font(.system(size: 22, weight: .bold)).monoDigits()
                 }
                 .foregroundColor(.white)
                 .contentDirection()
@@ -301,7 +301,7 @@ struct ChannelRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(String(format: "%03d", channel.number)).font(.system(size: 17, weight: .bold)).monospacedDigit().foregroundColor(.white).frame(width: 44)
+            Text(String(format: "%03d", channel.number)).font(.system(size: 17, weight: .bold)).monoDigits().foregroundColor(.white).frame(width: 44)
             ChannelLogo(url: channel.icon, name: channel.name, width: 62, height: 34)
             Text(channel.name).font(.system(size: 16, weight: .bold)).foregroundColor(.white).lineLimit(1)
             Spacer(minLength: 4)

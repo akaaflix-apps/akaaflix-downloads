@@ -141,7 +141,7 @@ struct SeriesDetailsView: View {
             Text(tr("تمت مشاهدة \(watched) من \(total) حلقة", "Watched \(watched) of \(total) episodes"))
                 .font(.system(size: 18, weight: .bold)).foregroundColor(.white)
             HStack(spacing: 12) {
-                Text("\(Int((fraction * 100).rounded()))%").font(.system(size: 17, weight: .bold)).foregroundColor(.white).monospacedDigit()
+                Text("\(Int((fraction * 100).rounded()))%").font(.system(size: 17, weight: .bold)).foregroundColor(.white).monoDigits()
                 ProgressBar(fraction: fraction, height: 7)
             }
         }

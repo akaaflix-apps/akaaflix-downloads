@@ -146,7 +146,7 @@ struct MovieDetailsView: View {
     private func infoChip(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon).font(.system(size: 20))
-            Text(text).font(.system(size: 20, weight: .bold)).monospacedDigit()
+            Text(text).font(.system(size: 20, weight: .bold)).monoDigits()
         }
         .foregroundColor(.white)
         .padding(.horizontal, 16).frame(height: 46)

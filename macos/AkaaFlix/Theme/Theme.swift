@@ -118,3 +118,14 @@ func linear(_ colors: [Color], _ start: UnitPoint = .top, _ end: UnitPoint = .bo
 func radial(_ colors: [Color], center: UnitPoint = .center, start: CGFloat = 0, end: CGFloat) -> RadialGradient {
     RadialGradient(gradient: Gradient(colors: colors), center: center, startRadius: start, endRadius: end)
 }
+
+extension View {
+    /// Tabular digits for clocks and counters (`View.monospacedDigit()` is macOS 12+).
+    @ViewBuilder func monoDigits() -> some View {
+        if #available(macOS 12.0, *) {
+            self.monospacedDigit()
+        } else {
+            self
+        }
+    }
+}

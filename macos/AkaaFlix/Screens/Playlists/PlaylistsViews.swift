@@ -252,7 +252,7 @@ struct PlaylistRow: View {
         VStack(spacing: 4) {
             Image(systemName: icon).font(.system(size: 22))
             Text(label).font(.system(size: 15, weight: .bold))
-            Text("\(count)").font(.system(size: 22, weight: .heavy)).monospacedDigit()
+            Text("\(count)").font(.system(size: 22, weight: .heavy)).monoDigits()
         }
         .foregroundColor(.white)
         .frame(width: 112)
@@ -496,7 +496,7 @@ struct PlaylistFormView: View {
         VStack(spacing: 6) {
             Image(systemName: icon).font(.system(size: 30))
             Text(label).font(.system(size: 18, weight: .bold))
-            Text("\(value)").font(.system(size: 30, weight: .heavy)).monospacedDigit()
+            Text("\(value)").font(.system(size: 30, weight: .heavy)).monoDigits()
         }
         .foregroundColor(.white)
         .frame(maxWidth: .infinity)

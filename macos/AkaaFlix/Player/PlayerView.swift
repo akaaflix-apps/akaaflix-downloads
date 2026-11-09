@@ -186,7 +186,7 @@ struct TimelineBar: View {
     var body: some View {
         HStack(spacing: 24) {
             Text(TimeFormat.longClock(controller.isScrubbing ? controller.scrubFraction * controller.duration : controller.currentTime))
-                .font(.system(size: 26, weight: .semibold)).monospacedDigit().foregroundColor(.white)
+                .font(.system(size: 26, weight: .semibold)).monoDigits().foregroundColor(.white)
             NeonSlider(value: Binding(
                 get: { controller.isScrubbing ? controller.scrubFraction : (controller.duration > 0 ? controller.currentTime / controller.duration : 0) },
                 set: { controller.scrubFraction = $0 }),
@@ -200,7 +200,7 @@ struct TimelineBar: View {
                     }
                 })
             Text(TimeFormat.longClock(controller.duration))
-                .font(.system(size: 26, weight: .semibold)).monospacedDigit().foregroundColor(.white)
+                .font(.system(size: 26, weight: .semibold)).monoDigits().foregroundColor(.white)
         }
     }
 }
@@ -324,7 +324,7 @@ struct PlayerOptionsMenu: View {
                 Text(tr("التزامن", "Sync")).font(.system(size: 14, weight: .bold)).foregroundColor(.white)
                 Spacer()
                 smallButton("minus") { controller.adjustSubtitleDelay(-250) }
-                Text("\(controller.subtitleDelayMs) ms").font(.system(size: 13, weight: .bold)).monospacedDigit().foregroundColor(.white).frame(width: 80)
+                Text("\(controller.subtitleDelayMs) ms").font(.system(size: 13, weight: .bold)).monoDigits().foregroundColor(.white).frame(width: 80)
                 smallButton("plus") { controller.adjustSubtitleDelay(250) }
             }
             .fixedLTR()
@@ -910,7 +910,7 @@ struct EPGListPanel: View {
                 let live = index == 0 && e.isLive()
                 HStack(spacing: 12) {
                     Text("\(TimeFormat.hourMinute.string(from: e.start)) - \(TimeFormat.hourMinute.string(from: e.end))")
-                        .font(.system(size: compact ? 16 : 20, weight: .semibold)).monospacedDigit().foregroundColor(.white)
+                        .font(.system(size: compact ? 16 : 20, weight: .semibold)).monoDigits().foregroundColor(.white)
                         .fixedLTR()
                     Spacer()
                     Text(e.title).font(.system(size: compact ? 16 : 20, weight: .bold)).foregroundColor(.white).lineLimit(1)

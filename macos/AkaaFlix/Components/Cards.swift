@@ -39,7 +39,7 @@ struct PosterCard: View {
                             if let d = dateText {
                                 HStack(spacing: 5) {
                                     Image(systemName: "calendar").font(.system(size: 11))
-                                    Text(d).font(.system(size: max(11, geo.size.width * 0.065), weight: .bold)).monospacedDigit()
+                                    Text(d).font(.system(size: max(11, geo.size.width * 0.065), weight: .bold)).monoDigits()
                                 }
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 10).padding(.vertical, 3)
@@ -101,7 +101,7 @@ struct ContinueCard: View {
                             Text(progress.title).font(.system(size: 18, weight: .heavy)).foregroundColor(.white).lineLimit(1)
                         }
                         HStack(spacing: 10) {
-                            Text("\(Int((progress.fraction * 100).rounded()))%").font(.system(size: 16, weight: .bold)).foregroundColor(.white).monospacedDigit()
+                            Text("\(Int((progress.fraction * 100).rounded()))%").font(.system(size: 16, weight: .bold)).foregroundColor(.white).monoDigits()
                             ProgressBar(fraction: progress.fraction, height: 6)
                         }
                     }
@@ -214,7 +214,7 @@ struct GroupRow: View {
                 if let c = count {
                     Text(showParentheses ? "(\(c))" : "\(c)")
                         .font(.system(size: 16, weight: .bold))
-                        .monospacedDigit()
+                        .monoDigits()
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .frame(height: 30)

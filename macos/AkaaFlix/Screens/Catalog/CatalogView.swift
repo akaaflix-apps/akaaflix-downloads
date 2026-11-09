@@ -178,7 +178,7 @@ struct CatalogView: View {
             HStack(spacing: 12) {
                 Image(systemName: isMovies ? "film" : "square.stack.3d.up").font(.system(size: 26))
                 HeaderDivider(height: 30)
-                Text(countText).font(.system(size: 24, weight: .heavy)).monospacedDigit()
+                Text(countText).font(.system(size: 24, weight: .heavy)).monoDigits()
             }
             .foregroundColor(.white)
             .padding(.horizontal, 22)
