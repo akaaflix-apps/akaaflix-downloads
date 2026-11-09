@@ -1,0 +1,125 @@
+{
+  "checks" : [
+    {
+      "detail" : "window visible, data dir \/var\/folders\/2s\/vty41l455yv698g4xkgfv7z00000gn\/T\/tmp.HUi3hmgZIa",
+      "name" : "Application startup",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.0006339550018310547
+    },
+    {
+      "detail" : "arm64 slice on arm64 hardware",
+      "name" : "Native architecture (no Rosetta)",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 1.0013580322265625e-05
+    },
+    {
+      "detail" : "account active, max connections 2",
+      "name" : "Xtream Codes authentication",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.0499039888381958
+    },
+    {
+      "detail" : "invalid credentials reported",
+      "name" : "Wrong credentials are rejected",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.0062400102615356445
+    },
+    {
+      "detail" : "12 channels, 12 movies, 8 series",
+      "name" : "Catalog sync (live, movies, series)",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.252236008644104
+    },
+    {
+      "detail" : "favorites, progress and catalog survive reopening akaaflix.sqlite",
+      "name" : "Database persistence (reopen from disk)",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.0066699981689453125
+    },
+    {
+      "detail" : "playing as MPEG-TS · MPEG-TS ✓",
+      "name" : "Live TV plays MPEG-TS first",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 1.685479998588562
+    },
+    {
+      "detail" : "MPEG-TS ✕ → HLS ✓",
+      "name" : "HLS fallback when MPEG-TS fails",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 1.056272029876709
+    },
+    {
+      "detail" : "channel switch failed",
+      "name" : "Live channel switching",
+      "passed" : false,
+      "required" : true,
+      "seconds" : 0.6946059465408325
+    },
+    {
+      "detail" : "2 audio tracks (switched), 1 subtitle track(s)",
+      "name" : "Movie playback, audio tracks and subtitles",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 4.836377024650574
+    },
+    {
+      "detail" : "position 40s saved; 1 item(s) in Continue Watching",
+      "name" : "Seek and Continue Watching",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.03853106498718262
+    },
+    {
+      "detail" : "window did not enter full screen (CI display limitation possible)",
+      "name" : "Full-screen mode",
+      "passed" : false,
+      "required" : false,
+      "seconds" : 6.208338975906372
+    },
+    {
+      "detail" : "advanced 50111 → 50112 after countdown",
+      "name" : "Series playback and automatic next episode",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 6.433590054512024
+    },
+    {
+      "detail" : "rendered at 1100×708",
+      "name" : "Window resizing and small screens",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 3.047587037086487
+    },
+    {
+      "detail" : "player released, database checkpointed",
+      "name" : "Shutdown and resource cleanup",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.013326048851013184
+    }
+  ],
+  "durationSeconds" : 95.9623509645462,
+  "environment" : {
+    "appVersion" : "4.0.7",
+    "binaryArchitecture" : "arm64",
+    "build" : "407",
+    "cpu" : "Apple M1 (Virtual)",
+    "engine" : "VLCKit",
+    "engineVersion" : "3.0.23 Vetinari",
+    "hardwareArchitecture" : "arm64",
+    "macOS" : "15.8.2",
+    "macOSName" : "Sequoia",
+    "memoryGB" : "7",
+    "model" : "VirtualMac2,1",
+    "rosetta" : "no"
+  },
+  "passed" : false
+}
