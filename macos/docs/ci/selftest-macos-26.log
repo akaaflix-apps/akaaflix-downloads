@@ -1,36 +1,17 @@
-[self-test] environment: ["build": "407", "memoryGB": "7", "binaryArchitecture": "arm64", "hardwareArchitecture": "arm64", "model": "VirtualMac2,1", "rosetta": "no", "macOS": "26.7.2", "macOSName": "Tahoe", "cpu": "Apple M1 (Virtual)", "engine": "VLCKit", "engineVersion": "3.0.23 Vetinari", "appVersion": "4.0.7"]
-[self-test] PASS Application startup — window visible, data dir /var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T/tmp.ak0kIUTstM
+[self-test] environment: ["model": "VirtualMac2,1", "engine": "VLCKit", "engineVersion": "3.0.23 Vetinari", "build": "407", "cpu": "Apple M1 (Virtual)", "appVersion": "4.0.7", "rosetta": "no", "binaryArchitecture": "arm64", "macOSName": "Tahoe", "memoryGB": "7", "macOS": "26.7.2", "hardwareArchitecture": "arm64"]
+[self-test] PASS Application startup — window visible, data dir /var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T/tmp.gVPSnQ8TEh
 [self-test] PASS Native architecture (no Rosetta) — arm64 slice on arm64 hardware
 [self-test] PASS Xtream Codes authentication — account active, max connections 2
 [self-test] PASS Wrong credentials are rejected — invalid credentials reported
 [self-test] PASS Catalog sync (live, movies, series) — 12 channels, 12 movies, 8 series
 [self-test] PASS Database persistence (reopen from disk) — favorites, progress and catalog survive reopening akaaflix.sqlite
-[self-test] → home
-[self-test] → live
 [self-test] PASS Live TV plays MPEG-TS first — playing as MPEG-TS · MPEG-TS ✓
 [self-test] PASS HLS fallback when MPEG-TS fails — MPEG-TS ✕ → HLS ✓
-[self-test] PASS Live channel switching — Sports One HD → Sports Three HD (channel up ×2), playing
-[self-test] → movies
-[self-test] → movieDetails(AkaaFlix.Movie(id: 101, number: 1, name: "ظل القلعة - Shadow of the Castle 4K", poster: Optional("http://127.0.0.1:8765/img/poster/0.bmp"), rating: Optional(8.7), added: Optional(2026-11-09 22:49:17 +0000), categoryID: Optional("12"), containerExtension: Optional("mp4"), year: Optional(2026), genre: nil, plot: nil, isAdult: false))
+[self-test] FAIL Live channel switching — channel switch failed
 [self-test] PASS Movie playback, audio tracks and subtitles — 2 audio tracks (switched), 1 subtitle track(s)
 [self-test] PASS Seek and Continue Watching — position 40s saved; 1 item(s) in Continue Watching
 [self-test] FAIL Full-screen mode — window did not enter full screen (CI display limitation possible)
-[self-test] closing player after full-screen check
-[self-test] player closed
-[self-test] → series
-[self-test] → seriesDetails(AkaaFlix.Series(id: 501, number: 1, name: "قيام الدولة - The Rise of the State 4K", cover: Optional("http://127.0.0.1:8765/img/poster/3.bmp"), plot: Optional("قصة ملحمية مليئة بالأحداث والتشويق."), cast: Optional("Actor One, Actor Two, Actor Three"), director: Optional("Director Name"), genre: Optional("دراما, تاريخي, مغامرة"), releaseDate: Optional("2026-01-01"), lastModified: Optional(2026-11-09 22:49:17 +0000), rating: Optional(9.1), backdrop: Optional("http://127.0.0.1:8765/img/backdrop/0.bmp"), episodeRunTime: Optional("45"), categoryID: Optional("23"), year: Optional(2026), isAdult: false))
 [self-test] PASS Series playback and automatic next episode — advanced 50111 → 50112 after countdown
-[self-test] PASS QR code playlist import (image) — decoded 1 QR payload → Xtream login OK (active)
-[self-test] PASS Playlist management (duplicate, default, reorder, delete) — duplicate → set default → reorder → delete, credentials kept in the secret store
-[self-test] → settings(AkaaFlix.SettingsSection.general)
-[self-test] → settings(AkaaFlix.SettingsSection.player)
-[self-test] → settings(AkaaFlix.SettingsSection.playlists)
-[self-test] → playlistForm(nil)
-[self-test] → playlistForm(Optional(1))
-[self-test] → settings(AkaaFlix.SettingsSection.about)
-[self-test] → settings(AkaaFlix.SettingsSection.account)
-[self-test] → home
-[self-test] PASS Navigation through every screen — 28 screens rendered (Arabic and English)
 [self-test] PASS Window resizing and small screens — rendered at 1100×708
 [self-test] PASS Shutdown and resource cleanup — player released, database checkpointed
-[self-test] ALL REQUIRED CHECKS PASSED
+[self-test] FAILED: ["Live channel switching"]
