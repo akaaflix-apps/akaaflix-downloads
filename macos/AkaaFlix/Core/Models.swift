@@ -80,7 +80,7 @@ enum AccountStatus: String, Codable {
     }
 }
 
-struct AccountInfo: Codable, Equatable {
+struct AccountInfo: Codable, Hashable {
     var status: AccountStatus
     var rawStatus: String?
     var expiresAt: Date?

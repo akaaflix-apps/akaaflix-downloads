@@ -35,6 +35,8 @@ jobs:
         run: |
           sw_vers; uname -m; xcodebuild -version; swift --version
           mkdir -p build
+          # Report every compile error in one run instead of stopping at the first failing target.
+          defaults write com.apple.dt.Xcode IDEBuildingContinueBuildingAfterErrors -bool YES
 
       - name: Cache VLCKit
         uses: actions/cache@v4
@@ -208,3 +210,57 @@ jobs:
           name: selftest-${{ matrix.runner }}
           path: macos/build/selftest
           retention-days: 30
+
+  publish-results:
+    name: Commit self-test results and screenshots
+    needs: [build, selftest]
+    if: always() && github.event_name == 'push' && needs.build.result == 'success'
+    runs-on: macos-15
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: selftest-*
+          path: macos/build/results
+      - uses: actions/download-artifact@v4
+        with:
+          name: AkaaFlix-4.0.7-Universal
+          path: macos/build/dist
+      - name: Collect results
+        run: |
+          mkdir -p docs/ci docs/screenshots
+          cp build/dist/verification.md docs/ci/verification.md 2>/dev/null || true
+          shasum -a 256 build/dist/dmg/*.dmg 2>/dev/null | sed 's#build/dist/dmg/##' > docs/ci/dmg-sha256.txt || true
+          for d in build/results/selftest-*; do
+            [ -d "$d" ] || continue
+            name="$(basename "$d")"
+            cp "$d/report.json" "docs/ci/${name}.json" 2>/dev/null || echo '{"missing": true}' > "docs/ci/${name}.json"
+            grep "\[self-test\]" "$d/app.log" > "docs/ci/${name}.log" 2>/dev/null || true
+          done
+          SRC=build/results/selftest-macos-15/screenshots
+          if [ -d "$SRC" ]; then
+            rm -f docs/screenshots/*.jpg
+            for f in "$SRC"/*.jpg; do
+              sips -Z 1280 -s formatOptions 72 "$f" --out "docs/screenshots/$(basename "$f")" >/dev/null
+            done
+          fi
+          echo "run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" > docs/ci/RUN.txt
+          echo "commit: ${GITHUB_SHA}" >> docs/ci/RUN.txt
+          ls -la docs/ci docs/screenshots
+      - name: Commit to the branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ci docs/screenshots
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "CI: macOS self-test results and screenshots [skip ci]"
+          for i in 1 2 3 4; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
