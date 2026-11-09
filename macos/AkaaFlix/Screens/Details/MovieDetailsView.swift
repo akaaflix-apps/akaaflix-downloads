@@ -50,7 +50,7 @@ struct MovieDetailsView: View {
                         infoBlock
                         Spacer(minLength: 0)
                     }
-                    actionButtons
+                    ScrollView(.horizontal, showsIndicators: false) { actionButtons.padding(.vertical, 12).padding(.horizontal, 4) }
                     castSection
                     if !vm.similar.isEmpty {
                         SectionTitle(title: tr("أفلام مشابهة", "Similar Movies"))
@@ -122,7 +122,7 @@ struct MovieDetailsView: View {
                 .fixedLTR()
             }
             HStack(spacing: 12) {
-                if let date = vm.details?.releaseDate ?? m.added.map({ TimeFormat.dayMonthYear.string(from: $0) }) {
+                if let date = vm.details?.releaseDate.map(TimeFormat.displayDate) ?? m.added.map({ TimeFormat.dayMonthYear.string(from: $0) }) {
                     infoChip("calendar", date)
                 }
                 if let d = vm.details?.durationSeconds { infoChip("clock", TimeFormat.clock(Double(d))) }
@@ -168,7 +168,6 @@ struct MovieDetailsView: View {
             NeonButton(title: tr("معلومات", "Info"), systemImage: "info.circle", kind: .dark, height: 54, fontSize: 18) { showCast = true }
             NeonButton(title: tr("المقطع الدعائي", "Trailer"), systemImage: "film", kind: .dark, height: 54, fontSize: 18) { openTrailer() }
                 .disabled(vm.details?.trailer == nil)
-            Spacer()
         }
     }
 

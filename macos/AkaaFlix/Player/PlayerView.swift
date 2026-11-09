@@ -415,7 +415,10 @@ func subtitleColorLabel(_ c: SubtitleColor) -> String {
 
 struct VODPlayerOverlay: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.contentSize) private var size
     @ObservedObject var controller: PlayerController
+
+    private var compact: Bool { size.width < 1500 }
     @State private var showInfo = false
 
     var body: some View {
@@ -530,7 +533,8 @@ struct VODPlayerOverlay: View {
                 }
                 HStack(spacing: 14) {
                     NeonToggle(isOn: Binding(get: { model.settings.autoPlayNextEpisode }, set: { v in model.updateSettings { $0.autoPlayNextEpisode = v } }), width: 58)
-                    Text(tr("تشغيل تلقائي للحلقة التالية", "Auto-play next episode")).font(.system(size: 18, weight: .bold)).foregroundColor(.white).lineLimit(1)
+                    Text(tr("تشغيل تلقائي للحلقة التالية", "Auto-play next episode")).font(.system(size: compact ? 15 : 18, weight: .bold)).foregroundColor(.white)
+                        .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .padding(.horizontal, 20).frame(height: 64)
                 .background(RoundedRectangle(cornerRadius: 18).fill(linear([Color(hex: 0x26282F).opacity(0.9), Color(hex: 0x0C0D12).opacity(0.9)])))
@@ -539,7 +543,7 @@ struct VODPlayerOverlay: View {
                 Button(action: { toggle(.quality) }) {
                     HStack(spacing: 14) {
                         Image(systemName: "display").font(.system(size: 24))
-                        Text(tr("جودة الفيديو", "Video quality")).font(.system(size: 18, weight: .bold))
+                        if !compact { Text(tr("جودة الفيديو", "Video quality")).font(.system(size: 18, weight: .bold)) }
                         QualityBadge(quality: qualityBadgeText, large: true).scaleEffect(0.8)
                     }
                     .foregroundColor(.white)
@@ -547,7 +551,7 @@ struct VODPlayerOverlay: View {
                     .background(RoundedRectangle(cornerRadius: 18).fill(linear([Color(hex: 0x26282F).opacity(0.9), Color(hex: 0x0C0D12).opacity(0.9)])))
                     .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.white.opacity(0.22), lineWidth: 1.2))
                 }.buttonStyle(PlainButtonStyle())
-                VolumePill(controller: controller, width: 300)
+                VolumePill(controller: controller, width: compact ? 200 : 300)
                 fullscreenButton
             }
         } else {
@@ -732,6 +736,7 @@ struct PlaybackInfoSheet: View {
 
 struct LivePlayerOverlay: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.contentSize) private var size
     @ObservedObject var controller: PlayerController
 
     var body: some View {
@@ -773,7 +778,7 @@ struct LivePlayerOverlay: View {
                             ChannelLogo(url: c.icon, name: c.name, width: 150, height: 74)
                             HeaderDivider(height: 80)
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(c.name).font(.system(size: 34, weight: .heavy)).foregroundColor(.white).lineLimit(1)
+                                Text(c.name).font(.system(size: size.width < 1500 ? 26 : 34, weight: .heavy)).foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.6)
                                 if let now = controller.nowPlaying {
                                     HStack(spacing: 10) {
                                         Circle().fill(Theme.redBright).frame(width: 18, height: 18).shadow(color: Theme.red, radius: 5)
@@ -785,8 +790,8 @@ struct LivePlayerOverlay: View {
                         }
                     }
                     Spacer()
-                    EPGListPanel(entries: Array(controller.epg.prefix(3)), compact: false)
-                        .frame(width: 700)
+                    EPGListPanel(entries: Array(controller.epg.prefix(3)), compact: size.width < 1500)
+                        .frame(width: min(700, size.width * 0.45))
                 }
                 .padding(.horizontal, 40)
                 ProgressBar(fraction: controller.nowPlaying?.progress() ?? 1, height: 5, track: Color.white.opacity(0.15))

@@ -157,22 +157,22 @@ struct HomeView: View {
     private var shortcutTiles: some View {
         HStack(spacing: 16) {
             ShortcutTile(title: tr("القنوات المباشرة", "Live TV"), systemImage: "tv", accent: .blue, artwork: "HomeTileLive", wide: true) { model.open(.live) }
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 150, maxWidth: .infinity)
                 .layoutPriority(2)
             ShortcutTile(title: tr("الأفلام", "Movies"), systemImage: "film", accent: .red, artwork: "HomeTileMovies", wide: true) { model.open(.movies) }
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 150, maxWidth: .infinity)
                 .layoutPriority(2)
             ShortcutTile(title: tr("المسلسلات", "Series"), systemImage: "square.stack.3d.up", accent: .blue, artwork: "HomeTileSeries", wide: true) { model.open(.series) }
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 150, maxWidth: .infinity)
                 .layoutPriority(2)
             ShortcutTile(title: tr("قوائم التشغيل", "Playlists"), systemImage: "gearshape", accent: .magenta) { model.open(.settings(.playlists)) }
-                .frame(width: 150)
+                .frame(minWidth: 96, maxWidth: 150)
             ShortcutTile(title: tr("التنزيلات", "Downloads"), systemImage: "arrow.down.to.line", accent: .blue) { model.open(.downloads) }
-                .frame(width: 150)
+                .frame(minWidth: 96, maxWidth: 150)
             ShortcutTile(title: tr("المشاهدة لاحقاً", "Watch Later"), systemImage: "clock", accent: .magenta) { model.open(.watchLater) }
-                .frame(width: 150)
+                .frame(minWidth: 96, maxWidth: 150)
             ShortcutTile(title: tr("المفضلة", "Favorites"), systemImage: "star", accent: .purple) { model.open(.favorites) }
-                .frame(width: 150)
+                .frame(minWidth: 96, maxWidth: 150)
         }
         .contentDirection()
     }

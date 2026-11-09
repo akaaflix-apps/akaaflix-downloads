@@ -236,14 +236,20 @@ jobs:
           mkdir -p docs/ci docs/screenshots
           cp build/dist/verification.md docs/ci/verification.md 2>/dev/null || true
           shasum -a 256 build/dist/dmg/*.dmg 2>/dev/null | sed 's#build/dist/dmg/##' > docs/ci/dmg-sha256.txt || true
+          rm -f docs/ci/selftest-*.json docs/ci/selftest-*.log
           for d in build/results/selftest-*; do
             [ -d "$d" ] || continue
             name="$(basename "$d")"
             cp "$d/report.json" "docs/ci/${name}.json" 2>/dev/null || echo '{"missing": true}' > "docs/ci/${name}.json"
             grep "\[self-test\]" "$d/app.log" > "docs/ci/${name}.log" 2>/dev/null || true
           done
-          SRC=build/results/selftest-macos-15/screenshots
-          if [ -d "$SRC" ]; then
+          SRC=""
+          for r in macos-15 macos-26 macos-15-intel; do
+            if [ -d "build/results/selftest-$r/screenshots" ] && ls build/results/selftest-$r/screenshots/*.jpg >/dev/null 2>&1; then
+              SRC="build/results/selftest-$r/screenshots"; echo "screenshots from $r" > docs/ci/SCREENSHOTS.txt; break
+            fi
+          done
+          if [ -n "$SRC" ]; then
             rm -f docs/screenshots/*.jpg
             for f in "$SRC"/*.jpg; do
               sips -Z 1280 -s formatOptions 72 "$f" --out "docs/screenshots/$(basename "$f")" >/dev/null

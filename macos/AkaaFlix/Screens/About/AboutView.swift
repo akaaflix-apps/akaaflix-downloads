@@ -29,8 +29,9 @@ struct AboutHeroPanel: View {
         ZStack {
             RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Color.black)
             // Approved artwork (wordmark, "عالمك من الترفيه", "More Than Entertainment") used as supplied.
-            Image("AboutHeroArt").resizable().aspectRatio(contentMode: .fill)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            Color.clear
+                .overlay(Image("AboutHeroArt").resizable().aspectRatio(contentMode: .fill))
+                .clipped()
         }
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(Theme.neonStrokeVertical, lineWidth: 1.6))
@@ -47,7 +48,7 @@ struct AboutView: View {
                 PanelHeader(systemImage: "info.circle", title: tr("حول التطبيق", "About"), size: 36)
                 Rectangle().fill(Color.white.opacity(0.1)).frame(height: 1)
                 HStack(alignment: .top, spacing: 24) {
-                    Text(tr("Akaa Flix هو تطبيق متكامل لمشاهدة القنوات المباشرة والأفلام والمسلسلات بجودة عالية، مع تجربة استخدام سهلة وواجهة عصرية مصممة خصيصاً لك.",
+                    Text(tr("\u{200F}Akaa Flix هو تطبيق متكامل لمشاهدة القنوات المباشرة والأفلام والمسلسلات بجودة عالية، مع تجربة استخدام سهلة وواجهة عصرية مصممة خصيصاً لك.",
                             "Akaa Flix is a complete app for watching live channels, movies and series in high quality, with an easy experience and a modern interface designed for you."))
                         .font(.system(size: 19, weight: .semibold)).foregroundColor(.white).lineSpacing(6)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -125,14 +126,14 @@ struct AboutView: View {
     private func infoRow(_ icon: String, _ label: String, _ value: String, link: String? = nil) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon).font(.system(size: 22)).foregroundColor(.white).frame(width: 30)
-            Text(label).font(.system(size: 18, weight: .semibold)).foregroundColor(.white).frame(width: 170, alignment: .leading)
+            Text(label).font(.system(size: 18, weight: .semibold)).foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.7).frame(width: 150, alignment: .leading)
             Group {
                 if let l = link, let url = URL(string: l) {
                     Button(action: { NSWorkspace.shared.open(url) }) {
-                        Text(value).font(.system(size: 18, weight: .bold)).foregroundColor(Theme.blueBright)
+                        Text(value).font(.system(size: 18, weight: .bold)).foregroundColor(Theme.blueBright).lineLimit(1).minimumScaleFactor(0.6)
                     }.buttonStyle(PlainButtonStyle())
                 } else {
-                    Text(value).font(.system(size: 18, weight: .bold)).foregroundColor(.white)
+                    Text(value).font(.system(size: 18, weight: .bold)).foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.6)
                 }
             }
             .fixedLTR()

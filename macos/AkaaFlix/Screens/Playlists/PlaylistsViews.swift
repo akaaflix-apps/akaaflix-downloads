@@ -91,16 +91,16 @@ struct PlaylistsManagementView: View {
         HStack(spacing: 16) {
             HStack(spacing: 20) {
                 Image(systemName: "info.circle").font(.system(size: 24))
-                Text(tr("إجمالي القوائم: \(model.playlists.count)", "Playlists: \(model.playlists.count)")).font(.system(size: 18, weight: .bold))
+                Text(tr("إجمالي القوائم: \(model.playlists.count)", "Playlists: \(model.playlists.count)")).font(.system(size: 18, weight: .bold)).lineLimit(1).minimumScaleFactor(0.5)
                 HeaderDivider(height: 30)
                 Image(systemName: "tv").font(.system(size: 22))
-                Text(tr("إجمالي القنوات: \(model.playlists.reduce(0) { $0 + $1.liveCount })", "Channels: \(model.playlists.reduce(0) { $0 + $1.liveCount })")).font(.system(size: 18, weight: .bold))
+                Text(tr("إجمالي القنوات: \(model.playlists.reduce(0) { $0 + $1.liveCount })", "Channels: \(model.playlists.reduce(0) { $0 + $1.liveCount })")).font(.system(size: 18, weight: .bold)).lineLimit(1).minimumScaleFactor(0.5)
                 HeaderDivider(height: 30)
                 Image(systemName: "film").font(.system(size: 22))
-                Text(tr("إجمالي الأفلام: \(model.playlists.reduce(0) { $0 + $1.movieCount })", "Movies: \(model.playlists.reduce(0) { $0 + $1.movieCount })")).font(.system(size: 18, weight: .bold))
+                Text(tr("إجمالي الأفلام: \(model.playlists.reduce(0) { $0 + $1.movieCount })", "Movies: \(model.playlists.reduce(0) { $0 + $1.movieCount })")).font(.system(size: 18, weight: .bold)).lineLimit(1).minimumScaleFactor(0.5)
                 HeaderDivider(height: 30)
                 Image(systemName: "square.stack.3d.up").font(.system(size: 22))
-                Text(tr("إجمالي المسلسلات: \(model.playlists.reduce(0) { $0 + $1.seriesCount })", "Series: \(model.playlists.reduce(0) { $0 + $1.seriesCount })")).font(.system(size: 18, weight: .bold))
+                Text(tr("إجمالي المسلسلات: \(model.playlists.reduce(0) { $0 + $1.seriesCount })", "Series: \(model.playlists.reduce(0) { $0 + $1.seriesCount })")).font(.system(size: 18, weight: .bold)).lineLimit(1).minimumScaleFactor(0.5)
             }
             .foregroundColor(.white)
             .padding(.horizontal, 24).frame(height: 66)
@@ -156,6 +156,7 @@ struct PlaylistDropDelegate: DropDelegate {
 
 /// One playlist row: logo, name, Xtream Codes badge, status, default radio, counts, enable toggle, actions.
 struct PlaylistRow: View {
+    @Environment(\.contentSize) private var size
     let playlist: Playlist
     let isSelected: Bool
     let reorderMode: Bool
@@ -175,7 +176,7 @@ struct PlaylistRow: View {
                     smallIcon("chevron.up", .blue) { onMove(-1) }
                     smallIcon("chevron.down", .blue) { onMove(1) }
                 }
-            } else {
+            } else if size.width >= 1300 {
                 Image(systemName: "circle.grid.2x3.fill").font(.system(size: 22)).foregroundColor(.white.opacity(0.8))
             }
             actionIcon("trash", .red, onDelete)
@@ -226,7 +227,7 @@ struct PlaylistRow: View {
             }
             Image("AppIconArt")
                 .resizable().aspectRatio(contentMode: .fit)
-                .frame(width: 96, height: 96)
+                .frame(width: size.width < 1300 ? 72 : 96, height: size.width < 1300 ? 72 : 96)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
         }
         .padding(.horizontal, 16)
@@ -256,13 +257,13 @@ struct PlaylistRow: View {
             Text("\(count)").font(.system(size: 22, weight: .heavy)).monoDigits()
         }
         .foregroundColor(.white)
-        .frame(minWidth: 72, maxWidth: 112)
+        .frame(minWidth: 62, maxWidth: 112)
     }
 
     private func actionIcon(_ icon: String, _ accent: NeonAccent, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon).font(.system(size: 22, weight: .semibold)).foregroundColor(.white)
-                .frame(width: 54, height: 54)
+                .frame(width: size.width < 1500 ? 44 : 54, height: size.width < 1500 ? 44 : 54)
                 .background(RoundedRectangle(cornerRadius: 14).fill(accent == .red ? Theme.redGradient : linear([Theme.blue.opacity(0.75), Color(hex: 0x0D2A7A)])))
                 .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(accent.stroke, lineWidth: 1.4))
                 .shadow(color: accent.glow.opacity(0.6), radius: 6)
@@ -282,7 +283,14 @@ struct PlaylistRow: View {
 
 struct PlaylistFormView: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.contentSize) private var size
     let playlistID: Int64?
+
+    /// Width of the illustration / status column (approved 540–560 pt; narrower on small windows).
+    private var sideWidth: CGFloat {
+        let available = size.width - (model.playlists.isEmpty ? 120 : Responsive.settingsNavWidth(size.width) + 90)
+        return min(560, max(300, available * 0.42))
+    }
 
     @State private var name = ""
     @State private var username = ""
@@ -394,8 +402,8 @@ struct PlaylistFormView: View {
                     .frame(width: 70, height: 56)
                     .background(RoundedRectangle(cornerRadius: 10).fill(Theme.blue.opacity(0.2)))
                 HStack(spacing: 8) {
-                    Text("Xtream Codes").font(.system(size: 26, weight: .heavy))
-                    Text("(Username / Password)").font(.system(size: 20, weight: .semibold))
+                    Text("Xtream Codes").font(.system(size: 26, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                    Text("(Username / Password)").font(.system(size: 20, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.6)
                 }
                 .foregroundColor(.white)
                 .padding(.horizontal, 18).frame(height: 54)
@@ -439,13 +447,13 @@ struct PlaylistFormView: View {
             .background(RoundedRectangle(cornerRadius: 20).fill(Theme.blue.opacity(0.12)))
             .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(NeonAccent.blue.stroke, lineWidth: 1.4))
         }
-        .frame(width: 540)
+        .frame(width: sideWidth)
     }
 
     private func statusCard(_ p: Playlist) -> some View {
         VStack(spacing: 14) {
             HStack(spacing: 16) {
-                Image("AppIconArt").resizable().aspectRatio(contentMode: .fit).frame(width: 190, height: 160)
+                Image("AppIconArt").resizable().aspectRatio(contentMode: .fit).frame(width: sideWidth < 480 ? 120 : 190, height: sideWidth < 480 ? 110 : 160)
                     .clipShape(RoundedRectangle(cornerRadius: 22))
                 VStack(spacing: 10) {
                     Text(p.name).font(.system(size: 32, weight: .heavy)).foregroundColor(.white).lineLimit(1)
@@ -483,7 +491,7 @@ struct PlaylistFormView: View {
             .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(NeonAccent.blue.stroke, lineWidth: 1))
         }
         .padding(18)
-        .frame(width: 560)
+        .frame(width: sideWidth)
         .background(RoundedRectangle(cornerRadius: 22).fill(Color(hex: 0x0D0A18).opacity(0.85)))
         .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(NeonAccent.red.stroke, lineWidth: 1.6))
         .shadow(color: Theme.red.opacity(0.45), radius: 12)

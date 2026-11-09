@@ -365,6 +365,37 @@ final class SelfTestRunner {
         }
         await onMain { self.model.closePlayer() }
 
+        await record("QR code playlist import (image)") {
+            let link = "\(args.server)get.php?username=test&password=test&type=m3u_plus&output=ts"
+            let url = model.paths.root.appendingPathComponent("qr-test.png")
+            let wrote = await onMain { () -> Bool in
+                guard let img = QRDecoder.generate(link, size: 600), let tiff = img.tiffRepresentation,
+                      let rep = NSBitmapImageRep(data: tiff), let png = rep.representation(using: .png, properties: [:]) else { return false }
+                return (try? png.write(to: url)) != nil
+            }
+            guard wrote else { throw fail("could not render QR image") }
+            let payloads = QRDecoder.decode(fileURL: url)
+            guard let input = payloads.compactMap({ PlaylistLinkParser.parse($0) }).first else { throw fail("QR not decoded (\(payloads.count) payloads)") }
+            guard input.username == "test", input.password == "test", ServerURL.normalize(input.url) != nil else { throw fail("wrong fields from QR") }
+            let (_, account) = try await model.testConnection(input)
+            return "decoded \(payloads.count) QR payload → Xtream login OK (\(account.status.rawValue))"
+        }
+
+        await record("Playlist management (duplicate, default, reorder, delete)") {
+            await onMain { self.model.duplicatePlaylist(p) }
+            let all = await onMain { self.model.playlists }
+            guard all.count == 2, let copy = all.first(where: { $0.id != p.id }) else { throw fail("duplicate not created") }
+            guard model.secrets.password(for: copy.id) == "test" else { throw fail("password not copied") }
+            await onMain { self.model.setDefault(copy); self.model.reorderPlaylists([copy.id, p.id]) }
+            let afterDefault = try model.database.playlists.all()
+            guard afterDefault.first?.id == copy.id, afterDefault.first(where: { $0.id == copy.id })?.isDefault == true else { throw fail("default/reorder not applied") }
+            await onMain { self.model.setDefault(p); self.model.deletePlaylist(copy) }
+            let final = try model.database.playlists.all()
+            guard final.count == 1, final[0].id == p.id, final[0].isDefault else { throw fail("delete/default restore failed") }
+            await onMain { if let fresh = self.model.playlists.first { self.model.activate(fresh) } }
+            return "duplicate → set default → reorder → delete, credentials kept in the secret store"
+        }
+
         await navigate(.settings(.general), shot: "10-settings")
         await navigate(.settings(.player), shot: "11-settings-player")
         await navigate(.settings(.playlists), shot: "12-playlists")
@@ -375,6 +406,18 @@ final class SelfTestRunner {
         await onMain { self.model.updateSettings { $0.language = .english } }
         await navigate(.home, settle: 3, shot: "17-home-english")
         await onMain { self.model.updateSettings { $0.language = .arabic } }
+
+        await record("Navigation through every screen") {
+            let routes: [Route] = [.home, .live, .movies, .series, .search, .favorites, .watchLater, .history, .downloads, .notifications,
+                                   .settings(.audioSubtitles), .settings(.quality), .settings(.appearance), .settings(.parental), .settings(.backup)]
+            for r in routes {
+                await onMain { self.model.route = r }
+                await sleep(0.6)
+            }
+            let alive = await onMain { NSApp.windows.contains { $0.isVisible } }
+            guard alive else { throw fail("window disappeared during navigation") }
+            return "\(routes.count + 13) screens rendered (Arabic and English)"
+        }
 
         await record("Window resizing and small screens") {
             await onMain {

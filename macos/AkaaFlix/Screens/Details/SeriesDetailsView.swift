@@ -40,6 +40,7 @@ final class SeriesDetailsViewModel: ObservableObject {
 
 struct SeriesDetailsView: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.contentSize) private var size
     @StateObject private var vm = SeriesDetailsViewModel()
     let series: Series
 
@@ -64,7 +65,7 @@ struct SeriesDetailsView: View {
                         }
                         .padding(.horizontal, 40)
                         HStack(alignment: .top, spacing: 26) {
-                            detailsPanel.frame(width: max(520, geo.size.width * 0.36))
+                            detailsPanel.frame(width: size.width < 1300 ? 440 : max(520, geo.size.width * 0.36))
                             episodesPanel
                         }
                         .frame(height: max(400, geo.size.height * 0.46))
@@ -149,7 +150,7 @@ struct SeriesDetailsView: View {
             }
         }
         .padding(.horizontal, 24).padding(.vertical, 14)
-        .frame(width: 480)
+        .frame(width: min(480, size.width * 0.27))
         .background(Capsule().fill(Color.black.opacity(0.65)))
         .overlay(Capsule().strokeBorder(Color.white.opacity(0.25), lineWidth: 1.2))
         .opacity(total > 0 ? 1 : 0)
@@ -159,7 +160,7 @@ struct SeriesDetailsView: View {
         NeonPanel(accent: .red, padding: 18) {
             HStack(alignment: .top, spacing: 18) {
                 RemoteImage(url: s.cover, contentMode: .fill, placeholder: .poster, maxPixel: 600, title: s.name)
-                    .frame(width: 220, height: 300)
+                    .frame(width: size.width < 1300 ? 150 : 220, height: size.width < 1300 ? 210 : 300)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.white.opacity(0.2), lineWidth: 1))
                 VStack(spacing: 10) {

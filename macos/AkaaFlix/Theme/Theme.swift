@@ -129,3 +129,27 @@ extension View {
         }
     }
 }
+
+// MARK: - Available content size (for responsive adaptation on small screens)
+
+private struct ContentSizeKey: EnvironmentKey {
+    static let defaultValue = CGSize(width: 1670, height: 940)
+}
+
+extension EnvironmentValues {
+    /// Size of the area below the top bar (or of the player window). Layouts keep the approved
+    /// design at normal sizes and only shrink or drop decorative panels on small windows.
+    var contentSize: CGSize {
+        get { self[ContentSizeKey.self] }
+        set { self[ContentSizeKey.self] = newValue }
+    }
+}
+
+enum Responsive {
+    /// Width of the settings section list for a given content width.
+    static func settingsNavWidth(_ width: CGFloat) -> CGFloat {
+        width < 1250 ? 250 : (width < 1450 ? 290 : 340)
+    }
+    /// Decorative artwork panels are hidden below this width.
+    static func showsDecorativePanels(_ width: CGFloat) -> Bool { width >= 1450 }
+}

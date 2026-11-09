@@ -235,6 +235,9 @@ final class TextAndRulesTests: XCTestCase {
         XCTAssertEqual(TimeFormat.parseDuration("45 min"), 2700)
         XCTAssertEqual(TimeFormat.clock(8076), "02:14:36")
         XCTAssertEqual(TimeFormat.clock(65), "01:05")
+        XCTAssertEqual(TimeFormat.displayDate("2026-11-08"), "08-11-2026")
+        XCTAssertEqual(TimeFormat.displayDate("2026-11-08 20:00:00"), "08-11-2026")
+        XCTAssertEqual(TimeFormat.displayDate("Nov 2026"), "Nov 2026")
     }
 
     func testContinueWatchingRules() {

@@ -127,6 +127,7 @@ final class CatalogViewModel: ObservableObject {
 
 struct CatalogView: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.contentSize) private var size
     @StateObject private var vm: CatalogViewModel
     @State private var showNewGroup = false
     @State private var newGroupName = ""
@@ -144,7 +145,7 @@ struct CatalogView: View {
             header.padding(.horizontal, 28)
             GeometryReader { geo in
                 HStack(alignment: .top, spacing: 18) {
-                    groupsPanel.frame(width: max(290, min(400, geo.size.width * 0.22)))
+                    groupsPanel.frame(width: size.width < 1300 ? 250 : max(290, min(400, geo.size.width * 0.22)))
                     gridPanel.frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 24)
@@ -169,11 +170,13 @@ struct CatalogView: View {
     private var header: some View {
         HStack(spacing: 20) {
             ScreenTitle(systemImage: "film", title: isMovies ? tr("الأفلام", "Movies") : tr("المسلسلات", "Series"), subtitle: isMovies ? "Movies" : "TV Series")
-            Image("CatalogHeaderArt")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 96)
-                .blendMode(.screen)
+            if size.width >= 1400 {
+                Image("CatalogHeaderArt")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 96)
+                    .blendMode(.screen)
+            }
             Spacer()
             HStack(spacing: 12) {
                 Image(systemName: isMovies ? "film" : "square.stack.3d.up").font(.system(size: 26))
@@ -284,19 +287,23 @@ struct CatalogView: View {
     }
 
     private var filterBar: some View {
-        HStack(spacing: 12) {
+        // Approved widths at normal sizes; narrower controls on small windows.
+        let compact = size.width < 1500
+        let tiny = size.width < 1250
+        let dd: CGFloat = tiny ? 118 : (compact ? 150 : 180)
+        return HStack(spacing: 12) {
             SearchField(placeholder: isMovies ? tr("بحث عن فيلم...", "Search movies...") : tr("بحث عن مسلسل...", "Search series..."), text: $vm.search, accent: .red, height: 50)
-                .frame(minWidth: 220)
+                .frame(minWidth: tiny ? 150 : 220)
                 .onChange(of: vm.search) { _ in vm.load(model) }
             DropdownButton(options: sortOptions, selection: Binding(get: { vm.sort }, set: { vm.sort = $0; vm.load(model) }),
-                           width: 210, height: 50, accent: Theme.redBright)
+                           width: tiny ? 150 : (compact ? 180 : 210), height: 50, accent: Theme.redBright)
                 .shadow(color: Theme.red.opacity(0.5), radius: 8)
             DropdownButton(options: [(0, tr("سنة الإنتاج", "Year"))] + vm.years.map { ($0, String($0)) },
-                           selection: Binding(get: { vm.year }, set: { vm.year = $0; vm.load(model) }), width: 180, height: 50, leadingIcon: "calendar")
+                           selection: Binding(get: { vm.year }, set: { vm.year = $0; vm.load(model) }), width: dd, height: 50, leadingIcon: tiny ? nil : "calendar")
             DropdownButton(options: [("", tr("النوع", "Genre"))] + vm.genres.map { ($0, $0) },
-                           selection: Binding(get: { vm.genre }, set: { vm.genre = $0; vm.load(model) }), width: 180, height: 50, leadingIcon: "square.stack.3d.up")
+                           selection: Binding(get: { vm.genre }, set: { vm.genre = $0; vm.load(model) }), width: dd, height: 50, leadingIcon: tiny ? nil : "square.stack.3d.up")
             DropdownButton(options: [("", tr("الجودة", "Quality")), ("4K", "4K"), ("FHD", "FHD"), ("HD", "HD"), ("SD", "SD")],
-                           selection: Binding(get: { vm.quality }, set: { vm.quality = $0; vm.load(model) }), width: 180, height: 50, leadingIcon: "4k.tv")
+                           selection: Binding(get: { vm.quality }, set: { vm.quality = $0; vm.load(model) }), width: dd, height: 50, leadingIcon: tiny ? nil : "4k.tv")
         }
         .fixedLTR()
     }

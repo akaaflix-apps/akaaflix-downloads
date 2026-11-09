@@ -3,14 +3,17 @@ import SwiftUI
 /// Settings layout: section list (left), artwork panel (centre) and the section content (right).
 struct SettingsShell: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.contentSize) private var size
     let section: SettingsSection
     var formPlaylistID: Int64?
     var showForm = false
 
+    private var decorative: Bool { Responsive.showsDecorativePanels(size.width) }
+
     var body: some View {
         HStack(alignment: .top, spacing: 18) {
             SettingsNav(selected: section)
-                .frame(width: 340)
+                .frame(width: Responsive.settingsNavWidth(size.width))
             Group {
                 if showForm {
                     PlaylistFormView(playlistID: formPlaylistID)
@@ -20,12 +23,12 @@ struct SettingsShell: View {
                         PlaylistsManagementView()
                     case .about:
                         HStack(alignment: .top, spacing: 18) {
-                            AboutHeroPanel().frame(width: 520)
+                            if decorative { AboutHeroPanel().frame(width: min(520, size.width * 0.3)) }
                             ScrollView(.vertical, showsIndicators: false) { AboutView().padding(.bottom, 20) }
                         }
                     default:
                         HStack(alignment: .top, spacing: 18) {
-                            SettingsHeroPanel(section: section).frame(width: 440)
+                            if decorative { SettingsHeroPanel(section: section).frame(width: min(440, size.width * 0.26)) }
                             ScrollView(.vertical, showsIndicators: false) {
                                 SettingsSectionContent(section: section)
                                     .padding(.bottom, 20)

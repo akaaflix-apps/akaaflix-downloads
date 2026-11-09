@@ -32,6 +32,9 @@ FEATURES = [
     ("Seek + Continue Watching", "Seek and Continue Watching"),
     ("Full-screen mode", "Full-screen mode"),
     ("Series playback + automatic next episode", "Series playback and automatic next episode"),
+    ("QR code playlist import", "QR code playlist import (image)"),
+    ("Playlist management", "Playlist management (duplicate, default, reorder, delete)"),
+    ("Navigation (all screens, Arabic + English)", "Navigation through every screen"),
     ("Window resizing (1100×680)", "Window resizing and small screens"),
     ("Shutdown and resource cleanup", "Shutdown and resource cleanup"),
 ]

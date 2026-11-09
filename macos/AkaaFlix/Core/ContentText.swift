@@ -173,6 +173,17 @@ enum TimeFormat {
         return nil
     }
 
+    /// Provider dates ("2026-11-08", "2026-11-08 20:00:00") shown as "08-11-2026" like the approved cards.
+    static func displayDate(_ raw: String) -> String {
+        let t = raw.trimmingCharacters(in: .whitespaces)
+        let parts = t.prefix(10).split(separator: "-")
+        if parts.count == 3, parts[0].count == 4, let y = Int(parts[0]), let m = Int(parts[1]), let d = Int(parts[2]),
+           (1...12).contains(m), (1...31).contains(d) {
+            return String(format: "%02d-%02d-%04d", d, m, y)
+        }
+        return t
+    }
+
     static let dayMonthYear: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")

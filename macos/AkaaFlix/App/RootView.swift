@@ -12,9 +12,12 @@ struct RootView: View {
                 MainShell()
             }
             if let player = model.player {
-                PlayerScreen(controller: player)
-                    .transition(.opacity)
-                    .zIndex(10)
+                GeometryReader { geo in
+                    PlayerScreen(controller: player)
+                        .environment(\.contentSize, geo.size)
+                }
+                .transition(.opacity)
+                .zIndex(10)
             }
             if let toast = model.toast {
                 ToastView(toast: toast)
@@ -48,7 +51,9 @@ struct MainShell: View {
             }
             // A screen taller than the window must never push the top bar out of view.
             GeometryReader { geo in
-                content.frame(width: geo.size.width, height: geo.size.height)
+                content
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .environment(\.contentSize, geo.size)
             }
         }
     }
