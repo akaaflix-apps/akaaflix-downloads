@@ -1,112 +1,133 @@
 {
   "checks" : [
     {
-      "detail" : "window visible, data dir \/var\/folders\/2s\/vty41l455yv698g4xkgfv7z00000gn\/T\/tmp.aZ3aaq5XG9",
+      "detail" : "window visible, data dir \/var\/folders\/2s\/vty41l455yv698g4xkgfv7z00000gn\/T\/tmp.vMbMvZOLP2",
       "name" : "Application startup",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.00018095970153808594
+      "seconds" : 0.00015997886657714844
     },
     {
       "detail" : "arm64 slice on arm64 hardware",
       "name" : "Native architecture (no Rosetta)",
       "passed" : true,
       "required" : true,
-      "seconds" : 4.303455352783203e-05
+      "seconds" : 8.940696716308594e-06
     },
     {
       "detail" : "account active, max connections 2",
       "name" : "Xtream Codes authentication",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.0729520320892334
+      "seconds" : 0.054141998291015625
     },
     {
       "detail" : "invalid credentials reported",
       "name" : "Wrong credentials are rejected",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.005756974220275879
+      "seconds" : 0.0031599998474121094
     },
     {
       "detail" : "12 channels, 12 movies, 8 series",
       "name" : "Catalog sync (live, movies, series)",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.25858306884765625
+      "seconds" : 0.12387597560882568
     },
     {
       "detail" : "favorites, progress and catalog survive reopening akaaflix.sqlite",
       "name" : "Database persistence (reopen from disk)",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.011773943901062012
+      "seconds" : 0.001860976219177246
     },
     {
       "detail" : "playing as MPEG-TS · MPEG-TS ✓",
       "name" : "Live TV plays MPEG-TS first",
       "passed" : true,
       "required" : true,
-      "seconds" : 1.109362006187439
+      "seconds" : 1.0206959247589111
     },
     {
       "detail" : "MPEG-TS ✕ → HLS ✓",
       "name" : "HLS fallback when MPEG-TS fails",
       "passed" : true,
       "required" : true,
-      "seconds" : 1.3753769397735596
+      "seconds" : 0.6960819959640503
     },
     {
       "detail" : "Sports One HD → Sports Three HD (channel up ×2), playing",
       "name" : "Live channel switching",
       "passed" : true,
       "required" : true,
-      "seconds" : 2.0378730297088623
+      "seconds" : 1.4334999322891235
     },
     {
       "detail" : "2 audio tracks (switched), 1 subtitle track(s)",
       "name" : "Movie playback, audio tracks and subtitles",
       "passed" : true,
       "required" : true,
-      "seconds" : 5.076639890670776
+      "seconds" : 4.876827001571655
     },
     {
       "detail" : "position 40s saved; 1 item(s) in Continue Watching",
       "name" : "Seek and Continue Watching",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.10015606880187988
+      "seconds" : 0.04813098907470703
     },
     {
       "detail" : "window did not enter full screen (CI display limitation possible)",
       "name" : "Full-screen mode",
       "passed" : false,
       "required" : false,
-      "seconds" : 6.314392924308777
+      "seconds" : 6.128129959106445
     },
     {
       "detail" : "advanced 50111 → 50112 after countdown",
       "name" : "Series playback and automatic next episode",
       "passed" : true,
       "required" : true,
-      "seconds" : 10.37909197807312
+      "seconds" : 10.120130062103271
+    },
+    {
+      "detail" : "decoded 1 QR payload → Xtream login OK (active)",
+      "name" : "QR code playlist import (image)",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.415350079536438
+    },
+    {
+      "detail" : "duplicate → set default → reorder → delete, credentials kept in the secret store",
+      "name" : "Playlist management (duplicate, default, reorder, delete)",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 0.16994202136993408
+    },
+    {
+      "detail" : "28 screens rendered (Arabic and English)",
+      "name" : "Navigation through every screen",
+      "passed" : true,
+      "required" : true,
+      "seconds" : 9.459195017814636
     },
     {
       "detail" : "rendered at 1100×708",
       "name" : "Window resizing and small screens",
       "passed" : true,
       "required" : true,
-      "seconds" : 3.302919030189514
+      "seconds" : 2.904675006866455
     },
     {
       "detail" : "player released, database checkpointed",
       "name" : "Shutdown and resource cleanup",
       "passed" : true,
       "required" : true,
-      "seconds" : 0.010498046875
+      "seconds" : 0.006152033805847168
     }
   ],
-  "durationSeconds" : 159.63324201107025,
+  "durationSeconds" : 160.58644199371338,
   "environment" : {
     "appVersion" : "4.0.7",
     "binaryArchitecture" : "arm64",

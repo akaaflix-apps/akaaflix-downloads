@@ -1,5 +1,5 @@
-[self-test] environment: ["model": "Macmini6,2", "binaryArchitecture": "x86_64", "macOS": "15.7.9", "rosetta": "no", "hardwareArchitecture": "x86_64", "macOSName": "Sequoia", "cpu": "Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz", "memoryGB": "14", "engineVersion": "3.0.23 Vetinari", "appVersion": "4.0.7", "build": "407", "engine": "VLCKit"]
-[self-test] PASS Application startup — window visible, data dir /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/tmp.zUjwDxMsMF
+[self-test] environment: ["binaryArchitecture": "x86_64", "rosetta": "no", "hardwareArchitecture": "x86_64", "memoryGB": "14", "macOS": "15.7.9", "engine": "VLCKit", "appVersion": "4.0.7", "build": "407", "engineVersion": "3.0.23 Vetinari", "macOSName": "Sequoia", "model": "Macmini6,2", "cpu": "Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz"]
+[self-test] PASS Application startup — window visible, data dir /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/tmp.AuQnKeCoV1
 [self-test] PASS Native architecture (no Rosetta) — x86_64 slice on x86_64 hardware
 [self-test] PASS Xtream Codes authentication — account active, max connections 2
 [self-test] PASS Wrong credentials are rejected — invalid credentials reported
@@ -11,15 +11,17 @@
 [self-test] PASS HLS fallback when MPEG-TS fails — MPEG-TS ✕ → HLS ✓
 [self-test] PASS Live channel switching — Sports One HD → Sports Three HD (channel up ×2), playing
 [self-test] → movies
-[self-test] → movieDetails(AkaaFlix.Movie(id: 101, number: 1, name: "ظل القلعة - Shadow of the Castle 4K", poster: Optional("http://127.0.0.1:8765/img/poster/0.bmp"), rating: Optional(8.7), added: Optional(2026-11-09 21:52:04 +0000), categoryID: Optional("12"), containerExtension: Optional("mp4"), year: Optional(2026), genre: nil, plot: nil, isAdult: false))
+[self-test] → movieDetails(AkaaFlix.Movie(id: 101, number: 1, name: "ظل القلعة - Shadow of the Castle 4K", poster: Optional("http://127.0.0.1:8765/img/poster/0.bmp"), rating: Optional(8.7), added: Optional(2026-11-09 22:21:22 +0000), categoryID: Optional("12"), containerExtension: Optional("mp4"), year: Optional(2026), genre: nil, plot: nil, isAdult: false))
 [self-test] PASS Movie playback, audio tracks and subtitles — 2 audio tracks (switched), 1 subtitle track(s)
 [self-test] PASS Seek and Continue Watching — position 40s saved; 1 item(s) in Continue Watching
 [self-test] PASS Full-screen mode — entered and left full screen
 [self-test] closing player after full-screen check
 [self-test] player closed
 [self-test] → series
-[self-test] → seriesDetails(AkaaFlix.Series(id: 501, number: 1, name: "قيام الدولة - The Rise of the State 4K", cover: Optional("http://127.0.0.1:8765/img/poster/3.bmp"), plot: Optional("قصة ملحمية مليئة بالأحداث والتشويق."), cast: Optional("Actor One, Actor Two, Actor Three"), director: Optional("Director Name"), genre: Optional("دراما, تاريخي, مغامرة"), releaseDate: Optional("2026-01-01"), lastModified: Optional(2026-11-09 21:52:04 +0000), rating: Optional(9.1), backdrop: Optional("http://127.0.0.1:8765/img/backdrop/0.bmp"), episodeRunTime: Optional("45"), categoryID: Optional("23"), year: Optional(2026), isAdult: false))
+[self-test] → seriesDetails(AkaaFlix.Series(id: 501, number: 1, name: "قيام الدولة - The Rise of the State 4K", cover: Optional("http://127.0.0.1:8765/img/poster/3.bmp"), plot: Optional("قصة ملحمية مليئة بالأحداث والتشويق."), cast: Optional("Actor One, Actor Two, Actor Three"), director: Optional("Director Name"), genre: Optional("دراما, تاريخي, مغامرة"), releaseDate: Optional("2026-01-01"), lastModified: Optional(2026-11-09 22:21:22 +0000), rating: Optional(9.1), backdrop: Optional("http://127.0.0.1:8765/img/backdrop/0.bmp"), episodeRunTime: Optional("45"), categoryID: Optional("23"), year: Optional(2026), isAdult: false))
 [self-test] PASS Series playback and automatic next episode — advanced 50111 → 50112 after countdown
+[self-test] PASS QR code playlist import (image) — decoded 1 QR payload → Xtream login OK (active)
+[self-test] PASS Playlist management (duplicate, default, reorder, delete) — duplicate → set default → reorder → delete, credentials kept in the secret store
 [self-test] → settings(AkaaFlix.SettingsSection.general)
 [self-test] → settings(AkaaFlix.SettingsSection.player)
 [self-test] → settings(AkaaFlix.SettingsSection.playlists)
@@ -28,6 +30,7 @@
 [self-test] → settings(AkaaFlix.SettingsSection.about)
 [self-test] → settings(AkaaFlix.SettingsSection.account)
 [self-test] → home
+[self-test] PASS Navigation through every screen — 28 screens rendered (Arabic and English)
 [self-test] PASS Window resizing and small screens — rendered at 1100×680
 [self-test] PASS Shutdown and resource cleanup — player released, database checkpointed
 [self-test] ALL REQUIRED CHECKS PASSED
