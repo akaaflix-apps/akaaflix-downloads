@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Weather widget and "Check for updates". -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Wi-Fi / Ethernet status icon. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Bluetooth on/off status in Settings > Connected devices (Android 11 and older; none needed on 12+). -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <!--
+      Weather city detection: APPROXIMATE location only, requested at runtime when the user taps
+      "Detect my location". One fix, no tracking, no background location. Optional – a city can be
+      typed instead.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application>
+        <!-- Periodic weather refresh (JobScheduler; bound only by the system). -->
+        <service
+            android:name=".weather.WeatherRefreshJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+    </application>
+</manifest>

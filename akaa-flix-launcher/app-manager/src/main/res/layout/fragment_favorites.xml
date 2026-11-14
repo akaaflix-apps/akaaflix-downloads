@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/content_start" android:paddingTop="@dimen/page_top" android:paddingRight="@dimen/content_end" android:paddingBottom="2dp">
+
+        <LinearLayout
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:clipChildren="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/editButton" style="@style/Akaa.Chip" android:layout_width="wrap_content" android:layout_height="40dp" android:drawableLeft="@drawable/ic_edit" android:text="@string/favorites_edit" />
+            <TextView android:id="@+id/reorderButton" style="@style/Akaa.Chip" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginStart="14dp" android:drawableLeft="@drawable/ic_move" android:text="@string/favorites_reorder" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/gridContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <com.akaaflix.launcher.remote.PagedGridRecyclerView
+                android:id="@+id/grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layoutDirection="ltr" />
+
+            <TextView
+                android:id="@+id/emptyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/favorites_empty"
+                android:textAppearance="@style/TextAppearance.Akaa.Section"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/pagerControls"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:clipChildren="false"
+            android:gravity="center"
+            android:layoutDirection="ltr"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <include layout="@layout/view_pager_controls" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/recentTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="@string/favorites_recent"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.Akaa.Section" />
+
+        <FrameLayout
+            android:id="@+id/recentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <com.akaaflix.launcher.remote.PagedGridRecyclerView
+                android:id="@+id/recentGrid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layoutDirection="ltr" />
+
+            <TextView
+                android:id="@+id/recentEmpty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/favorites_recent_empty"
+                android:textAppearance="@style/TextAppearance.Akaa.Caption"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/moveHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:maxWidth="620dp"
+        android:paddingStart="20dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="10dp"
+        android:text="@string/move_mode_hint"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.Akaa.Label"
+        android:visibility="gone" />
+</FrameLayout>

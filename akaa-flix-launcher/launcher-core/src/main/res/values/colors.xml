@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Akaa Flix palette extracted from the approved reference screens -->
+    <color name="akaa_bg">#FF07020F</color>
+    <color name="akaa_bg_deep">#FF04010A</color>
+    <color name="akaa_purple">#FFA855F7</color>
+    <color name="akaa_purple_deep">#FF6D28D9</color>
+    <color name="akaa_neon">#FFB44CFF</color>
+    <color name="akaa_blue">#FF3D7BFF</color>
+    <color name="akaa_gold">#FFFFC94A</color>
+    <color name="akaa_silver">#FFE8E6F0</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#FFCFC6E0</color>
+    <color name="text_tertiary">#FF9D92B5</color>
+    <color name="success_green">#FF22C55E</color>
+    <color name="danger_red">#FFF87171</color>
+    <color name="scrim_dark">#B3000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

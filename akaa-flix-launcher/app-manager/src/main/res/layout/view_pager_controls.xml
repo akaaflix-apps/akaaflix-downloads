@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView
+        android:id="@+id/prevPage"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="@string/cd_previous_page"
+        android:focusable="true"
+        android:padding="10dp"
+        android:src="@drawable/ic_chevron_left" />
+
+    <com.akaaflix.launcher.core.ui.PageIndicatorView
+        android:id="@+id/pageIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp" />
+
+    <ImageView
+        android:id="@+id/nextPage"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="@string/cd_next_page"
+        android:focusable="true"
+        android:padding="10dp"
+        android:src="@drawable/ic_chevron_right" />
+</merge>

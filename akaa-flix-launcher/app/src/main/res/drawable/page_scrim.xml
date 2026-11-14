@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Darkens the wallpaper behind secondary pages (header art and floor glow stay visible). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:centerColor="#E0050112"
+        android:centerY="0.45"
+        android:endColor="#99050112"
+        android:startColor="#B3050112" />
+</shape>

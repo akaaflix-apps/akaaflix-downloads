@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+<LinearLayout
+    android:id="@+id/pageRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/content_start" android:paddingTop="@dimen/page_top" android:paddingRight="@dimen/content_end" android:paddingBottom="2dp">
+
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:gravity="center_vertical"
+        android:layoutDirection="ltr"
+        android:orientation="horizontal">
+
+        <include layout="@layout/include_search_box" android:id="@+id/searchInclude" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1.35" />
+
+        <ImageView
+            android:id="@+id/sortButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/apps_sort"
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_sort" />
+
+        <TextView android:id="@+id/chipAll" style="@style/Akaa.Chip" android:layout_width="0dp" android:layout_height="40dp" android:layout_marginStart="26dp" android:layout_weight="0.95" android:drawableLeft="@drawable/ic_apps" />
+        <TextView android:id="@+id/chipEntertainment" style="@style/Akaa.Chip" android:layout_width="0dp" android:layout_height="40dp" android:layout_marginStart="26dp" android:layout_weight="1" android:drawableLeft="@drawable/ic_play_box" android:text="@string/apps_chip_entertainment" />
+        <TextView android:id="@+id/chipTools" style="@style/Akaa.Chip" android:layout_width="0dp" android:layout_height="40dp" android:layout_marginStart="26dp" android:layout_weight="1" android:drawableLeft="@drawable/ic_wrench" android:text="@string/apps_chip_tools" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/gridContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.akaaflix.launcher.remote.PagedGridRecyclerView
+            android:id="@+id/grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layoutDirection="ltr" />
+
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/emptyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/apps_empty"
+                android:textAppearance="@style/TextAppearance.Akaa.Section" />
+
+            <TextView
+                android:id="@+id/storeButton"
+                style="@style/Akaa.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="14dp"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/pagerControls"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:clipChildren="false"
+        android:gravity="center"
+        android:layoutDirection="ltr"
+        android:orientation="horizontal"
+        android:visibility="invisible">
+
+        <include layout="@layout/view_pager_controls" />
+    </LinearLayout>
+</LinearLayout>
+
+    <TextView
+        android:id="@+id/moveHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:maxWidth="620dp"
+        android:paddingStart="20dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="10dp"
+        android:text="@string/move_mode_hint"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.Akaa.Label"
+        android:visibility="gone" />
+</FrameLayout>

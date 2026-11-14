@@ -1,0 +1,22 @@
+.gradle/
+build/
+**/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.kotlin/
+.cxx/
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.password
+keystore.password
+keystore.properties
+# APKs are only kept in release/ (deliverables)
+*.apk
+!release/*.apk
+*.aab
+__pycache__/

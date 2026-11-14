@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextAppearance.Akaa" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+    <style name="TextAppearance.Akaa.Title">
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.Akaa.Subtitle">
+        <item name="android:textSize">@dimen/text_subtitle</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    <style name="TextAppearance.Akaa.Label">
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+    <style name="TextAppearance.Akaa.LabelBold">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.Akaa.Caption">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    <style name="TextAppearance.Akaa.Small">
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    <style name="TextAppearance.Akaa.Clock">
+        <item name="android:textSize">@dimen/text_clock</item>
+    </style>
+    <style name="TextAppearance.Akaa.Section">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Text views pick the user's font through ?attr/akaaFont (works in dialogs too). -->
+    <style name="Widget.Akaa.TextView" parent="android:Widget.TextView">
+        <item name="android:fontFamily">?attr/akaaFont</item>
+        <item name="fontFamily">?attr/akaaFont</item>
+    </style>
+    <style name="Widget.Akaa.EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:fontFamily">?attr/akaaFont</item>
+        <item name="fontFamily">?attr/akaaFont</item>
+    </style>
+
+    <!-- Dialog window: transparent so the glass panel drawable shows -->
+    <style name="Theme.Akaa.Dialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.62</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="colorAccent">@color/akaa_purple</item>
+        <item name="android:textViewStyle">@style/Widget.Akaa.TextView</item>
+        <item name="editTextStyle">@style/Widget.Akaa.EditText</item>
+    </style>
+    <style name="Theme.Akaa.FullscreenDialog" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/akaa_bg_deep</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:textViewStyle">@style/Widget.Akaa.TextView</item>
+    </style>
+</resources>

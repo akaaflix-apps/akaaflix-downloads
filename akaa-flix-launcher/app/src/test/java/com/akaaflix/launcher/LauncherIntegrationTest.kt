@@ -1,0 +1,234 @@
+package com.akaaflix.launcher
+
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Looper
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider
+import com.akaaflix.launcher.apps.AppRepository
+import com.akaaflix.launcher.apps.model.AppInstallType
+import com.akaaflix.launcher.apps.ui.AppActions
+import com.akaaflix.launcher.apps.ui.AppCardView
+import com.akaaflix.launcher.core.nav.LauncherPage
+import com.akaaflix.launcher.home.shell.NavItemView
+import com.akaaflix.launcher.prefs.SettingsRepository
+import com.akaaflix.launcher.remote.isAncestorOf
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.LooperMode
+
+/**
+ * End-to-end launcher behaviour on every Android version Robolectric provides
+ * (6.0 → 17). Robolectric runs the real framework code of each version on the JVM; it is not a
+ * substitute for physical devices (see docs/COMPATIBILITY.md).
+ */
+@RunWith(RobolectricTestRunner::class)
+@LooperMode(LooperMode.Mode.PAUSED)
+@Config(sdk = [24, 26, 28, 29, 30, 31, 33, 34, 35, 36], application = AkaaLauncherApp::class, qualifiers = "en-w960dp-h540dp-land-television-xhdpi")
+open class LauncherIntegrationTest {
+    /** Robolectric's legacy graphics (API 23) cannot create font families from resources. */
+    protected open val fontFamily = "tajawal"
+
+    private fun settle(ms: Long = 1200) {
+        val end = System.currentTimeMillis() + ms
+        while (System.currentTimeMillis() < end) { shadowOf(Looper.getMainLooper()).idle(); Thread.sleep(30) }
+        shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun <T : View> View.findAll(cls: Class<T>, out: MutableList<T> = mutableListOf()): List<T> {
+        if (cls.isInstance(this)) out.add(cls.cast(this)!!)
+        if (this is android.view.ViewGroup) for (i in 0 until childCount) getChildAt(i).findAll(cls, out)
+        return out
+    }
+
+    @Test
+    fun registeredAsHomeApp() {
+        val ctx = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val homes = ctx.packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY)
+        assertTrue("HOME intent must resolve to MainActivity", homes.any { it.activityInfo.name == MainActivity::class.java.name })
+        val tv = ctx.packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER), 0)
+        assertTrue("Must appear in the Android TV apps row", tv.any { it.activityInfo.name == MainActivity::class.java.name })
+    }
+
+    @Test
+    fun fullLauncherFlow() {
+        val ctx = ApplicationProvider.getApplicationContext<android.content.Context>()
+        TestApps.install(ctx, leanback = true)
+        AppRepository.get(ctx).refresh(0)
+        val prefs = SettingsRepository.get(ctx)
+        prefs.awaitLoaded()
+        runBlocking { prefs.update { it.copy(language = "en", fontFamily = fontFamily) } }
+        settle(600)
+
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+        settle(2500)
+        val activity = controller.get()
+        val root = activity.findViewById<com.akaaflix.launcher.remote.NavigationRootLayout>(R.id.root)
+
+        // 1. Real installed apps are discovered and shown on Home ("Add app" card last); nothing invented.
+        val repoApps = AppRepository.get(ctx).apps.value
+        assertTrue(repoApps.any { it.packageName == "com.example.videoplayer" })
+        assertFalse("no app that is not installed", repoApps.any { it.packageName == "com.android.vending" })
+        val cards = root.findAll(AppCardView::class.java).filter { it.isShown }
+        assertTrue("home cards: ${cards.size}", cards.size >= 6)
+        assertFalse("launcher itself is never listed", repoApps.any { it.packageName.startsWith("com.akaaflix.launcher") })
+        assertEquals(AppInstallType.SYSTEM, repoApps.first { it.packageName == TestApps.SYSTEM_SAMPLE }.installType)
+        assertEquals(AppInstallType.USER, repoApps.first { it.packageName == "com.example.music" }.installType)
+
+        // 1b. Home: exactly three rows by default, between the header and the bottom controls.
+        val home = activity.supportFragmentManager.findFragmentByTag("page_home")!!.requireView()
+        val homeGrid = home.findViewById<RecyclerView>(com.akaaflix.launcher.home.R.id.grid)
+        val lm = homeGrid.layoutManager as androidx.recyclerview.widget.GridLayoutManager
+        val rows = (homeGrid.adapter!!.itemCount + lm.spanCount - 1) / lm.spanCount
+        assertEquals("home rows", 3, rows)
+        val gridBox = home.findViewById<View>(com.akaaflix.launcher.home.R.id.gridContainer)
+        val bar = home.findViewById<View>(com.akaaflix.launcher.home.R.id.bottomBar)
+        assertTrue("grid (${gridBox.bottom}) must end above the quick bar (${bar.top})", gridBox.bottom <= bar.top)
+        val decor = home.findViewById<View>(com.akaaflix.launcher.home.R.id.remoteDecor)
+        assertTrue("grid must end above the remote art", !decor.isShown || gridBox.bottom <= decor.top)
+        val topBar = root.findViewById<View>(R.id.topBar)
+        val logo = topBar.findViewById<View>(com.akaaflix.launcher.home.R.id.homeLogo)
+        val logoBottom = IntArray(2).also { logo.getLocationInWindow(it) }[1] + logo.height
+        val gridTop = IntArray(2).also { gridBox.getLocationInWindow(it) }[1]
+        assertTrue("grid ($gridTop) starts below the logo ($logoBottom)", gridTop >= logoBottom)
+        // Removed controls are gone (voice, notifications, Bluetooth icon).
+        assertTrue(home.findViewById<View>(com.akaaflix.launcher.home.R.id.searchBtn).isShown)
+        assertEquals(0, root.findAll(View::class.java).count { it.contentDescription == "Bluetooth status" || it.contentDescription == "Voice search" || it.contentDescription == "Notifications" })
+
+        // 1c. Sidebar: Home, All apps, Favorites, Customize, Settings (no Wallpapers item).
+        val nav = root.findAll(NavItemView::class.java)
+        assertEquals(listOf("Home", "All apps", "Favorites", "Customize", "Settings"), nav.map { it.contentDescription.toString() })
+
+        // 1d. Home and Favorites are independent; nothing is a favourite automatically.
+        val custom0 = prefs.apps.value
+        assertTrue("home seeded with real apps", custom0.homeApps.isNotEmpty())
+        assertTrue("no automatic favourites", custom0.favorites.isEmpty())
+        val music = repoApps.first { it.packageName == "com.example.music" }
+        AppActions.toggleFavorite(ctx, music)
+        settle(300)
+        assertTrue(music.key in prefs.apps.value.favorites)
+        assertEquals("adding a favourite does not change Home", custom0.homeApps, prefs.apps.value.homeApps)
+        val homeApp = repoApps.first { it.key == custom0.homeApps.first() }
+        AppActions.toggleHome(ctx, homeApp)
+        settle(300)
+        assertFalse(homeApp.key in prefs.apps.value.homeApps)
+        assertTrue("removing from Home does not change Favorites", music.key in prefs.apps.value.favorites)
+        AppActions.toggleHome(ctx, homeApp)
+        settle(600)
+
+        // 2. D-pad routing: content → sidebar lands on the SELECTED item; sidebar → content restores focus.
+        // (Cards are looked up again: the Home list changed above, so views were re-bound.)
+        val first = homeGrid.findViewHolderForAdapterPosition(0)!!.itemView
+        assertTrue(first.requestFocus())
+        val left = first.focusSearch(View.FOCUS_LEFT)
+        assertNotNull(left)
+        assertTrue("LEFT from the first card enters the sidebar", left is NavItemView)
+        assertTrue((left as NavItemView).isActivated)
+        left.requestFocus()
+        val down = left.focusSearch(View.FOCUS_DOWN)
+        assertTrue(down is NavItemView && down !== left)
+        val backRight = left.focusSearch(View.FOCUS_RIGHT)
+        assertTrue("RIGHT from the sidebar restores the last focused card", backRight === first)
+
+        // 3. Every page opens; Back returns to Home (Wallpapers -> Customization -> Home); Back on Home never exits.
+        for (page in listOf(LauncherPage.ALL_APPS, LauncherPage.FAVORITES, LauncherPage.CUSTOMIZATION, LauncherPage.WALLPAPERS, LauncherPage.SETTINGS)) {
+            activity.navigate(page)
+            settle(700)
+            assertEquals(page, activity.currentPage())
+            assertTrue(root.findViewById<View>(R.id.content).let { c -> (c as android.view.ViewGroup).childCount > 0 })
+            if (page == LauncherPage.WALLPAPERS) {
+                assertTrue("Wallpapers highlights Customize in the sidebar", nav.first { it.contentDescription == "Customize" }.isActivated)
+                activity.onBackPressedDispatcher.onBackPressed()
+                settle(300)
+                assertEquals(LauncherPage.CUSTOMIZATION, activity.currentPage())
+            }
+            activity.onBackPressedDispatcher.onBackPressed()
+            settle(300)
+            assertEquals(LauncherPage.HOME, activity.currentPage())
+        }
+        activity.onBackPressedDispatcher.onBackPressed()
+        settle(200)
+        assertFalse("a launcher must not finish on Back", activity.isFinishing)
+
+        // 4. All Apps lists every app (no hard-coded data) in its own scrolling grid (more than 3 rows).
+        activity.navigate(LauncherPage.ALL_APPS)
+        settle(900)
+        val page = activity.supportFragmentManager.findFragmentByTag("page_secondary")!!.requireView()
+        val grid = page.findViewById<RecyclerView>(com.akaaflix.launcher.apps.R.id.grid)
+        assertEquals("all apps = every installed app", repoApps.size, grid.adapter?.itemCount)
+        val allLm = grid.layoutManager as androidx.recyclerview.widget.GridLayoutManager
+        assertTrue("All apps is not limited to the Home row count", (repoApps.size + allLm.spanCount - 1) / allLm.spanCount > 3)
+        assertTrue("All apps scrolls vertically", grid.canScrollVertically(1) || grid.computeVerticalScrollRange() <= grid.height)
+
+        // 5. HOME intent while on another page goes back to Home, and is recorded as start-up evidence.
+        controller.newIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
+        settle(400)
+        assertEquals(LauncherPage.HOME, activity.currentPage())
+        val log = com.akaaflix.launcher.prefs.BootLog.read(ctx)
+        assertTrue("HOME intent recorded", log.homeStartThisBoot && log.lastHomeIntentAt > 0)
+        val homeStatus = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
+        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(homeStatus, log, android.os.Build.VERSION.SDK_INT, false)
+        if (homeStatus.isDefault) assertEquals(com.akaaflix.launcher.apps.home.StartupState.VERIFIED, startup)
+        else assertTrue(startup != com.akaaflix.launcher.apps.home.StartupState.VERIFIED)
+
+        // 5b. Settings → Interface: real Home / start-up rows; the boot switch exists only on Android 6–9.
+        activity.navigate(LauncherPage.SETTINGS, android.os.Bundle().apply { putString("open_section", "interface") })
+        settle(1200)
+        val settingsFragment = activity.supportFragmentManager.findFragmentByTag("page_secondary") as com.akaaflix.launcher.settings.SettingsFragment
+        val detail = settingsFragment.requireView().findViewById<RecyclerView>(com.akaaflix.launcher.settings.R.id.detailList)
+        val rowsNow = { (detail.adapter as com.akaaflix.launcher.core.ui.rows.SettingRowsAdapter).currentList }
+        assertTrue(rowsNow().any { it.id == "homeStatus" } && rowsNow().any { it.id == "startup" })
+        assertEquals(android.os.Build.VERSION.SDK_INT < 29, rowsNow().any { it.id == "autostart" })
+
+        // 5c. App manager lists every installed package (user and pre-installed) with Shizuku status.
+        settingsFragment.openAppManager()
+        settle(2500)
+        val managerRows = rowsNow()
+        assertTrue(managerRows.any { it.id == "shizuku" })
+        assertTrue("user app listed", managerRows.any { it.id == "pkg_com.example.videoplayer" })
+        assertTrue("pre-installed app listed", managerRows.any { it.id == "pkg_" + TestApps.SYSTEM_SAMPLE })
+        val shizukuState = com.akaaflix.launcher.apps.privileged.Privileged.status(ctx).state
+        assertTrue("no elevated access without Shizuku", shizukuState != com.akaaflix.launcher.apps.privileged.Privileged.State.READY)
+        settingsFragment.showDiagnostics()
+        settle(400)
+        activity.onBackPressedDispatcher.onBackPressed()   // closes nothing harmful: dialog or manager
+        settle(300)
+        activity.navigate(LauncherPage.HOME)
+        settle(400)
+
+        // 6. Settings persist across activity recreation.
+        runBlocking { prefs.update { it.copy(homeRows = 2, iconSize = "large", themeId = "royal_blue") } }
+        settle(300)
+        controller.recreate()
+        settle(1500)
+        assertEquals(2, prefs.settings.value.homeRows)
+        assertEquals("large", prefs.settings.value.iconSize)
+        assertEquals("royal_blue", prefs.settings.value.themeId)
+        assertEquals(LauncherPage.HOME, controller.get().currentPage())
+
+        controller.pause().stop().destroy()
+    }
+
+    @Test
+    fun crashGuardEntersSafeModeAfterRepeatedCrashes() {
+        val ctx = ApplicationProvider.getApplicationContext<android.content.Context>()
+        CrashGuard.reset(ctx)
+        val now = System.currentTimeMillis()
+        CrashGuard.record(ctx, now - 20_000)
+        assertFalse(CrashGuard.shouldEnterSafeMode(ctx, now))
+        CrashGuard.record(ctx, now - 10_000)
+        CrashGuard.record(ctx, now)
+        assertTrue(CrashGuard.shouldEnterSafeMode(ctx, now))
+        assertFalse("old crashes expire", CrashGuard.shouldEnterSafeMode(ctx, now + 10 * 60_000))
+    }
+}

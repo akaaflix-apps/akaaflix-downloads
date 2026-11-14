@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rowRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="3dp"
+    android:layout_marginBottom="3dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_height"
+    android:orientation="horizontal"
+    android:paddingStart="18dp"
+    android:paddingTop="9dp"
+    android:paddingEnd="18dp"
+    android:paddingBottom="9dp">
+
+    <ImageView
+        android:id="@+id/rowIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="14dp"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.Akaa"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/rowSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.Akaa.Caption" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/rowValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:maxWidth="220dp"
+        android:textAlignment="viewEnd"
+        android:textAppearance="@style/TextAppearance.Akaa.Label"
+        android:textColor="@color/text_secondary" />
+
+    <com.akaaflix.launcher.core.ui.NeonSwitch
+        android:id="@+id/rowSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp" />
+
+    <LinearLayout
+        android:id="@+id/rowStepper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:clipChildren="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/rowMinus"
+            android:layout_width="38dp"
+            android:layout_height="34dp"
+            android:contentDescription="@string/minus"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="−"
+            android:textAppearance="@style/TextAppearance.Akaa.Section" />
+
+        <TextView
+            android:id="@+id/rowStepValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:minWidth="64dp"
+            android:textAppearance="@style/TextAppearance.Akaa.LabelBold" />
+
+        <TextView
+            android:id="@+id/rowPlus"
+            android:layout_width="38dp"
+            android:layout_height="34dp"
+            android:contentDescription="@string/plus"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="+"
+            android:textAppearance="@style/TextAppearance.Akaa.Section" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/rowSwatches"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="horizontal" />
+
+    <ImageView
+        android:id="@+id/rowChevron"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginStart="8dp"
+        android:alpha="0.7"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_chevron_right" />
+</LinearLayout>

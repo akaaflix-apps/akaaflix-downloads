@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Akaa.Launcher" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/akaa_bg</item>
+        <item name="android:colorBackground">@color/akaa_bg</item>
+        <item name="colorPrimary">@color/akaa_purple_deep</item>
+        <item name="colorPrimaryDark">@color/akaa_bg</item>
+        <item name="colorAccent">@color/akaa_purple</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">#80000000</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textViewStyle">@style/Widget.Akaa.TextView</item>
+        <item name="editTextStyle">@style/Widget.Akaa.EditText</item>
+        <item name="android:windowContentTransitions">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="akaaFont">@font/tajawal</item>
+    </style>
+</resources>
