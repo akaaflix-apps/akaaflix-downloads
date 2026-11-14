@@ -13,7 +13,7 @@ cheap, hardware-accelerated primitives and can be scaled down per device.
 - Home page is created once and only hidden when other pages open, so returning Home is instant and focus
   is preserved; other pages are created on demand and destroyed when left.
 - Native Views instead of Compose (smaller runtime, faster first frame on low-end TV boxes).
-- R8 full minification and resource shrinking: release APK 3.1 MB.
+- R8 full minification and resource shrinking: release APK 3.08 MB, no native libraries.
 
 ## Rendering
 

@@ -86,7 +86,7 @@ class HomeFragment : Fragment(), MenuKeyHandler {
         b.searchBtn.setOnClickListener { launcherHost?.navigate(LauncherPage.ALL_APPS, bundleOf(NavArgs.FOCUS_SEARCH to true)) }
         b.micBtn.setOnClickListener { launcherHost?.startVoiceSearch { q -> launcherHost?.navigate(LauncherPage.ALL_APPS, bundleOf(NavArgs.SEARCH_QUERY to q)) } }
         b.appsBtn.setOnClickListener { launcherHost?.navigate(LauncherPage.ALL_APPS) }
-        b.bellBtn.setOnClickListener { HomeDialogs.showNotifications(this) }
+        b.bellBtn.setOnClickListener { com.akaaflix.launcher.device.system.SystemShortcuts.notifications(requireContext()) }
         b.infoBtn.setOnClickListener { HomeDialogs.showDeviceInfo(requireContext()) }
         b.remoteDecor.setOnClickListener { launcherHost?.navigate(LauncherPage.SETTINGS, bundleOf(NavArgs.OPEN_SECTION to "remote")) }
         b.weatherWidget.setOnClickListener { launcherHost?.navigate(LauncherPage.SETTINGS, bundleOf(NavArgs.OPEN_SECTION to "interface")) }
@@ -95,7 +95,6 @@ class HomeFragment : Fragment(), MenuKeyHandler {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { vm.state.collect { render(it) } }
                 launch { vm.weather.collect { renderWeather(it) } }
-                launch { vm.notificationCount.collect { renderBadge(it) } }
                 launch { while (true) { vm.refreshWeather(); delay(WeatherRepository.REFRESH_INTERVAL_MS) } }
             }
         }
@@ -161,12 +160,6 @@ class HomeFragment : Fragment(), MenuKeyHandler {
             WeatherKind.THUNDER -> R.drawable.ic_weather_thunder
         })
         b.weatherPlace.compoundDrawablesRelative[2]?.setTint(LauncherUi.palette.accentLight)
-    }
-
-    private fun renderBadge(count: Int) {
-        val show = count > 0 && vm.state.value.settings.notificationBadges
-        b.bellBadge.isVisible = show
-        b.bellBadge.text = if (count > 9) "9+" else count.toString()
     }
 
     /** Called by the activity when HOME is pressed again or Back is pressed on home. */

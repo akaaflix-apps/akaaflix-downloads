@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.akaaflix.launcher.apps.AppLists
 import com.akaaflix.launcher.apps.AppRepository
 import com.akaaflix.launcher.apps.model.AppEntry
-import com.akaaflix.launcher.device.notifications.NotificationCenter
 import com.akaaflix.launcher.device.weather.WeatherRepository
 import com.akaaflix.launcher.device.weather.WeatherState
 import com.akaaflix.launcher.prefs.LauncherSettings
@@ -41,10 +40,6 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     val weather: StateFlow<WeatherState?> = combine(weatherRepo.state, prefs.settings) { _, s ->
         if (s.weatherEnabled && s.hasWeatherLocation) weatherRepo.displayable() else null
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    val notificationCount: StateFlow<Int> = combine(NotificationCenter.items, NotificationCenter.connected) { items, c ->
-        if (c) items.size else 0
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     init {
         // First run: pick initial favourites among the apps that are really installed.

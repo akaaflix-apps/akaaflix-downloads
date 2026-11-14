@@ -51,7 +51,6 @@ import com.akaaflix.launcher.core.ui.tint
 import com.akaaflix.launcher.core.util.Bytes
 import com.akaaflix.launcher.core.util.SafeIntents
 import com.akaaflix.launcher.device.info.DeviceInfoProvider
-import com.akaaflix.launcher.device.notifications.NotificationCenter
 import com.akaaflix.launcher.device.status.BluetoothMonitor
 import com.akaaflix.launcher.device.status.NetworkMonitor
 import com.akaaflix.launcher.device.system.SystemShortcuts
@@ -210,7 +209,7 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
     private fun state(): SettingsState {
         val ctx = requireContext()
         return SettingsState(prefs.settings.value, prefs.apps.value, apps.apps.value, network.state.value, bluetooth.state.value,
-            NotificationCenter.isAccessGranted(ctx), apps.isDefaultLauncher(), DevicePerformance.profile(ctx), info.screenTimeoutMs())
+            apps.isDefaultLauncher(), DevicePerformance.profile(ctx), info.screenTimeoutMs())
     }
 
     private fun renderAll() {
@@ -313,12 +312,11 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
 
     private fun explainAutoStartIfNeeded() {
         val ctx = requireContext()
-        if (Build.VERSION.SDK_INT >= 29 && !Settings.canDrawOverlays(ctx)) {
-            LauncherDialog(ctx).title(R.string.set_quick_autostart).message(R.string.autostart_overlay_needed).icon(R.drawable.ic_power)
+        if (Build.VERSION.SDK_INT >= 29 && !apps.isDefaultLauncher()) {
+            LauncherDialog(ctx).title(R.string.set_quick_autostart).message(R.string.autostart_android10).icon(R.drawable.ic_power)
                 .button(R.string.cancel)
-                .button(R.string.autostart_grant, primary = true) {
-                    if (!SystemShortcuts.overlayPermission(ctx)) toast(R.string.system_setting_unavailable)
-                }.show()
+                .button(R.string.row_default_launcher, primary = true) { requestDefaultLauncher() }
+                .show()
         }
     }
 
@@ -488,8 +486,7 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             "display" -> SystemShortcuts.display(c)
             "battery" -> SystemShortcuts.battery(c)
             "apps" -> SystemShortcuts.apps(c)
-            "notifications" -> if (!SystemShortcuts.notificationAccess(c)) Dialogs.info(c, getString(R.string.row_notif_access),
-                str(R.string.notif_access_unavailable, c.packageName + "/com.akaaflix.launcher.device.notifications.LauncherNotificationListener"))
+            "notifications" -> SystemShortcuts.notifications(c)
         }
     }
 

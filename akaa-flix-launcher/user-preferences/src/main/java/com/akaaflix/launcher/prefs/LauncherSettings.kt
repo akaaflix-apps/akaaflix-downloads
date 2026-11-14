@@ -64,8 +64,6 @@ data class LauncherSettings(
     val menuKeyAction: String = "context",       // context | settings | customize
     val longPressAction: String = "context",     // context | move | info
     val backOnHome: String = "focus_first",      // focus_first | none
-    // Notifications
-    val notificationBadges: Boolean = true,
     // Parental controls & profile
     val pinHash: String = "",
     val pinSalt: String = "",
@@ -122,7 +120,6 @@ data class LauncherSettings(
         put("rotationSource", rotationSource); put("lastRotationAt", lastRotationAt)
         put("performanceMode", performanceMode)
         put("menuKeyAction", menuKeyAction); put("longPressAction", longPressAction); put("backOnHome", backOnHome)
-        put("notificationBadges", notificationBadges)
         if (includeSecrets) { put("pinHash", pinHash); put("pinSalt", pinSalt) }
         put("lockSettings", lockSettings); put("lockCustomization", lockCustomization)
         put("protectHiddenApps", protectHiddenApps)
@@ -199,7 +196,6 @@ data class LauncherSettings(
                 menuKeyAction = s("menuKeyAction", d.menuKeyAction, setOf("context", "settings", "customize")),
                 longPressAction = s("longPressAction", d.longPressAction, setOf("context", "move", "info")),
                 backOnHome = s("backOnHome", d.backOnHome, setOf("focus_first", "none")),
-                notificationBadges = b("notificationBadges", d.notificationBadges),
                 pinHash = s("pinHash", d.pinHash),
                 pinSalt = s("pinSalt", d.pinSalt),
                 lockSettings = b("lockSettings", d.lockSettings),

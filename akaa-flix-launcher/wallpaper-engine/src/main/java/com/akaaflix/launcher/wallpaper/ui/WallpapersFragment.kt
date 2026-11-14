@@ -2,20 +2,19 @@ package com.akaaflix.launcher.wallpaper.ui
 
 import com.akaaflix.launcher.core.util.str
 
-import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
@@ -74,9 +73,9 @@ class WallpapersFragment : Fragment(), BackHandler {
         val uri = res.data?.data
         if (res.resultCode == Activity.RESULT_OK && uri != null) import(uri, null)
     }
-    private val mediaPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
-        if (granted.values.any { it }) MediaPickerDialog.show(requireContext(), viewLifecycleOwner.lifecycleScope, pendingVideo) { import(it.uri, it.name) }
-        else Toast.makeText(requireContext(), CoreR.string.wp_permission_needed, Toast.LENGTH_LONG).show()
+    /** System photo picker (Android 11+ / Play-services backport): access to the chosen file only. */
+    private val pickVisualMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) import(uri, null)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -335,8 +334,16 @@ class WallpapersFragment : Fragment(), BackHandler {
         }
     }
 
-    /** System document picker → GET_CONTENT → built-in MediaStore picker (TV boxes without a file picker). */
+    /**
+     * Photo picker → system document picker → GET_CONTENT (any installed file manager). No storage
+     * permission is ever requested; each picker grants access to the one file the user chooses.
+     */
     private fun pick(video: Boolean) {
+        val ctx = requireContext()
+        if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(ctx)) {
+            val type = if (video) ActivityResultContracts.PickVisualMedia.VideoOnly else ActivityResultContracts.PickVisualMedia.ImageOnly
+            try { pickVisualMedia.launch(PickVisualMediaRequest(type)); return } catch (_: ActivityNotFoundException) {}
+        }
         val mime = if (video) "video/*" else "image/*"
         val intents = listOf(
             Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime),
@@ -345,12 +352,7 @@ class WallpapersFragment : Fragment(), BackHandler {
         for (i in intents) {
             try { openDocument.launch(i); return } catch (_: ActivityNotFoundException) {} catch (_: SecurityException) {}
         }
-        val perms = when {
-            Build.VERSION.SDK_INT >= 34 -> arrayOf(if (video) Manifest.permission.READ_MEDIA_VIDEO else Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
-            Build.VERSION.SDK_INT >= 33 -> arrayOf(if (video) Manifest.permission.READ_MEDIA_VIDEO else Manifest.permission.READ_MEDIA_IMAGES)
-            else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-        mediaPermission.launch(perms)
+        Dialogs.info(ctx, getString(CoreR.string.wp_pick_title), getString(CoreR.string.wp_no_picker))
     }
 
     private fun import(uri: Uri, name: String?) {

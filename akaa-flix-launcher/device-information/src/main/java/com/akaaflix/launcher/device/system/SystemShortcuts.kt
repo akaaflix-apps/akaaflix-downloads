@@ -39,15 +39,16 @@ object SystemShortcuts {
 
     fun homeSettings(c: Context) = SafeIntents.start(c, i(Settings.ACTION_HOME_SETTINGS))
 
-    fun notificationAccess(c: Context): Boolean {
-        val detail = if (Build.VERSION.SDK_INT >= 30) Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS).putExtra(
-            Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME,
-            ComponentName(c.packageName, "com.akaaflix.launcher.device.notifications.LauncherNotificationListener").flattenToString()) else null
-        return SafeIntents.start(c, detail, i("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-    }
-
-    fun overlayPermission(c: Context): Boolean =
-        SafeIntents.start(c, Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + c.packageName)))
+    /**
+     * Opens Android's own notifications screen. The launcher never reads notifications itself
+     * (no notification-listener access), so it hands over to the system UI: the Android TV
+     * notification panel where available, otherwise notification history / settings.
+     */
+    fun notifications(c: Context): Boolean = SafeIntents.startOrToast(c,
+        i("com.android.tv.action.OPEN_NOTIFICATIONS_PANEL"),
+        if (Build.VERSION.SDK_INT >= 30) i("android.settings.NOTIFICATION_HISTORY") else null,
+        i("android.settings.NOTIFICATION_SETTINGS"),
+        SafeIntents.systemSettings())
 
     fun appLanguage(c: Context): Boolean = if (Build.VERSION.SDK_INT >= 33)
         SafeIntents.start(c, Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.parse("package:" + c.packageName)), i(Settings.ACTION_LOCALE_SETTINGS))

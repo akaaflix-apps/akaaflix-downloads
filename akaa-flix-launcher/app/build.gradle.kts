@@ -15,8 +15,8 @@ android {
         applicationId = "com.akaaflix.launcher"
         minSdk = rootProject.extra["akaa.minSdk"] as Int
         targetSdk = rootProject.extra["akaa.targetSdk"] as Int
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "UPDATE_REPO", "\"${prop("akaa.update.repo") ?: ""}\"")
         buildConfigField("String", "UPDATE_TAG_PREFIX", "\"${prop("akaa.update.tagPrefix") ?: "launcher-v"}\"")
@@ -31,6 +31,10 @@ android {
                 storePassword = prop("AKAAFLIX_LAUNCHER_KEYSTORE_PASSWORD")
                 keyAlias = prop("AKAAFLIX_LAUNCHER_KEY_ALIAS")
                 keyPassword = prop("AKAAFLIX_LAUNCHER_KEY_PASSWORD")
+                // v1 (JAR) is required by Android 6.0; v2 for 7.0+; v3 enables future key rotation (9+).
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
@@ -74,6 +78,9 @@ android {
     }
     packaging {
         resources.excludes += setOf("META-INF/*.version", "META-INF/**/LICENSE*", "kotlin/**", "DebugProbesKt.bin")
+        // DataStore ships a JNI helper only used by multi-process DataStore. The launcher uses the
+        // single-process DataStore and R8 removes the loader, so the native library is never loaded.
+        jniLibs.excludes += "**/libdatastore_shared_counter.so"
     }
 }
 

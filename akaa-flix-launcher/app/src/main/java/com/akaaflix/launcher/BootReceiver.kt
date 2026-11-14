@@ -5,19 +5,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.provider.Settings
 import com.akaaflix.launcher.prefs.BootPrefs
 
 /**
  * "Start with device": opens the launcher after boot when the user enabled it and another app is
- * the default Home (e.g. Google TV, where the default launcher cannot be changed in Settings).
- * Android 10+ blocks background activity starts unless "Display over other apps" is granted.
+ * the default Home. Only Android 6–9 allow this; Android 10+ blocks activity starts from the
+ * background, and the launcher deliberately does not request the "Display over other apps"
+ * permission that would bypass that. Only the protected BOOT_COMPLETED broadcast is accepted.
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED && intent.action != "android.intent.action.QUICKBOOT_POWERON") return
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        if (Build.VERSION.SDK_INT >= 29) return
         if (!BootPrefs.autoStart(context) || isDefaultHome(context)) return
-        if (Build.VERSION.SDK_INT >= 29 && !Settings.canDrawOverlays(context)) return
         try {
             context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
         } catch (_: Exception) {}

@@ -91,10 +91,30 @@ Create your permanent key once and keep it safe (every update must be signed wit
 keytool -genkeypair -v -keystore ~/keys/akaaflix-launcher.jks -alias akaalauncher -keyalg RSA -keysize 3072 -validity 10000
 ```
 
-> **Important:** `release/AkaaFlixLauncher-v1.0.0-release.apk` in this repository was signed with a
-> **temporary key** generated in the build environment and not kept. It installs and runs, but a future
-> build signed with your own key cannot update it in place: uninstall it first, then install the build signed
-> with your permanent key.
+The release key used for `release/AkaaFlixLauncher-v1.0.1-release.apk` (PKCS12, RSA 4096, valid until 2056,
+alias `akaaflix-launcher`) was handed to the project owner together with its password; it is **not** in Git.
+Certificate fingerprint (public – use it to check downloads):
+
+| | |
+|---|---|
+| Subject | `CN=Akaa Flix Launcher, O=Akaa Flix, C=EG` |
+| SHA-256 | `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf` |
+| SHA-1 | `2096d60af67fb34b1b342cd73b9afbe46a0737f1` |
+
+Build a release with it (PKCS12 keystores work with the same properties):
+
+```bash
+export AKAAFLIX_LAUNCHER_KEYSTORE_FILE=/secure/path/akaaflix-launcher-release.p12
+export AKAAFLIX_LAUNCHER_KEY_ALIAS=akaaflix-launcher
+export AKAAFLIX_LAUNCHER_KEYSTORE_PASSWORD='…' AKAAFLIX_LAUNCHER_KEY_PASSWORD='…'
+./gradlew clean :app:assembleRelease
+```
+
+Signature schemes v1 (needed by Android 6.0), v2 and v3 are enabled. Keep the keystore and password backed up:
+losing them means future updates cannot be installed over existing installations.
+
+> v1.0.0 was signed with a temporary key that no longer exists. If v1.0.0 is installed anywhere, uninstall it
+> before installing v1.0.1.
 
 Verify a signature:
 
@@ -113,7 +133,7 @@ adb connect <tv-ip-address>:5555
 ```
 
 ```bash
-adb install -r release/AkaaFlixLauncher-v1.0.0-release.apk
+adb install -r release/AkaaFlixLauncher-v1.0.1-release.apk
 ```
 
 ## Making it the default launcher
@@ -135,9 +155,10 @@ adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
 adb shell pm enable com.google.android.apps.tv.launcherx
 ```
 
-Alternative without ADB on Google TV: Settings → *Start with device* in the launcher (requires granting
-"Display over other apps" on Android 10+). The system Home button still opens Google's launcher; this is an
-operating-system restriction a normal app cannot bypass.
+Google TV runs Android 10 or newer, where only the default Home app is started automatically after a restart
+(the launcher's *Start with device* option applies to Android 6–9). The system Home button keeps opening
+Google's launcher unless it is disabled as above; this is an operating-system restriction a normal app cannot
+bypass.
 
 ## Optional configuration (`gradle.properties`)
 
@@ -150,10 +171,10 @@ operating-system restriction a normal app cannot bypass.
 To publish an update so that *Check for updates* finds it, create a GitHub release in the configured repository
 with a tag like `launcher-v1.0.1` and attach the APK.
 
-## Notification access on Android TV (optional)
+## Google Play Protect
 
-The bell panel needs notification access. If the TV has no settings screen for it:
-
-```bash
-adb shell cmd notification allow_listener com.akaaflix.launcher/com.akaaflix.launcher.device.notifications.LauncherNotificationListener
-```
+v1.0.0 was blocked by Play Protect's enhanced fraud protection because it contained a notification listener.
+v1.0.1 removes it and requests no sensitive permission (docs/SECURITY_AUDIT.md). Play Protect may still show its
+standard prompt for apps from developers it does not know yet; that is expected for sideloaded apps and must
+not be worked around by disabling Play Protect. See the recommendations in the audit (developer verification,
+store distribution).

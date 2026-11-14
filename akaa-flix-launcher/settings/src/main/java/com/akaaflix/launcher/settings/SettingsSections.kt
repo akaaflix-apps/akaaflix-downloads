@@ -45,7 +45,6 @@ data class SettingsState(
     val apps: List<AppEntry>,
     val network: NetworkState,
     val bluetooth: BluetoothState,
-    val notificationAccess: Boolean,
     val isDefaultLauncher: Boolean,
     val profile: DeviceProfile,
     val screenTimeoutMs: Long?,
@@ -266,10 +265,10 @@ object SettingsSections {
     }
 
     private fun notificationRows(c: Context, s: LauncherSettings, st: SettingsState, a: SettingsActions) = listOf(
-        SettingRow.Action("access", c.s(R.string.row_notif_access), c.s(if (st.notificationAccess) R.string.row_notif_access_on else R.string.row_notif_access_off), R.drawable.ic_bell) { a.system("notifications") },
-        SettingRow.Toggle("badges", c.s(R.string.row_notif_badges), icon = R.drawable.ic_bell, checked = s.notificationBadges) { v -> a.edit { it.copy(notificationBadges = v) } },
+        SettingRow.Action("system", c.s(R.string.row_notif_system), icon = R.drawable.ic_bell) { a.system("notifications") },
         SettingRow.Toggle("updates", c.s(R.string.row_auto_update_check), icon = R.drawable.ic_download, checked = s.autoCheckUpdates) { v -> a.edit { it.copy(autoCheckUpdates = v) } },
-    )
+        SettingRow.Info("note", c.s(R.string.row_notif_note), null, R.drawable.ic_shield),
+    ).also { @Suppress("UNUSED_VARIABLE") val unused = st }
 
     private fun dateRows(c: Context, s: LauncherSettings, a: SettingsActions): List<SettingRow> {
         val formats = listOf("system", "12", "24")

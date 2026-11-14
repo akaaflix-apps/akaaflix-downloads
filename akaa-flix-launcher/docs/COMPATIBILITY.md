@@ -1,6 +1,6 @@
 # Device compatibility report
 
-**Version:** 1.0.0 (versionCode 1) · **minSdk** 23 (Android 6.0) · **targetSdk/compileSdk** 37 (Android 17)
+**Version:** 1.0.1 (versionCode 2) · **minSdk** 23 (Android 6.0) · **targetSdk/compileSdk** 37 (Android 17)
 
 This report separates what was **actually verified** from what is **expected but not yet tested**.
 No physical device or hardware-accelerated emulator was available in the build environment (the build host
@@ -12,8 +12,9 @@ has no KVM), so **nothing has been tested on real hardware yet**.
 
 | Check | Result |
 |---|---|
-| `assembleDebug` (all 10 modules) | ✅ builds, 8.7 MB |
-| `assembleRelease` with R8 minify + resource shrink, APK signature v2 | ✅ builds, 3.1 MB, `apksigner verify` OK |
+| `assembleDebug` (all 10 modules) | ✅ builds |
+| `assembleRelease` with R8 minify + resource shrink, persistent RSA-4096 key, signature v1+v2+v3 | ✅ builds, 3.08 MB, `apksigner verify` OK, `zipalign` OK, no native code |
+| Permissions (`aapt2`) | ✅ no runtime or special-access permissions (see SECURITY_AUDIT.md) |
 | Manifest (`aapt2 dump badging`) | ✅ minSdk 23, targetSdk 37, `launchable-activity` and `leanback-launchable-activity` with TV banner, no required hardware features (touchscreen, leanback, Wi-Fi, Bluetooth, microphone all optional) |
 
 ### 1.2 Automated tests (all passing)
@@ -63,7 +64,8 @@ AppCompat font resources are supported on Android 6 devices, but this specific p
 | Video wallpapers (MediaPlayer + TextureView) and procedural animated wallpapers on real GPUs | ⚠️ not tested |
 | Startup time, frame rate, memory on 1 GB devices | ⚠️ not measured (see PERFORMANCE.md for the design budget) |
 | Weather (Open-Meteo) and update check (GitHub) against the live services | ⚠️ the build environment blocked these hosts; parsing is unit-tested |
-| Notification listener, voice search, document picker on TV | ⚠️ not tested |
+| Google Play Protect result for v1.0.1 on a real device | ⚠️ not tested (v1.0.0 block cause removed) |
+| Voice search, photo/document picker on TV, system notification shortcuts | ⚠️ not tested |
 | 4K and 8K output (UI is density-independent; 4K/8K wallpaper decoding is unit-tested) | ⚠️ not tested on screens |
 
 Recommended device test plan before distribution: one 1 GB Android TV box (Android 7–9), one 2 GB box
@@ -77,12 +79,13 @@ video wallpaper on/off, lightweight mode, reboot with "Start with device".
 | Feature | Restriction |
 |---|---|
 | Default launcher on **Google TV** | Google TV has no home-app chooser; the system Home key keeps opening Google's launcher unless it is disabled with ADB (docs/BUILD_AND_INSTALL.md). |
-| "Start with device" | Works when another launcher is default. On Android 10+ only if the user grants *Display over other apps* (background activity start limits). |
+| "Start with device" | Android 6–9 only, when another launcher is default. Android 10+ blocks background activity starts; the launcher deliberately does not request "Display over other apps" to bypass that, and instead offers to become the default Home app. |
 | App shortcuts (long-press menu) | Android 7.1+ and only while Akaa Flix is the **default** launcher (`LauncherApps` shortcut host permission). |
 | System settings (Wi-Fi, Bluetooth, VPN, date, language, display, sleep, HDMI-CEC) | A launcher cannot change them; the launcher opens the system screen. Some TVs lack some screens; the launcher then shows a message. |
 | Bluetooth | Only on/off state. Connected-device details would need the `BLUETOOTH_CONNECT` runtime permission, which is intentionally not requested. |
 | Recently used apps | The launcher's own launch history (no usage-access permission). Apps opened elsewhere are not listed. |
-| Notifications panel | Requires user-granted notification access; Android TV builds often hide that setting (ADB command provided). |
+| Notifications | The launcher does not read notifications (no notification-listener access, to avoid Play Protect fraud blocks and for privacy). The bell opens the system notification panel/history/settings, whichever the device provides. |
+| Wallpaper import | Uses the system photo picker / document picker or any file manager that offers `GET_CONTENT`. TV boxes without any picker need a file-manager app installed. |
 | Parental locks | Apply inside the launcher only; apps can still be opened from Android settings or another launcher. |
 | Per-app language on Android 6–12 | Handled by AppCompat (stored by the launcher); Android 13+ also shows it in system settings. |
 | Custom mouse pointer | Android 7.0+ (`PointerIcon`), inside the launcher only. |

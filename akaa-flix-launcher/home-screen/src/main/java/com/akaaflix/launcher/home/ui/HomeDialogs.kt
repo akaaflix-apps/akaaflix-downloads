@@ -3,19 +3,14 @@ package com.akaaflix.launcher.home.ui
 import com.akaaflix.launcher.core.util.str
 
 import android.content.Context
-import android.os.Build
-import android.text.format.DateUtils
-import androidx.fragment.app.Fragment
 import com.akaaflix.launcher.core.AppConfig
 import com.akaaflix.launcher.core.R
 import com.akaaflix.launcher.core.perf.DevicePerformance
 import com.akaaflix.launcher.core.perf.PerformanceTier
 import com.akaaflix.launcher.core.ui.dialog.Dialogs
-import com.akaaflix.launcher.core.ui.dialog.LauncherDialog
 import com.akaaflix.launcher.core.ui.rows.SettingRow
 import com.akaaflix.launcher.core.util.Bytes
 import com.akaaflix.launcher.device.info.DeviceInfoProvider
-import com.akaaflix.launcher.device.notifications.NotificationCenter
 import com.akaaflix.launcher.device.status.NetworkMonitor
 import com.akaaflix.launcher.device.status.NetworkState
 import com.akaaflix.launcher.device.system.SystemShortcuts
@@ -64,41 +59,5 @@ object HomeDialogs {
             d.button(R.string.info_open_system) { SystemShortcuts.deviceInfo(context) }
             d.button(R.string.close, primary = true)
         }
-    }
-
-    /** Notification panel (requires the user to grant notification access). */
-    fun showNotifications(fragment: Fragment) {
-        val context = fragment.requireContext()
-        if (!NotificationCenter.isAccessGranted(context)) {
-            LauncherDialog(context).title(R.string.notif_title).icon(R.drawable.ic_bell)
-                .message(R.string.notif_access_needed)
-                .button(R.string.cancel)
-                .button(R.string.notif_grant, primary = true) {
-                    if (!SystemShortcuts.notificationAccess(context))
-                        Dialogs.info(context, context.getString(R.string.row_notif_access), context.str(R.string.notif_access_unavailable,
-                            context.packageName + "/com.akaaflix.launcher.device.notifications.LauncherNotificationListener"))
-                }.show()
-            return
-        }
-        val items = NotificationCenter.items.value
-        if (items.isEmpty()) { Dialogs.info(context, context.getString(R.string.notif_title), context.getString(R.string.notif_empty)); return }
-        var dialog: LauncherDialog? = null
-        val pm = context.packageManager
-        val rows = items.map { n ->
-            val appName = try { pm.getApplicationLabel(pm.getApplicationInfo(n.packageName, 0)).toString() } catch (_: Exception) { n.packageName }
-            val time = DateUtils.getRelativeTimeSpanString(n.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
-            SettingRow.Action("n_" + n.key, n.title.ifBlank { appName }, subtitle = listOf(n.text, "$appName • $time").filter { it.isNotBlank() }.joinToString("\n"),
-                iconLoader = { iv -> try { iv.setImageDrawable(pm.getApplicationIcon(n.packageName)) } catch (_: Exception) {} },
-                showChevron = false,
-                onLongClick = { NotificationCenter.dismiss(n.key); dialog?.dialog?.dismiss(); showNotifications(fragment) }) {
-                dialog?.dialog?.dismiss(); NotificationCenter.open(n)
-            }
-        }
-        dialog = Dialogs.rows(context, context.getString(R.string.notif_title), rows, icon = R.drawable.ic_bell, widthDp = 560) { d, _ ->
-            d.message(context.getString(R.string.notif_hint))
-            d.button(R.string.notif_clear_all) { NotificationCenter.dismissAll() }
-            d.button(R.string.close, primary = true)
-        }
-        @Suppress("UNUSED_VARIABLE") val unused = Build.VERSION.SDK_INT
     }
 }

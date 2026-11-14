@@ -23,8 +23,10 @@ Android TV banner. Phone screenshots: `docs/screenshots/phone_ar_*.jpg`.*
 
 | File | Notes |
 |---|---|
-| [`release/AkaaFlixLauncher-v1.0.0-release.apk`](release/) | R8-minified release build (3.1 MB). **Signed with a temporary key** – see [Release signing](docs/BUILD_AND_INSTALL.md#release-signing). |
-| [`release/AkaaFlixLauncher-v1.0.0-debug.apk`](release/) | Debug build (`com.akaaflix.launcher.debug`), installs side by side. |
+| [`release/AkaaFlixLauncher-v1.0.1-release.apk`](release/) | R8-minified release build (3.08 MB), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. |
+
+v1.0.1 fixes the Google Play Protect "App blocked to protect your device" block of v1.0.0 – see
+[docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
 
 SHA-256 checksums: `release/SHA256SUMS.txt`. Install instructions: [docs/BUILD_AND_INSTALL.md](docs/BUILD_AND_INSTALL.md).
 
@@ -43,7 +45,7 @@ SHA-256 checksums: `release/SHA256SUMS.txt`. Install instructions: [docs/BUILD_A
 **Pages (as in the reference design)**
 - **Home** – logo, favourite apps (1–3 rows) with *Add app*, clock, Gregorian + Hijri date (Arabic and English),
   Wi-Fi/Ethernet and Bluetooth status, optional weather widget, quick bar (search, voice search, all apps,
-  notifications, device info).
+  system notifications, device info).
 - **All apps** – search (Arabic-normalised), filters *All / Entertainment / Tools* (no Games or System
   categories), sorting (custom, A–Z, Z–A, recently installed, most used, recently used), paging with D-pad edges,
   arrows and swipe, app options menu (favourite, move, hide, PIN lock, category, app info, uninstall, app shortcuts).
@@ -78,7 +80,7 @@ launcher-core       design system (glass/neon drawables, switch, dialogs, PIN pa
 remote-navigation   D-pad focus routing (NavigationRootLayout), paged grids, key helpers
 user-preferences    LauncherSettings / AppCustomization / wallpaper data (DataStore), backup codec, PIN hashing
 device-information  clock ticker, Hijri calendar + date formatter, network & Bluetooth monitors, device info,
-                    weather (Open-Meteo), system settings shortcuts, update checker, notification listener
+                    weather (Open-Meteo), system settings shortcuts, update checker
 app-manager         app discovery & launching, icon cache, list logic, app card/grid, All apps & Favorites pages
 wallpaper-engine    catalogue, memory-efficient decoder, host view (static/video/animated), rotation, Wallpapers page
 home-screen         shell views (sidebar, top bar), Home page, dialogs, live Home preview
@@ -95,6 +97,7 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 - [Device compatibility report](docs/COMPATIBILITY.md) – what was verified and what was not
 - [Performance](docs/PERFORMANCE.md) – optimisations, tiers, lightweight mode
 - [Design specification](docs/DESIGN_SPEC.md) – measurements taken from the reference, decisions to confirm
+- [Security & Play Protect audit](docs/SECURITY_AUDIT.md) – permissions, components, dependencies, signing
 
 ## Permissions
 
@@ -104,10 +107,13 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 | `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` | Wi-Fi / Ethernet status icon |
 | `BLUETOOTH` (≤ Android 11) | Bluetooth on/off icon |
 | `REQUEST_DELETE_PACKAGES` | "Uninstall" in the app menu opens the system uninstall dialog |
-| `RECEIVE_BOOT_COMPLETED`, `SYSTEM_ALERT_WINDOW` | Optional "Start with device" when another app is the default Home (Android 10+ requires the user to grant "Display over other apps") |
-| `READ_MEDIA_IMAGES/VIDEO` (≤12: `READ_EXTERNAL_STORAGE`) | Only for the built-in wallpaper picker on devices without a system file picker; requested at that moment |
+| `RECEIVE_BOOT_COMPLETED` | Optional "Start with device" on Android 6–9 when another app is the default Home |
 
-No location, contacts, microphone, phone or usage-access permission. Voice search uses the system recogniser.
+No runtime ("dangerous") or special-access permission is requested: no location, contacts, camera, microphone,
+SMS, phone, storage/media, notification access, accessibility, overlay or usage access. Wallpapers are picked
+with the system photo/document picker (access to the chosen file only). Full details: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
+
+Voice search uses the system speech recogniser (the launcher never records audio itself).
 
 ## Privacy
 

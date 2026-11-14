@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Weather widget (opt-in) and "Check for updates" (user initiated). -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Wi-Fi / Ethernet status icon. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Bluetooth on/off icon (Android 11 and older; no permission needed on 12+). -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
-
-    <application>
-        <!-- Optional: only active after the user grants notification access in Android settings. -->
-        <service
-            android:name=".notifications.LauncherNotificationListener"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
-    </application>
 </manifest>
