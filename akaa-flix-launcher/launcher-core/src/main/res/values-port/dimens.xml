@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Portrait phones/tablets: navigation becomes a bottom bar, top bar is two rows. -->
+    <dimen name="top_bar_height">168dp</dimen>
+    <dimen name="page_top">160dp</dimen>
+    <dimen name="content_start">12dp</dimen>
+    <dimen name="content_end">12dp</dimen>
+    <dimen name="home_grid_top">176dp</dimen>
+</resources>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/content_start"
+    android:paddingTop="@dimen/page_top"
+    android:paddingRight="@dimen/content_end"
+    android:paddingBottom="2dp">
+
+    <HorizontalScrollView
+        android:id="@+id/chipsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/chipsRow"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp" />
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:layoutDirection="ltr"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/gridContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <com.akaaflix.launcher.remote.PagedGridRecyclerView
+                    android:id="@+id/grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/pagerControls"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:clipChildren="false"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="invisible">
+
+                <ImageView android:id="@+id/prevPage" android:layout_width="40dp" android:layout_height="40dp" android:contentDescription="@string/cd_previous_page" android:focusable="true" android:padding="10dp" android:src="@drawable/ic_chevron_left" />
+                <com.akaaflix.launcher.core.ui.PageIndicatorView android:id="@+id/pageIndicator" android:layout_width="wrap_content" android:layout_height="20dp" android:layout_marginStart="18dp" android:layout_marginEnd="18dp" />
+                <ImageView android:id="@+id/nextPage" android:layout_width="40dp" android:layout_height="40dp" android:contentDescription="@string/cd_next_page" android:focusable="true" android:padding="10dp" android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sidePanel"
+            android:layout_width="270dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="14dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/detailPanel"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <com.akaaflix.launcher.wallpaper.ui.AspectFrameLayout
+                    android:id="@+id/previewFrame"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/previewImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop" />
+
+                    <TextView
+                        android:id="@+id/previewBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="8dp"
+                        android:paddingStart="7dp"
+                        android:paddingTop="2dp"
+                        android:paddingEnd="7dp"
+                        android:paddingBottom="2dp"
+                        android:textColor="@color/akaa_gold"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </com.akaaflix.launcher.wallpaper.ui.AspectFrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/titleIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="8dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_image" />
+
+                    <TextView
+                        android:id="@+id/detailTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:textAlignment="viewStart"
+                        android:textAppearance="@style/TextAppearance.Akaa.Section"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="28dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/detailResolution"
+                        android:textDirection="ltr"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1.4"
+                        android:drawableEnd="@drawable/ic_image"
+                        android:drawablePadding="6dp"
+                        android:gravity="center"
+                        android:textAppearance="@style/TextAppearance.Akaa.Caption"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:id="@+id/detailType"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:drawablePadding="6dp"
+                        android:gravity="center"
+                        android:textAppearance="@style/TextAppearance.Akaa.Caption"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/setButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="6dp"
+                    android:drawableEnd="@drawable/ic_check"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="24dp"
+                    android:paddingEnd="24dp"
+                    android:text="@string/wp_set"
+                    android:textAppearance="@style/TextAppearance.Akaa.LabelBold"
+                    android:textSize="15sp" />
+
+                <LinearLayout
+                    android:id="@+id/actionRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="6dp"
+                    android:clipChildren="false"
+                    android:orientation="horizontal">
+
+                    <TextView android:id="@+id/previewButton" style="@style/Akaa.SquareAction" android:drawableTop="@drawable/ic_play_box" android:text="@string/wp_preview" />
+                    <TextView android:id="@+id/fullscreenButton" style="@style/Akaa.SquareAction" android:layout_marginStart="8dp" android:drawableTop="@drawable/ic_fullscreen" android:text="@string/wp_fullscreen" />
+                    <TextView android:id="@+id/favoriteButton" style="@style/Akaa.SquareAction" android:layout_marginStart="8dp" android:drawableTop="@drawable/ic_heart" android:text="@string/wp_add_favorite" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rotationCard"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="8dp"
+                android:clipChildren="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp">
+
+                <LinearLayout
+                    android:id="@+id/rotationToggle"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp">
+
+                    
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView style="@style/Akaa.AutoLabel" android:layout_width="match_parent" android:layout_height="17dp" android:text="@string/wp_rotation" android:textAlignment="viewStart" android:textAppearance="@style/TextAppearance.Akaa.LabelBold" />
+                        <TextView style="@style/Akaa.AutoLabel" android:layout_width="match_parent" android:layout_height="14dp" android:text="@string/wp_rotation_sub" android:textAlignment="viewStart" android:textAppearance="@style/TextAppearance.Akaa.Small" />
+                    </LinearLayout>
+
+                    <com.akaaflix.launcher.core.ui.NeonSwitch android:id="@+id/rotationSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/intervalChip"
+                    style="@style/Akaa.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:drawableEnd="@drawable/ic_chevron_down"
+                    android:maxWidth="104dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

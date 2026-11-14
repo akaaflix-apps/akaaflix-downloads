@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base canvas: 960x540dp (Android TV 720p/1080p/4K). Values = reference px × 0.5745. -->
+    <dimen name="sidebar_width">100dp</dimen>
+    <dimen name="sidebar_top">58dp</dimen>
+    <dimen name="sidebar_bottom">80dp</dimen>
+    <dimen name="sidebar_item_height">52dp</dimen>
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="content_start">104dp</dimen>
+    <dimen name="content_end">10dp</dimen>
+    <dimen name="top_bar_height">92dp</dimen>
+    <dimen name="home_grid_top">188dp</dimen>
+    <dimen name="page_top">96dp</dimen>
+    <dimen name="glow_pad">6dp</dimen>
+    <dimen name="card_radius">14dp</dimen>
+    <dimen name="panel_radius">16dp</dimen>
+    <dimen name="chip_height">34dp</dimen>
+    <dimen name="tile_radius">16dp</dimen>
+    <dimen name="circle_button">40dp</dimen>
+    <dimen name="pill_height">46dp</dimen>
+    <dimen name="right_panel_width">204dp</dimen>
+    <dimen name="row_height">46dp</dimen>
+    <dimen name="dialog_width">520dp</dimen>
+    <dimen name="text_title">28sp</dimen>
+    <dimen name="text_subtitle">12sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_label">13sp</dimen>
+    <dimen name="text_caption">11sp</dimen>
+    <dimen name="text_small">10sp</dimen>
+    <dimen name="text_clock">21sp</dimen>
+</resources>

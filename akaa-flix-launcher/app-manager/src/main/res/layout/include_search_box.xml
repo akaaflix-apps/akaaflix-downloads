@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/searchBox"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:gravity="center_vertical"
+    android:layoutDirection="ltr"
+    android:orientation="horizontal"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp">
+
+    <ImageView
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_search" />
+
+    <EditText
+        android:id="@+id/searchEdit"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:background="@null"
+        android:hint="@string/apps_search_hint"
+        android:imeOptions="actionSearch|flagNoExtractUi"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:singleLine="true"
+        android:textAlignment="textStart"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_secondary"
+        android:textDirection="locale"
+        android:textSize="14sp" />
+</LinearLayout>
