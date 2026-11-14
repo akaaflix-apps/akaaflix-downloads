@@ -112,6 +112,7 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 - [Performance](docs/PERFORMANCE.md) – optimisations, tiers, lightweight mode
 - [Design specification](docs/DESIGN_SPEC.md) – measurements taken from the reference, decisions to confirm
 - [Security & Play Protect audit](docs/SECURITY_AUDIT.md) – permissions, components, dependencies, signing
+- [v1.3 delivery report](docs/V1.3_DELIVERY_REPORT.md) – Home button accessibility service, Shizuku connection handling, what works, limitations
 - [v1.2 delivery report](docs/V1.2_DELIVERY_REPORT.md) – bugs, fixes, permissions model, tested versions, limitations
 - [Xiaomi TV Box test plan](docs/XIAOMI_TEST_PLAN.md) and `tools/device_check.sh`
 - [v1.1 feature status](docs/FEATURE_STATUS.md) – completed / unsupported features, control audit
@@ -124,6 +125,7 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 | `INTERNET` | Optional weather widget and *Check for updates* (both off until the user uses them) |
 | `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` | Wi-Fi / Ethernet status icon |
 | `BLUETOOTH` (≤ Android 11) | Bluetooth on/off icon |
+| Accessibility service *Home button* (`BIND_ACCESSIBILITY_SERVICE`, held by Android only) | Optional, turned on by the user in Settings → Accessibility on devices without a Home chooser (Google TV): the Home button and start-up open Akaa Flix. Receives only the Home key and the package/class name of new windows; no screen content, no typed text |
 | `REQUEST_DELETE_PACKAGES` | "Uninstall" in the app menu opens the system uninstall dialog |
 | `RECEIVE_BOOT_COMPLETED` | Optional "Start with device" on Android 6–9; keeps the weather refresh job scheduled after a restart |
 | `QUERY_ALL_PACKAGES` | App manager: lists every installed package, including pre-installed ones without a launcher icon and packages removed for the user (stays on the device) |

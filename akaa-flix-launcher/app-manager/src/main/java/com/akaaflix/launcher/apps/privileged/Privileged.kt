@@ -8,6 +8,9 @@ import android.os.Build
 import android.os.IBinder
 import com.akaaflix.launcher.core.AppConfig
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -39,6 +42,24 @@ object Privileged {
         if (Build.VERSION.SDK_INT < MIN_SDK) return Status(State.UNSUPPORTED_ANDROID)
         return Impl.status(context.applicationContext)
     }
+
+    private val _state = MutableStateFlow(Status(State.NOT_INSTALLED))
+    /** Live connection state: updated when Shizuku starts, stops (binder death) or the permission changes. */
+    val state: StateFlow<Status> = _state.asStateFlow()
+    @Volatile private var watching = false
+
+    /** Starts following Shizuku's connection (idempotent) and publishes the current state. */
+    fun watch(context: Context): Status {
+        val c = context.applicationContext
+        if (Build.VERSION.SDK_INT >= MIN_SDK && !watching) {
+            watching = true
+            Impl.watch { refresh(c) }
+        }
+        return refresh(c)
+    }
+
+    /** Re-reads the state from Shizuku ("Check again"). */
+    fun refresh(context: Context): Status = status(context.applicationContext).also { _state.value = it }
 
     /** Shows Shizuku's permission dialog (handled by the Shizuku app). */
     fun requestPermission(onResult: (Boolean) -> Unit) {
@@ -76,6 +97,15 @@ object Privileged {
             } catch (_: Throwable) { Status(State.NOT_RUNNING) }
         }
 
+        /** Shizuku delivers these on the main thread. A dead binder also kills our user service. */
+        fun watch(onChange: () -> Unit) {
+            try {
+                rikka.shizuku.Shizuku.addBinderReceivedListenerSticky { onChange() }
+                rikka.shizuku.Shizuku.addBinderDeadListener { service = null; connection = null; args = null; onChange() }
+                rikka.shizuku.Shizuku.addRequestPermissionResultListener { _, _ -> onChange() }
+            } catch (_: Throwable) { }
+        }
+
         fun requestPermission(onResult: (Boolean) -> Unit) {
             try {
                 if (rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { onResult(true); return }
@@ -101,6 +131,8 @@ object Privileged {
                         val conn = object : ServiceConnection {
                             override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
                                 val s = if (binder != null && binder.pingBinder()) IShellService.Stub.asInterface(binder) else null
+                                // The shell process can die independently (Shizuku stopped, killed): rebind on next use.
+                                try { binder?.linkToDeath({ service = null }, 0) } catch (_: Exception) { }
                                 service = s
                                 if (cont.isActive) cont.resume(s)
                             }

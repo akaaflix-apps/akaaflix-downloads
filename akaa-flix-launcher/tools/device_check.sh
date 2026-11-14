@@ -50,6 +50,11 @@ case "${1:-}" in
     echo; echo "== Re-enabling the Google TV launcher"; sh pm enable $GTV ;;
 esac
 
+echo; echo "== Akaa Flix Home button service (accessibility)"
+echo "-- enabled services:"; sh settings get secure enabled_accessibility_services
+echo "-- bound by Android:"; sh dumpsys accessibility | grep -i -m3 "akaaflix" || echo "not bound"
+echo "-- restricted settings app-op:"; sh appops get $PKG ACCESS_RESTRICTED_SETTINGS 2>/dev/null || echo "n/a"
+
 echo; echo "== Home key test"
 sh input keyevent KEYCODE_HOME; sleep 3
 sh dumpsys activity activities | grep -m2 -E "topResumedActivity|mResumedActivity"

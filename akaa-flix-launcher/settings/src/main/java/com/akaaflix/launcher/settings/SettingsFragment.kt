@@ -214,10 +214,11 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         val ctx = requireContext()
         val home = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
         val log = com.akaaflix.launcher.prefs.BootLog.read(ctx)
-        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(home, log, Build.VERSION.SDK_INT, prefs.settings.value.autoStartOnBoot)
+        val access = com.akaaflix.launcher.apps.home.HomeAccess.state(ctx)
+        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(home, log, Build.VERSION.SDK_INT, prefs.settings.value.autoStartOnBoot, access)
         return SettingsState(prefs.settings.value, prefs.apps.value, apps.apps.value, network.state.value, bluetooth.state.value,
             home.isDefault, DevicePerformance.profile(ctx), info.screenTimeoutMs(), home, startup, log,
-            com.akaaflix.launcher.apps.privileged.Privileged.status(ctx))
+            com.akaaflix.launcher.apps.privileged.Privileged.status(ctx), access)
     }
 
     private fun renderAll() {
@@ -580,6 +581,62 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         }
     }
 
+    /** Home-button service: real state, the manual steps (like any accessibility app), optional Shizuku. */
+    override fun openHomeAccessibility() {
+        val ctx = requireContext()
+        val access = com.akaaflix.launcher.apps.home.HomeAccess.state(ctx)
+        val shizuku = com.akaaflix.launcher.apps.privileged.Privileged.status(ctx)
+        val user = com.akaaflix.launcher.apps.privileged.PackageCommands.currentUser()
+        val off = access == com.akaaflix.launcher.apps.home.AccessState.OFF
+        val msg = buildString {
+            append(getString(when (access) {
+                com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_help
+                com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_help_on
+                com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_help_not_running
+            }))
+            if (off && Build.VERSION.SDK_INT >= 33) {
+                val adb = com.akaaflix.launcher.apps.privileged.PackageCommands.asAdb(
+                    com.akaaflix.launcher.apps.privileged.PackageCommands.allowRestrictedSettings(ctx.packageName, user))
+                append("\n\n").append(str(if (com.akaaflix.launcher.apps.home.HomeAccess.restrictedSettingsBlocked(ctx)) R.string.hs_a11y_restricted else R.string.hs_a11y_restricted_maybe, adb))
+            }
+            append("\n\n").append(getString(R.string.hs_a11y_privacy))
+        }
+        LauncherDialog(ctx).title(R.string.hs_a11y_title).icon(R.drawable.ic_remote)
+            .message(msg)
+            .button(R.string.close)
+            .apply { if (off && shizuku.ready) button(R.string.hs_a11y_shizuku) { enableAccessibilityWithShizuku() } }
+            .button(R.string.hs_a11y_open, primary = true) {
+                if (com.akaaflix.launcher.apps.home.HomeAccess.settingsIntents(ctx).none { SafeIntents.start(ctx, it) })
+                    Toast.makeText(ctx, R.string.app_launch_failed, Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    /** Same commands as from a computer, run through the user's Shizuku; the result is read back from Android. */
+    private fun enableAccessibilityWithShizuku() {
+        val ctx = requireContext()
+        val pkg = ctx.packageName
+        val user = com.akaaflix.launcher.apps.privileged.PackageCommands.currentUser()
+        viewLifecycleOwner.lifecycleScope.launch {
+            val P = com.akaaflix.launcher.apps.privileged.PackageCommands
+            if (Build.VERSION.SDK_INT >= 33) com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, P.allowRestrictedSettings(pkg, user))
+            val current = try { Settings.Secure.getString(ctx.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) } catch (_: Exception) { null }
+            val cmd = try { P.setAccessibilityServices(com.akaaflix.launcher.apps.home.HomeAccess.withService(current, pkg), user) } catch (_: IllegalArgumentException) { null }
+            val r = if (cmd == null) null else com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, cmd)
+            if (r?.ok == true) com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, P.accessibilityOn(user))
+            kotlinx.coroutines.delay(1500)   // Android binds the service asynchronously
+            if (_b == null) return@launch
+            refreshTick.value++
+            val state = com.akaaflix.launcher.apps.home.HomeAccess.state(ctx)
+            when {
+                state == com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> Dialogs.info(ctx, getString(R.string.hs_a11y_title), getString(R.string.hs_a11y_shizuku_ok))
+                state == com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> Dialogs.info(ctx, getString(R.string.hs_a11y_title), getString(R.string.hs_a11y_help_not_running))
+                else -> Dialogs.info(ctx, getString(R.string.hs_a11y_title), str(R.string.hs_a11y_shizuku_failed,
+                    (r?.output ?: "").take(300).ifBlank { r?.code?.toString() ?: "-" }))
+            }
+        }
+    }
+
     override fun showDiagnostics() {
         val ctx = requireContext()
         val st = state()
@@ -597,6 +654,12 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             SettingRow.Info("startup", getString(R.string.hs_startup), SettingsSections.startupText(ctx, st), R.drawable.ic_power),
             SettingRow.Info("boot", getString(R.string.dg_boot_broadcast), if (st.bootLog.bootBroadcastThisBoot) yes else no, R.drawable.ic_power),
             SettingRow.Info("lastHome", getString(R.string.dg_last_home), t(st.bootLog.lastHomeIntentAt), R.drawable.ic_home),
+            SettingRow.Info("a11y", getString(R.string.hs_a11y_title), getString(when (st.access) {
+                com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_on
+                com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_not_running
+                com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_off
+            }) + " • " + getString(R.string.dg_service_start) + ": " + (if (st.bootLog.serviceStartThisBoot) SettingsSections.duration(st.bootLog.serviceStartAtElapsedMs) else no) +
+                " • " + getString(R.string.dg_service_last) + ": " + t(st.bootLog.lastServiceLaunchAt), R.drawable.ic_remote),
             SettingRow.Info("disc", getString(R.string.dg_discovery), str(R.string.dg_discovery_fmt, rep.profiles, rep.launcherActivities, rep.tvActivities, rep.shown), R.drawable.ic_apps),
             SettingRow.Info("dups", getString(R.string.dg_duplicates), removed, R.drawable.ic_eye_off),
             SettingRow.Info("shizuku", getString(R.string.am_shizuku), st.shizuku.state.name.lowercase() + (if (st.shizuku.uid >= 0) " • uid ${st.shizuku.uid}" else ""), R.drawable.ic_shield),

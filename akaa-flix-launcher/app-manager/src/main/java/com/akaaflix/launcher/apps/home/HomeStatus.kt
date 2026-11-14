@@ -51,12 +51,18 @@ data class HomeStatus(
     }
 }
 
-/** Start-up state shown to the user; only [VERIFIED] / [VERIFIED_FALLBACK] claim that it worked. */
+/** Start-up state shown to the user; only the VERIFIED* states claim that it worked. */
 enum class StartupState {
     /** Default Home + Android opened Akaa Flix as Home right after the latest boot (observed). */
     VERIFIED,
     /** Default Home, not observed yet (e.g. selected after the last boot) – verified at the next restart. */
     DEFAULT_PENDING,
+    /** Not Android's default, but Akaa Flix's accessibility service opened Akaa Flix after this boot (observed). */
+    VERIFIED_SERVICE,
+    /** Accessibility service on and running; no restart observed with it yet. */
+    SERVICE_PENDING,
+    /** Accessibility service turned on in Settings but Android has not bound it. */
+    SERVICE_NOT_RUNNING,
     /** Android 6–9 fallback ("Start with device") opened the launcher after this boot (observed). */
     VERIFIED_FALLBACK,
     /** Android 6–9 fallback enabled but not observed after this boot (broadcast blocked or not yet restarted). */
@@ -71,9 +77,12 @@ object Startup {
     /** Home start observed within this time after boot counts as the start-up launch. */
     const val STARTUP_WINDOW_MS = 10 * 60 * 1000L
 
-    fun evaluate(home: HomeStatus, log: BootLog.Snapshot, sdkInt: Int, autoStartEnabled: Boolean): StartupState = when {
+    fun evaluate(home: HomeStatus, log: BootLog.Snapshot, sdkInt: Int, autoStartEnabled: Boolean, access: AccessState = AccessState.OFF): StartupState = when {
         home.isDefault && log.homeStartThisBoot && log.homeStartAtElapsedMs in 0..STARTUP_WINDOW_MS -> StartupState.VERIFIED
         home.isDefault -> StartupState.DEFAULT_PENDING
+        access != AccessState.OFF && log.serviceStartThisBoot && log.serviceStartAtElapsedMs in 0..STARTUP_WINDOW_MS -> StartupState.VERIFIED_SERVICE
+        access == AccessState.ON_RUNNING -> StartupState.SERVICE_PENDING
+        access == AccessState.ON_NOT_RUNNING -> StartupState.SERVICE_NOT_RUNNING
         sdkInt < 29 && autoStartEnabled && log.fallbackLaunchThisBoot -> StartupState.VERIFIED_FALLBACK
         sdkInt < 29 && autoStartEnabled -> StartupState.FALLBACK_PENDING
         home.googleTvLauncher -> StartupState.MANUFACTURER_STEPS

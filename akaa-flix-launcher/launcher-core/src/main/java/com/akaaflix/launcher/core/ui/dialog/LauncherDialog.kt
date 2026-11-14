@@ -153,7 +153,8 @@ object Dialogs {
             list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpi(46f)).apply { topMargin = context.dpi(4f) })
             if (i == selected || focusTarget == null) focusTarget = row
         }
-        val scroll = ScrollView(context).apply { isFillViewport = true; clipChildren = false; addView(list) }
+        // Clip to the list area so rows scrolled out of view never draw over the title.
+        val scroll = ScrollView(context).apply { isFillViewport = true; clipChildren = true; addView(list) }
         val maxH = (context.resources.displayMetrics.heightPixels * 0.62f).toInt()
         scroll.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         d.content(BoundedFrame(context, maxH).apply { addView(scroll) })
@@ -195,7 +196,9 @@ object Dialogs {
         val rv = RecyclerView(context).apply {
             layoutManager = LinearLayoutManager(context)
             this.adapter = adapter
-            clipChildren = false; clipToPadding = false
+            // clipChildren: rows scrolled out of view are cut at the list edge instead of drawing over
+            // the dialog title; clipToPadding=false keeps the focus glow inside the padding visible.
+            clipChildren = true; clipToPadding = false
             setPadding(context.dpi(4f), context.dpi(2f), context.dpi(4f), context.dpi(2f))
             itemAnimator = null
         }

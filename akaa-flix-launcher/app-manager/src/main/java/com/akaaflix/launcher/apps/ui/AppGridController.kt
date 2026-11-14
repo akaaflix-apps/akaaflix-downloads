@@ -106,6 +106,9 @@ class AppGridController(
     }
 
     private fun measure(container: View) {
+        // Posted layout callbacks can run after the page was detached (activity recreated for a
+        // language / font change): the old page must not measure any more.
+        if (!fragment.isAdded) return
         val w = container.width - container.paddingLeft - container.paddingRight
         val h = container.height - container.paddingTop - container.paddingBottom
         if (w <= 0 || h <= 0) return

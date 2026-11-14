@@ -52,6 +52,8 @@ data class SettingsState(
     val startup: com.akaaflix.launcher.apps.home.StartupState,
     val bootLog: com.akaaflix.launcher.prefs.BootLog.Snapshot,
     val shizuku: com.akaaflix.launcher.apps.privileged.Privileged.Status,
+    /** Akaa Flix's Home-button accessibility service, as Android reports it. */
+    val access: com.akaaflix.launcher.apps.home.AccessState = com.akaaflix.launcher.apps.home.AccessState.OFF,
 )
 
 /** Actions the rows trigger (implemented by the fragment). */
@@ -87,6 +89,8 @@ interface SettingsActions {
     fun showDefaultLauncherGuide()
     fun openAppManager()
     fun makeDefaultWithShizuku()
+    /** Explains and opens Settings → Accessibility for the Home-button service. */
+    fun openHomeAccessibility()
     fun showDiagnostics()
     fun exitSafeMode()
     fun system(which: String)
@@ -158,6 +162,15 @@ object SettingsSections {
         }
         rows += SettingRow.Info("homeStatus", c.s(R.string.hs_default_home), current, R.drawable.ic_home)
         rows += SettingRow.Info("startup", c.s(R.string.hs_startup), startupText(c, st), R.drawable.ic_power)
+        // The Home-button service matters only while Android does not open Akaa Flix for Home itself.
+        if (!h.isDefault || st.access != com.akaaflix.launcher.apps.home.AccessState.OFF) {
+            rows += SettingRow.Action("a11y", c.s(R.string.hs_a11y_title), accessText(c, st.access), R.drawable.ic_remote,
+                value = c.s(when (st.access) {
+                    com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_on
+                    com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_not_running
+                    com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_off
+                })) { a.openHomeAccessibility() }
+        }
         if (!h.isDefault) {
             rows += SettingRow.Action("default", c.s(R.string.row_default_launcher), c.s(R.string.hs_set_default_sub), R.drawable.ic_home) { a.requestDefaultLauncher() }
             rows += SettingRow.Action("defaultShizuku", c.s(R.string.hs_set_default_shizuku), c.s(R.string.hs_set_default_shizuku_sub), R.drawable.ic_shield) { a.makeDefaultWithShizuku() }
@@ -170,11 +183,20 @@ object SettingsSections {
         return rows
     }
 
+    fun accessText(c: Context, a: com.akaaflix.launcher.apps.home.AccessState): String = c.s(when (a) {
+        com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_sub_on
+        com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_sub_not_running
+        com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_sub_off
+    })
+
     fun startupText(c: Context, st: SettingsState): String {
         val log = st.bootLog
         return when (st.startup) {
             com.akaaflix.launcher.apps.home.StartupState.VERIFIED -> c.str(R.string.hs_state_verified, duration(log.homeStartAtElapsedMs))
             com.akaaflix.launcher.apps.home.StartupState.DEFAULT_PENDING -> c.s(R.string.hs_state_pending)
+            com.akaaflix.launcher.apps.home.StartupState.VERIFIED_SERVICE -> c.str(R.string.hs_state_service_verified, duration(log.serviceStartAtElapsedMs))
+            com.akaaflix.launcher.apps.home.StartupState.SERVICE_PENDING -> c.s(R.string.hs_state_service_pending)
+            com.akaaflix.launcher.apps.home.StartupState.SERVICE_NOT_RUNNING -> c.s(R.string.hs_a11y_sub_not_running)
             com.akaaflix.launcher.apps.home.StartupState.VERIFIED_FALLBACK -> c.s(R.string.hs_state_fallback_ok)
             com.akaaflix.launcher.apps.home.StartupState.FALLBACK_PENDING -> c.s(R.string.hs_state_fallback_pending)
             com.akaaflix.launcher.apps.home.StartupState.MANUFACTURER_STEPS -> c.s(R.string.hs_state_manufacturer)

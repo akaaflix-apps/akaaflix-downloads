@@ -44,16 +44,38 @@ class AppManagerPage(private val fragment: Fragment, private val onChanged: () -
     private var filter = PackageInventory.Filter.ALL
     private var query = ""
     private var shizuku = Privileged.Status(Privileged.State.NOT_INSTALLED)
+    private var following = false
 
     fun reload() {
         loading = true
         onChanged()
+        follow()
         fragment.viewLifecycleOwner.lifecycleScope.launch {
             val c = ctx.applicationContext
             val list = withContext(Dispatchers.IO) { PackageInventory.load(c) }
-            shizuku = Privileged.status(c)
+            shizuku = Privileged.refresh(c)
             all = list; loading = false
             onChanged()
+        }
+    }
+
+    /** Follows Shizuku live: a stop (binder death) or a restart updates the page and is announced. */
+    private fun follow() {
+        if (following) return
+        following = true
+        shizuku = Privileged.watch(ctx)
+        fragment.viewLifecycleOwner.lifecycleScope.launch {
+            Privileged.state.collect { s ->
+                val prev = shizuku
+                if (prev == s) return@collect
+                shizuku = s
+                if (!fragment.isAdded) return@collect
+                when {
+                    prev.ready && !s.ready -> Toast.makeText(ctx, R.string.am_shizuku_lost, Toast.LENGTH_LONG).show()
+                    !prev.ready && s.ready -> Toast.makeText(ctx, R.string.am_shizuku_connected, Toast.LENGTH_SHORT).show()
+                }
+                onChanged()
+            }
         }
     }
 
@@ -122,15 +144,46 @@ class AppManagerPage(private val fragment: Fragment, private val onChanged: () -
     private fun onShizukuClick() {
         val c = ctx
         when (shizuku.state) {
-            Privileged.State.PERMISSION_REQUIRED -> Privileged.requestPermission { granted ->
-                fragment.view?.post {
-                    if (!fragment.isAdded) return@post
-                    shizuku = Privileged.status(c); onChanged()
-                    Toast.makeText(c, if (granted) R.string.am_shizuku_granted else R.string.am_shizuku_denied, Toast.LENGTH_LONG).show()
-                }
-            }
+            Privileged.State.PERMISSION_REQUIRED -> requestShizuku()
             Privileged.State.READY -> Dialogs.info(c, c.getString(R.string.am_shizuku), shizukuText(c))
-            else -> Dialogs.info(c, c.getString(R.string.am_shizuku), c.getString(R.string.am_shizuku_help))
+            Privileged.State.UNSUPPORTED_ANDROID -> Dialogs.info(c, c.getString(R.string.am_shizuku), c.getString(R.string.am_shizuku_help))
+            // Not installed / stopped / denied: explain, offer to open Shizuku and to check again (reconnect).
+            else -> LauncherDialog(c).title(R.string.am_shizuku).icon(R.drawable.ic_shield)
+                .message(c.getString(if (shizuku.state == Privileged.State.PERMISSION_DENIED) R.string.am_shizuku_denied_help else R.string.am_shizuku_help))
+                .button(R.string.close)
+                .apply { if (shizuku.state != Privileged.State.NOT_INSTALLED) button(R.string.am_shizuku_open) { openShizuku() } }
+                .button(R.string.am_shizuku_retry, primary = true) { checkAgain() }
+                .show()
+        }
+    }
+
+    private fun requestShizuku() {
+        val c = ctx
+        Privileged.requestPermission { granted ->
+            fragment.view?.post {
+                if (!fragment.isAdded) return@post
+                shizuku = Privileged.refresh(c); onChanged()
+                Toast.makeText(c, if (granted) R.string.am_shizuku_granted else R.string.am_shizuku_denied, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun openShizuku() {
+        val c = ctx
+        val pm = c.packageManager
+        val i = pm.getLaunchIntentForPackage(Privileged.SHIZUKU_PACKAGE) ?: pm.getLeanbackLaunchIntentForPackage(Privileged.SHIZUKU_PACKAGE)
+        if (i == null || !SafeIntents.start(c, i)) SafeIntents.startOrToast(c, SafeIntents.appDetails(Privileged.SHIZUKU_PACKAGE))
+    }
+
+    /** Reconnect: re-reads Shizuku; if it runs but Akaa Flix is not allowed yet, asks for permission. */
+    private fun checkAgain() {
+        val c = ctx
+        val s = Privileged.refresh(c)
+        shizuku = s; onChanged()
+        when (s.state) {
+            Privileged.State.READY -> Toast.makeText(c, R.string.am_shizuku_connected, Toast.LENGTH_SHORT).show()
+            Privileged.State.PERMISSION_REQUIRED, Privileged.State.PERMISSION_DENIED -> requestShizuku()
+            else -> Toast.makeText(c, shizukuShort(s.state), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -236,6 +289,7 @@ class AppManagerPage(private val fragment: Fragment, private val onChanged: () -
             append(c.str(R.string.am_confirm_fmt, c.getString(actionLabel(plan.action)), p.label, p.packageName))
             if (p.protection == Protection.CAUTION) append("\n\n").append(c.getString(R.string.am_caution_system))
             if (p.isHomeApp && plan.action in DANGEROUS) append("\n\n").append(c.getString(R.string.am_caution_home))
+            if (plan.action == PackageAction.UNINSTALL) append("\n\n").append(c.getString(R.string.am_uninstall_permanent))
             plan.undo?.let { append("\n\n").append(c.str(R.string.am_undo_hint, c.getString(undoLabel(plan.action)))) }
         }
         LauncherDialog(c).title(actionLabel(plan.action)).icon(actionIcon(plan.action)).message(warn)
@@ -255,6 +309,7 @@ class AppManagerPage(private val fragment: Fragment, private val onChanged: () -
         val cmd = plan.command ?: return
         fragment.viewLifecycleOwner.lifecycleScope.launch {
             val r = Privileged.exec(c.applicationContext, cmd)
+            Privileged.refresh(c.applicationContext)
             if (!fragment.isAdded) return@launch
             if (r.ok) Toast.makeText(c, c.str(R.string.am_done_fmt, c.getString(actionLabel(plan.action)), p.label), Toast.LENGTH_LONG).show()
             else Dialogs.info(c, c.getString(R.string.am_failed), c.str(R.string.am_failed_fmt, PackageCommands.asAdb(cmd), r.output.take(400).ifBlank { r.code.toString() }))

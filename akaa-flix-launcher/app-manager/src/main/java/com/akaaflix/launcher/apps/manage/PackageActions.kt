@@ -37,7 +37,11 @@ object PackageActions {
         val validName = PackageCommands.isValidPackage(pkg)
         if (p.installed && p.enabled && p.launchable) out += ActionPlan(PackageAction.LAUNCH, ActionPath.DIRECT)
         if (p.installed) out += ActionPlan(PackageAction.APP_INFO, ActionPath.DIRECT)
-        if (p.installed && !p.isSystem && !critical) out += ActionPlan(PackageAction.UNINSTALL, ActionPath.DIRECT)
+        if (p.installed && !p.isSystem && !critical) {
+            // With Shizuku: uninstall for this user directly (confirmed in Akaa Flix); otherwise Android's own dialog.
+            out += if (shizukuReady && validName) ActionPlan(PackageAction.UNINSTALL, ActionPath.SHIZUKU, PackageCommands.uninstall(pkg, user))
+            else ActionPlan(PackageAction.UNINSTALL, ActionPath.DIRECT)
+        }
         if (!validName || critical) return out
         if (p.installed && p.isUpdatedSystem) {
             out += if (shizukuReady && sdkInt >= 29) ActionPlan(PackageAction.UNINSTALL_UPDATES, ActionPath.SHIZUKU, PackageCommands.uninstallUpdates(pkg))

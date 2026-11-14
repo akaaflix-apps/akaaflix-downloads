@@ -1,5 +1,8 @@
 package com.akaaflix.launcher.apps
 
+import com.akaaflix.launcher.apps.home.AccessState
+import com.akaaflix.launcher.apps.home.HomeAccess
+import com.akaaflix.launcher.apps.home.HomeRedirect
 import com.akaaflix.launcher.apps.home.HomeStatus
 import com.akaaflix.launcher.apps.home.Startup
 import com.akaaflix.launcher.apps.home.StartupState
@@ -114,6 +117,11 @@ class ManagementLogicTest {
         assertEquals(ActionPath.SHIZUKU, disabled[PackageAction.ENABLE])
         assertNull(disabled[PackageAction.LAUNCH])
 
+        val userWithShizuku = PackageActions.plan(pkg("com.example.app"), true, 34, user = 0).single { it.action == PackageAction.UNINSTALL }
+        assertEquals("user apps: uninstall for user 0 through Shizuku", ActionPath.SHIZUKU, userWithShizuku.path)
+        assertEquals(listOf("pm", "uninstall", "--user", "0", "com.example.app"), userWithShizuku.command)
+        assertNull("a real uninstall has no undo command", userWithShizuku.undo)
+
         val critical = actions(pkg("com.android.systemui", system = true, protection = Protection.CRITICAL), true)
         assertEquals("critical packages: information only", setOf(PackageAction.LAUNCH, PackageAction.APP_INFO), critical.keys)
     }
@@ -130,6 +138,15 @@ class ManagementLogicTest {
         var threw = false
         try { PackageCommands.disable("x.y && rm -rf /", 0) } catch (_: IllegalArgumentException) { threw = true }
         assertTrue(threw)
+        assertEquals(listOf("cmd", "appops", "set", "--user", "0", "com.akaaflix.launcher", "ACCESS_RESTRICTED_SETTINGS", "allow"),
+            PackageCommands.allowRestrictedSettings("com.akaaflix.launcher", 0))
+        val list = "com.vendor.tv/com.vendor.tv.TvService:com.akaaflix.launcher/com.akaaflix.launcher.apps.home.HomeAccessibilityService"
+        assertEquals(listOf("cmd", "settings", "put", "--user", "0", "secure", "enabled_accessibility_services", list), PackageCommands.setAccessibilityServices(list, 0))
+        for (bad in listOf("", "a.b/C; reboot", "a.b/C:\$(id)", "a.b/C::", "a.b/C\nput global x")) {
+            var rejected = false
+            try { PackageCommands.setAccessibilityServices(bad, 0) } catch (_: IllegalArgumentException) { rejected = true }
+            assertTrue("service list must be rejected: $bad", rejected)
+        }
         val noCritical = PackageActions.plan(pkg("bad name"), true, 34, 0)
         assertTrue("invalid names never get privileged actions", noCritical.none { it.path == ActionPath.SHIZUKU })
     }
@@ -149,6 +166,52 @@ class ManagementLogicTest {
     private fun home(default: Boolean, gtv: Boolean = false) = HomeStatus(default, true, default, if (default) "com.akaaflix.launcher" else "com.vendor.launcher", "X", emptyList(), gtv)
     private fun log(homeThisBoot: Boolean, homeAt: Long = 30_000, fallback: Boolean = false) =
         BootLog.Snapshot(1000, 1000, 5_000, if (homeThisBoot) 1001 else 900, homeAt, if (fallback) 1000 else 0)
+
+    // ---- Home button accessibility service ----------------------------------------------------
+
+    @Test fun accessibilityServiceListIsReadAndExtendedWithoutTouchingOtherServices() {
+        val own = "com.akaaflix.launcher"
+        val tv = "com.xiaomi.mitv.tvservice/.TvService"
+        assertEquals(listOf("com.xiaomi.mitv.tvservice" to "com.xiaomi.mitv.tvservice.TvService"), HomeAccess.parse(tv))
+        assertFalse(HomeAccess.containsService(tv, own))
+        assertFalse(HomeAccess.containsService(null, own))
+        val added = HomeAccess.withService(tv, own)
+        assertEquals("$tv:$own/${HomeAccess.SERVICE_CLASS}", added)
+        assertTrue(HomeAccess.containsService(added, own))
+        assertEquals("already present: unchanged", added, HomeAccess.withService(added, own))
+        assertEquals("$own/${HomeAccess.SERVICE_CLASS}", HomeAccess.withService("", own))
+        assertFalse("debug build is a different package", HomeAccess.containsService(added, "$own.debug"))
+        // The value written through Shizuku is accepted by the strict validator.
+        PackageCommands.setAccessibilityServices(added, 0)
+    }
+
+    @Test fun onlyAnotherLaunchersHomeActivityTriggersTheReturn() {
+        val homes = setOf("com.google.android.apps.tv.launcherx.home.HomeActivity")
+        assertTrue(HomeRedirect.isHomeWindow("com.google.android.apps.tv.launcherx.home.HomeActivity", homes))
+        assertFalse("other screens of the launcher (search…) are left alone", HomeRedirect.isHomeWindow("com.google.android.apps.tv.launcherx.search.SearchActivity", homes))
+        assertFalse("popups / views", HomeRedirect.isHomeWindow("android.widget.FrameLayout", homes))
+        assertFalse(HomeRedirect.isHomeWindow(null, homes))
+        assertFalse(HomeRedirect.isHomeWindow("", homes))
+    }
+
+    @Test fun serviceConnectionCountsAsStartUpOnlyAfterARestart() {
+        assertFalse("first activation by the user", BootLog.isRestartConnection(0, 1000))
+        assertFalse("reconnection in the same boot", BootLog.isRestartConnection(999, 1000))
+        assertTrue("was on before this boot", BootLog.isRestartConnection(500, 1000))
+    }
+
+    private fun serviceLog(startThisBoot: Boolean, at: Long = 40_000) =
+        BootLog.Snapshot(1000, 1000, 5_000, 900, 0, 0, 0, if (startThisBoot) 1000 else 0, at, 0, 1000)
+
+    @Test fun startupWithTheServiceIsOnlyVerifiedWithEvidence() {
+        val gtv = home(false, gtv = true)
+        assertEquals(StartupState.VERIFIED_SERVICE, Startup.evaluate(gtv, serviceLog(true), 34, false, AccessState.ON_RUNNING))
+        assertEquals("observed long after boot", StartupState.SERVICE_PENDING, Startup.evaluate(gtv, serviceLog(true, at = 3_600_000), 34, false, AccessState.ON_RUNNING))
+        assertEquals(StartupState.SERVICE_PENDING, Startup.evaluate(gtv, serviceLog(false), 34, false, AccessState.ON_RUNNING))
+        assertEquals(StartupState.SERVICE_NOT_RUNNING, Startup.evaluate(gtv, serviceLog(false), 34, false, AccessState.ON_NOT_RUNNING))
+        assertEquals("service off: evidence from an earlier activation does not count", StartupState.MANUFACTURER_STEPS, Startup.evaluate(gtv, serviceLog(true), 34, false, AccessState.OFF))
+        assertEquals("real default Home wins", StartupState.DEFAULT_PENDING, Startup.evaluate(home(true), serviceLog(true), 34, false, AccessState.ON_RUNNING))
+    }
 
     @Test fun startupStatusIsOnlyVerifiedWithEvidence() {
         assertEquals(StartupState.VERIFIED, Startup.evaluate(home(true), log(true), 34, false))

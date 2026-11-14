@@ -7,6 +7,8 @@ package com.akaaflix.launcher.apps.privileged
 object PackageCommands {
     private val PACKAGE = Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)+$")
     private val COMPONENT = Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)+/[A-Za-z0-9_.$]+$")
+    private const val COMPONENT_PART = "[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)+/[A-Za-z0-9_.$]+"
+    private val COMPONENT_LIST = Regex("^$COMPONENT_PART(:$COMPONENT_PART)*$")
 
     fun isValidPackage(p: String) = PACKAGE.matches(p)
 
@@ -17,6 +19,8 @@ object PackageCommands {
     /** Removes the package for this user only; the APK stays on the system partition (restorable). */
     fun removeForUser(p: String, user: Int) = listOf("pm", "uninstall", "-k", "--user", user.toString(), pkg(p))
     fun restore(p: String, user: Int) = listOf("pm", "install-existing", "--user", user.toString(), pkg(p))
+    /** Uninstalls a user-installed app for this user (with its data). Not used for pre-installed apps. */
+    fun uninstall(p: String, user: Int) = listOf("pm", "uninstall", "--user", user.toString(), pkg(p))
     /** Android 10+: back to the factory version of a pre-installed app. */
     fun uninstallUpdates(p: String) = listOf("pm", "uninstall-system-updates", pkg(p))
     /** Android 10+: makes [p] the holder of the HOME role (the default launcher). */
@@ -26,6 +30,15 @@ object PackageCommands {
         require(COMPONENT.matches(component)) { "invalid component" }
         return listOf("cmd", "package", "set-home-activity", "--user", user.toString(), component)
     }
+
+    /** Android 13+: lifts "restricted settings" for [p] (what App info → Allow restricted settings does). */
+    fun allowRestrictedSettings(p: String, user: Int) = listOf("cmd", "appops", "set", "--user", user.toString(), pkg(p), "ACCESS_RESTRICTED_SETTINGS", "allow")
+    /** Writes the enabled accessibility services list; [value] must be a plain list of components. */
+    fun setAccessibilityServices(value: String, user: Int): List<String> {
+        require(COMPONENT_LIST.matches(value)) { "invalid service list" }
+        return listOf("cmd", "settings", "put", "--user", user.toString(), "secure", "enabled_accessibility_services", value)
+    }
+    fun accessibilityOn(user: Int) = listOf("cmd", "settings", "put", "--user", user.toString(), "secure", "accessibility_enabled", "1")
 
     /** Text for the ADB fallback dialog. */
     fun asAdb(cmd: List<String>) = "adb shell " + cmd.joinToString(" ")

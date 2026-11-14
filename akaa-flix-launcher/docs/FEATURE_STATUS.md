@@ -1,5 +1,22 @@
 # Akaa Flix Launcher – completed and unsupported features
 
+## v1.3.0 additions (Home button service, Shizuku connection)
+
+Full report: [V1.3_DELIVERY_REPORT.md](V1.3_DELIVERY_REPORT.md). Verified with JVM and Robolectric tests;
+**not yet run on the Xiaomi box** (tests 16–22 in [XIAOMI_TEST_PLAN.md](XIAOMI_TEST_PLAN.md)).
+
+| Requirement | Status | Evidence / notes |
+|---|---|---|
+| Genuine HOME launcher (HOME + DEFAULT intent filter, Default apps → Home app where the firmware has it) | ✅ unchanged | `registeredAsHomeApp` integration test. Google TV has no Home-app setting – hence the service below |
+| Real accessibility service listed in Settings → Accessibility → Services | ✅ (manifest) / ⏳ device | `registeredAsAccessibilityServiceWithMinimalAccess`: declared with `BIND_ACCESSIBILITY_SERVICE`, key filtering, no window content |
+| Manual activation like other TV launchers | ✅ | Android's own switch and warning; Akaa Flix only opens the screen. Optional "Turn on with Shizuku" |
+| Real status detection | ✅ | Read from `enabled_accessibility_services` + whether Android bound the service (Off / On / On – not running); tests |
+| Home button returns to Akaa Flix | ✅ (logic) / ⏳ device | Home key taken only while Android would open another launcher; other keys pass through; tests on API 24–36 |
+| Start-up after reboot | ✅ (logic) / ⏳ device | First service connection after a restart opens Akaa Flix; start-up row says "Verified" only with that evidence; tests |
+| Shizuku: authorization, connection, disconnection, reconnection | ✅ (code) / ⏳ device | Binder received/dead listeners, live state in App manager, "Shizuku stopped" notice, Open Shizuku / Check again |
+| Shizuku: disable / uninstall incl. pre-installed apps for user 0 | ✅ (commands + tests) / ⏳ device | `pm disable-user --user 0`, `pm uninstall --user 0` (user apps), `pm uninstall -k --user 0` (pre-installed, restorable) |
+| Release APK only | ✅ | Debug APK removed from `release/`; only `assembleRelease` is delivered |
+
 ## v1.2.0 additions (functional fixes)
 
 Full report: [V1.2_DELIVERY_REPORT.md](V1.2_DELIVERY_REPORT.md). Same verification level as below: JVM and

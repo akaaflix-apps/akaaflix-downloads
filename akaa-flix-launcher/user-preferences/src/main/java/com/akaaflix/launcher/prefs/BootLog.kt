@@ -21,10 +21,18 @@ object BootLog {
         val fallbackLaunchBootId: Long,
         /** Wall-clock time of the most recent HOME intent (Home button / boot) that reached Akaa Flix. */
         val lastHomeIntentAt: Long = 0L,
+        /** Akaa Flix's accessibility service brought Akaa Flix up at start-up (first time this boot). */
+        val serviceStartBootId: Long = 0L,
+        val serviceStartAtElapsedMs: Long = 0L,
+        /** Wall-clock time of the latest launch made by the accessibility service (any reason). */
+        val lastServiceLaunchAt: Long = 0L,
+        val serviceConnectedBootId: Long = 0L,
     ) {
         val bootBroadcastThisBoot get() = sameBoot(bootBroadcastBootId, currentBootId)
         val homeStartThisBoot get() = sameBoot(homeStartBootId, currentBootId)
         val fallbackLaunchThisBoot get() = sameBoot(fallbackLaunchBootId, currentBootId)
+        val serviceStartThisBoot get() = sameBoot(serviceStartBootId, currentBootId)
+        val serviceConnectedThisBoot get() = sameBoot(serviceConnectedBootId, currentBootId)
     }
 
     fun currentBootId(nowMs: Long = System.currentTimeMillis(), elapsedMs: Long = SystemClock.elapsedRealtime()): Long =
@@ -46,10 +54,40 @@ object BootLog {
 
     fun recordFallbackLaunch(c: Context) = prefs(c).edit().putLong("fallback_id", currentBootId()).apply()
 
+    /**
+     * The accessibility service connected. Returns true only for its first connection after a
+     * restart while it was already turned on before (= start-up), not when the user just turned it on.
+     */
+    fun recordServiceConnected(c: Context): Boolean {
+        val p = prefs(c)
+        val id = currentBootId()
+        val previous = p.getLong("svc_conn_id", 0)
+        p.edit().putLong("svc_conn_id", id).apply()
+        return isRestartConnection(previous, id)
+    }
+
+    /** Pure rule behind [recordServiceConnected]. */
+    fun isRestartConnection(previousConnectBootId: Long, currentBootId: Long) =
+        previousConnectBootId > 0 && !sameBoot(previousConnectBootId, currentBootId)
+
+    /** The user turned the service off: forget the activation so turning it on again is not a "restart". */
+    fun recordServiceDisabled(c: Context) = prefs(c).edit().remove("svc_conn_id").apply()
+
+    /** The service opened Akaa Flix. Start-up launches are kept once per boot as start-up evidence. */
+    fun recordServiceLaunch(c: Context, homeKey: Boolean, startUp: Boolean) {
+        val p = prefs(c)
+        val id = currentBootId()
+        val e = p.edit().putLong("svc_last", System.currentTimeMillis())
+        if (homeKey) e.putLong("home_last", System.currentTimeMillis())
+        if (startUp && !sameBoot(p.getLong("svc_start_id", 0), id)) e.putLong("svc_start_id", id).putLong("svc_start_at", SystemClock.elapsedRealtime())
+        e.apply()
+    }
+
     fun read(c: Context): Snapshot {
         val p = prefs(c)
         return Snapshot(currentBootId(), p.getLong("boot_id", 0), p.getLong("boot_at", 0), p.getLong("home_id", 0), p.getLong("home_at", 0),
-            p.getLong("fallback_id", 0), p.getLong("home_last", 0))
+            p.getLong("fallback_id", 0), p.getLong("home_last", 0), p.getLong("svc_start_id", 0), p.getLong("svc_start_at", 0),
+            p.getLong("svc_last", 0), p.getLong("svc_conn_id", 0))
     }
 
     private fun prefs(c: Context) = c.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)

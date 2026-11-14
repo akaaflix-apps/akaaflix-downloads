@@ -4,8 +4,8 @@ These tests need the physical box. The build environment has no device, so **non
 are filled in by the developer**; the launcher itself records evidence (Settings → About → Diagnostics)
 and `tools/device_check.sh` prints what Android reports over ADB.
 
-Install: uninstall v1.0.0 if present, then install `release/AkaaFlixLauncher-v1.2.0-release.apk`
-(updates v1.0.1 / v1.1.0 in place).
+Install: uninstall v1.0.0 if present, then install `release/AkaaFlixLauncher-v1.3.0-release.apk`
+(updates v1.0.1 / v1.1.0 / v1.2.0 in place).
 
 | # | Test | How | Expected | Evidence |
 |---|---|---|---|---|
@@ -24,6 +24,13 @@ Install: uninstall v1.0.0 if present, then install `release/AkaaFlixLauncher-v1.
 | 13 | Protected packages | App manager → System UI / Settings / Google Play services | Information only, "Protected", no disable/remove | Screenshot |
 | 14 | Remote keys | D-pad Up/Down/Left/Right, OK, Back, Home, long-press OK on cards | Neon focus always visible on the selected card; Back never leaves the launcher; long-press opens app options | Settings → Remote control → Remote button test |
 | 15 | Memory / long run | Leave on Home 1 h, navigate, open apps | No crash, smooth focus; `dumpsys meminfo com.akaaflix.launcher` PSS stays stable | Script "Memory" before/after |
+| 16 | Home button service listed | Android Settings → Accessibility → Services | "Akaa Flix Launcher" appears (Off), like Monet | Photo |
+| 17 | Manual activation | Akaa Flix Launcher → Enable → OK on Android's warning | Switch stays on. If greyed out: run the `appops … ACCESS_RESTRICTED_SETTINGS allow` command from BUILD_AND_INSTALL.md, then retry | Photo |
+| 18 | Status detection | Akaa Flix → Settings → Interface → Home app & start-up → Home button service | Shows "On" (and "Off" again after turning it off in Android settings) | Photos of both |
+| 19 | Home key with the service | Open any app (YouTube…), press Home | Akaa Flix opens immediately, Google TV Home does not stay on screen. Diagnostics → Home button service → "last launch" updates | Video / photo |
+| 20 | Start-up with the service | Restart the box | Akaa Flix comes to the front after Google TV starts (a short flash of Google TV Home is possible). Start-up row: "Verified: the Home button service opened Akaa Flix m:ss after the last restart" | Photo of the row |
+| 21 | Service turned off | Turn the service off, press Home | Google TV Home opens normally (nothing intercepted) | – |
+| 22 | Shizuku reconnection | Start Shizuku, allow Akaa Flix, then stop Shizuku (or restart) | App manager shows "Shizuku stopped…" and the row becomes "Not running"; after starting Shizuku again, "Check again" → "Shizuku connected" | Photos |
 
 Report back: screenshots of Diagnostics, the Home & start-up rows and the output of
-`./tools/device_check.sh` before and after the tests.
+`./tools/device_check.sh` before and after the tests (it also prints the accessibility service state).

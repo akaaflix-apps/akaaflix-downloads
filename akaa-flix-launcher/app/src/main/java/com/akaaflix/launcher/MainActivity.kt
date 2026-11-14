@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         })
         super.onCreate(savedInstanceState)
 
-        if (intent?.hasCategory(Intent.CATEGORY_HOME) == true) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
+        if (isAndroidHomeIntent(intent)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
@@ -205,9 +205,13 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         if (::b.isInitialized && level >= TRIM_MEMORY_BACKGROUND && (quality.mode == "light" || level >= TRIM_MEMORY_COMPLETE)) b.wallpaper.releaseMemory()
     }
 
+    /** HOME from Android itself; launches made by Akaa Flix's accessibility service are recorded by the service. */
+    private fun isAndroidHomeIntent(i: Intent?) = i?.hasCategory(Intent.CATEGORY_HOME) == true &&
+        i.getStringExtra(com.akaaflix.launcher.apps.home.HomeAccess.EXTRA_SOURCE) == null
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.hasCategory(Intent.CATEGORY_HOME)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
+        if (isAndroidHomeIntent(intent)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
         if (intent.action == Intent.ACTION_MAIN && (intent.hasCategory(Intent.CATEGORY_HOME) || intent.hasCategory(Intent.CATEGORY_LAUNCHER) || intent.hasCategory(Intent.CATEGORY_LEANBACK_LAUNCHER))) {
             if (peeking) endPeek()
             if (current != LauncherPage.HOME) navigate(LauncherPage.HOME)
