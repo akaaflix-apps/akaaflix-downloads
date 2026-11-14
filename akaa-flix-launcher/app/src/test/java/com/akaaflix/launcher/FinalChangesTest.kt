@@ -24,6 +24,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -42,6 +43,12 @@ import org.robolectric.annotation.LooperMode
 @Config(sdk = [24, 29, 31, 34, 36], application = AkaaLauncherApp::class, qualifiers = "en-w960dp-h540dp-land-television-xhdpi")
 class FinalChangesTest {
     private val ctx get() = ApplicationProvider.getApplicationContext<Context>()
+
+    /** The settings repository is a process-wide singleton: leave defaults for the next test class. */
+    @After fun resetSettings() {
+        runBlocking { SettingsRepository.get(ctx).apply { awaitLoaded() }.update { com.akaaflix.launcher.prefs.LauncherSettings() } }
+        shadowOf(Looper.getMainLooper()).idle()
+    }
 
     private fun settle(ms: Long = 1200) {
         val end = System.currentTimeMillis() + ms

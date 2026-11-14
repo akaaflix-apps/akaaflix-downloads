@@ -1,1 +1,1 @@
-5ccc4726c141e1dadce2803fa46ca27f30a8e166c8e960758a204491ddf60ad4  AkaaFlixLauncher-v1.3.0-release.apk
+eb97582f0710ce450da449455f11208d39acc9fff7de15b1db68d398d90ec052  AkaaFlixLauncher-v1.4.0-release.apk

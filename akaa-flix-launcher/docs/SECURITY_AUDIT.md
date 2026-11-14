@@ -289,3 +289,20 @@ file manager can be blocked or warned about; installing over ADB is not affected
 the APK hides or disguises the service. On Google Play, an accessibility service that is not an accessibility
 tool requires a policy declaration.
 
+## 14. v1.4.0 security review
+
+`release/AkaaFlixLauncher-v1.4.0-release.apk` – 7,114,782 bytes – SHA-256
+`eb97582f0710ce450da449455f11208d39acc9fff7de15b1db68d398d90ec052`. `apksigner`: Verifies, v1 + v2 + v3, same persistent RSA-4096 key (certificate SHA-256
+`8ee47c47…73cdf`). `zipalign`: OK. Native libraries: none. Only the release APK is delivered.
+
+**Accessibility service removed.** Google Play Protect blocked v1.3.0 on the Xiaomi box ("App blocked to protect
+your device") because of the accessibility service; it was removed at the owner's choice. The manifest has no
+accessibility service and the code scan is identical to v1.2.0: accessibility, SMS, notification listener, device
+identifiers, dynamic code loading, native code, overlay, device admin = 0. None of the capabilities targeted by
+Play Protect's enhanced fraud protection are present again.
+
+**Permissions** unchanged from v1.2.0 (no new permission). Backups are written to Download/AkaaFlix through
+MediaStore (own files, no storage permission) and to the app's private storage; the PIN is never included.
+The top-right gear opens `Settings.ACTION_SETTINGS`; the HOME role is requested with `RoleManager` or, at the
+user's request, through Shizuku (`cmd role add-role-holder`), and the result is read back from Android.
+
