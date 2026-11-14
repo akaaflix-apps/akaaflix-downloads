@@ -24,8 +24,12 @@ that are really installed, with their real icons or Android TV banners. French a
 
 | File | Notes |
 |---|---|
-| [`release/AkaaFlixLauncher-v1.1.0-release.apk`](release/) | R8-minified release build (7.05 MB – includes the approved wallpaper collection), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. Installs over v1.0.1 and keeps its settings. |
-| [`release/AkaaFlixLauncher-v1.1.0-debug.apk`](release/) | Debug build (`com.akaaflix.launcher.debug`, installs next to the release build, Android debug key) for testing only. |
+| [`release/AkaaFlixLauncher-v1.2.0-release.apk`](release/) | R8-minified release build (7.11 MB), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. Installs over v1.0.1 / v1.1.0 and keeps their settings. |
+| [`release/AkaaFlixLauncher-v1.2.0-debug.apk`](release/) | Debug build (`com.akaaflix.launcher.debug`, installs next to the release build, Android debug key) for testing only. |
+
+v1.2.0: duplicate-entry fix (Play Store), real default-Home and start-up status with verification, App manager
+for user and pre-installed apps with optional Shizuku, accurate device information, diagnostics – see
+[docs/V1.2_DELIVERY_REPORT.md](docs/V1.2_DELIVERY_REPORT.md).
 
 v1.1.0: neon remote focus, three-row Home, Favorites independent of Home, real weather with optional approximate
 location, approved wallpaper collection, French, About page with the official website, app management for
@@ -108,6 +112,8 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 - [Performance](docs/PERFORMANCE.md) – optimisations, tiers, lightweight mode
 - [Design specification](docs/DESIGN_SPEC.md) – measurements taken from the reference, decisions to confirm
 - [Security & Play Protect audit](docs/SECURITY_AUDIT.md) – permissions, components, dependencies, signing
+- [v1.2 delivery report](docs/V1.2_DELIVERY_REPORT.md) – bugs, fixes, permissions model, tested versions, limitations
+- [Xiaomi TV Box test plan](docs/XIAOMI_TEST_PLAN.md) and `tools/device_check.sh`
 - [v1.1 feature status](docs/FEATURE_STATUS.md) – completed / unsupported features, control audit
 - [v1.1 implementation checklist](docs/IMPLEMENTATION_CHECKLIST_v1.1.md)
 
@@ -120,6 +126,8 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 | `BLUETOOTH` (≤ Android 11) | Bluetooth on/off icon |
 | `REQUEST_DELETE_PACKAGES` | "Uninstall" in the app menu opens the system uninstall dialog |
 | `RECEIVE_BOOT_COMPLETED` | Optional "Start with device" on Android 6–9; keeps the weather refresh job scheduled after a restart |
+| `QUERY_ALL_PACKAGES` | App manager: lists every installed package, including pre-installed ones without a launcher icon and packages removed for the user (stays on the device) |
+| `moe.shizuku.manager.permission.API_V23` (from the Shizuku library) | Lets the user grant Akaa Flix access in the Shizuku app (optional) |
 | `ACCESS_COARSE_LOCATION` (runtime, optional) | "Detect my location" for the weather city: asked only when the user taps it, after an explanation; one approximate fix, no tracking, no background location |
 
 The only runtime permission is the optional approximate location above. No contacts, camera, microphone, SMS,

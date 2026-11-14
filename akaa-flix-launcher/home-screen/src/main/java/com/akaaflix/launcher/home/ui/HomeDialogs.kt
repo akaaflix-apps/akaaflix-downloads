@@ -32,6 +32,9 @@ object HomeDialogs {
         else -> R.string.net_other
     })
 
+    /** "59.94" / "60" – the display's real refresh rate. */
+    fun hz(v: Float): String = if (kotlin.math.abs(v - Math.round(v)) < 0.05f) Math.round(v).toString() else String.format(java.util.Locale.US, "%.2f", v)
+
     /** Device information (real values; no special permissions). */
     fun showDeviceInfo(context: Context) {
         val info = DeviceInfoProvider(context)
@@ -46,14 +49,14 @@ object HomeDialogs {
             SettingRow.Info("model", context.getString(R.string.info_model), s.model, R.drawable.ic_cpu),
             SettingRow.Info("maker", context.getString(R.string.info_manufacturer), s.manufacturer, R.drawable.ic_tag),
             SettingRow.Info("android", context.getString(R.string.info_android), context.str(R.string.info_android_fmt, s.androidRelease, s.sdkInt), R.drawable.ic_shield),
-            SettingRow.Info("screen", context.getString(R.string.info_screen), context.str(R.string.info_screen_fmt, s.screenWidthPx, s.screenHeightPx, s.densityDpi, s.refreshRateHz), R.drawable.ic_monitor),
-            SettingRow.Info("ram", context.getString(R.string.info_ram), context.str(R.string.set_size_fmt, Bytes.memory(mem.usedBytes), Bytes.memory(mem.totalBytes)), R.drawable.ic_memory),
-            SettingRow.Info("storage", context.getString(R.string.info_storage), context.str(R.string.set_size_fmt, Bytes.storage(st.usedBytes), Bytes.storage(st.totalBytes)), R.drawable.ic_storage),
+            SettingRow.Info("screen", context.getString(R.string.info_screen), context.str(R.string.info_screen_fmt, s.screenWidthPx, s.screenHeightPx, s.densityDpi, hz(s.refreshRateHz)), R.drawable.ic_monitor),
+            SettingRow.Info("ram", context.getString(R.string.info_ram), context.str(R.string.info_ram_fmt, Bytes.memory(mem.usedBytes), Bytes.memory(mem.totalBytes), Bytes.memory(mem.availableBytes)), R.drawable.ic_memory),
+            SettingRow.Info("storage", context.getString(R.string.info_storage), context.str(R.string.info_storage_fmt, Bytes.storage(st.usedBytes), Bytes.storage(st.totalBytes), Bytes.storage(st.freeBytes)), R.drawable.ic_storage),
             SettingRow.Info("net", context.getString(R.string.info_network), networkLabel(context, net) + (net.ipAddress?.let { " • $it" } ?: ""), R.drawable.ic_wifi),
-            SettingRow.Info("cpu", context.getString(R.string.info_cpu), context.str(R.string.info_cpu_fmt, s.cores, s.abi), R.drawable.ic_cpu),
+            SettingRow.Info("cpu", context.getString(R.string.info_cpu), context.str(R.string.info_cpu_fmt, s.cores, s.abis.ifBlank { s.abi }), R.drawable.ic_cpu),
             SettingRow.Info("perf", context.getString(R.string.info_performance), context.getString(tierLabel(profile.tier)), R.drawable.ic_gauge),
             SettingRow.Info("uptime", context.getString(R.string.info_uptime), context.str(R.string.uptime_fmt, (upMin / 1440).toInt(), ((upMin / 60) % 24).toInt(), (upMin % 60).toInt()), R.drawable.ic_clock),
-            SettingRow.Info("launcher", context.getString(R.string.info_launcher), "v" + AppConfig.versionName, R.drawable.ic_logo_mark),
+            SettingRow.Info("launcher", context.getString(R.string.info_launcher), "v" + AppConfig.versionName + " (" + AppConfig.versionCode + ")", R.drawable.ic_logo_mark),
         )
         Dialogs.rows(context, context.getString(R.string.home_device_info), rows, icon = R.drawable.ic_info, widthDp = 560) { d, _ ->
             d.button(R.string.info_open_system) { SystemShortcuts.deviceInfo(context) }

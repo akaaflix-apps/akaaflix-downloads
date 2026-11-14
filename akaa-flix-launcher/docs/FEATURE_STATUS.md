@@ -1,11 +1,30 @@
-# Akaa Flix Launcher v1.1.0 – completed and unsupported features
+# Akaa Flix Launcher – completed and unsupported features
+
+## v1.2.0 additions (functional fixes)
+
+Full report: [V1.2_DELIVERY_REPORT.md](V1.2_DELIVERY_REPORT.md). Same verification level as below: JVM and
+Robolectric tests on API 23–37 plus inspection of the built APK. **The Xiaomi TV Box tests in
+[XIAOMI_TEST_PLAN.md](XIAOMI_TEST_PLAN.md) have not been run.**
+
+| Requirement | Status | Evidence / notes |
+|---|---|---|
+| No fake or duplicate Play Store entry | ✅ (logic) / ⏳ device | Entries come only from LauncherApps/PackageManager. Profile copies and same-name stubs are removed (`AppDedup`, 4 unit tests); Diagnostics lists each hidden entry |
+| Real default-Home status | ✅ (logic) / ⏳ device | HOME role + resolved Home activity + Home app list; integration test checks the status rows on API 23–37 |
+| Set as default (official path) | ✅ | RoleManager dialog (10+), Home settings (6–9); Google TV / Xiaomi: role command through Shizuku or ADB, re-read afterwards |
+| Start-up status only from evidence | ✅ (logic) / ⏳ device | Boot broadcast + first HOME intent per boot (`BootLog`); "Verified" only after Android opened Akaa Flix as Home following the latest restart (unit tests) |
+| Boot switch limited to Android 6–9 | ✅ | Row hidden on API 29+ (integration test); the quick toggle shows the real Default Home state there |
+| App manager (user + pre-installed apps) | ✅ | Listing, filters, search, per-package actions; integration test opens it on API 23–37; screenshots `*_11_app_manager` |
+| Shizuku integration (optional) | ✅ (code + tests without Shizuku) / ⏳ device | Official API 13.1.5; nothing privileged runs until the user allows access in Shizuku. Command validation tests include an injection attempt |
+| Critical packages protected | ✅ | `PackageProtection` CRITICAL set; such packages are information-only (unit test) |
+| Device information from Android APIs | ✅ | Exact refresh rate, available RAM, free storage, all ABIs, build number |
+
 
 "Verified" means checked by automated tests (JVM unit tests and Robolectric, which runs the real Android
 framework code of each API level on the JVM) and/or by inspecting rendered screenshots and the built APK.
 **Nothing has been tested on a physical TV, box, phone or tablet** (no device in the build environment);
 see `docs/COMPATIBILITY.md`.
 
-## Acceptance checklist
+## v1.1.0 acceptance checklist
 
 | Requirement | Status | Evidence / notes |
 |---|---|---|

@@ -110,6 +110,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         })
         super.onCreate(savedInstanceState)
 
+        if (intent?.hasCategory(Intent.CATEGORY_HOME) == true) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
@@ -206,6 +207,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
         if (intent.action == Intent.ACTION_MAIN && (intent.hasCategory(Intent.CATEGORY_HOME) || intent.hasCategory(Intent.CATEGORY_LAUNCHER) || intent.hasCategory(Intent.CATEGORY_LEANBACK_LAUNCHER))) {
             if (peeking) endPeek()
             if (current != LauncherPage.HOME) navigate(LauncherPage.HOME)

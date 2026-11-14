@@ -135,6 +135,10 @@ object AppActions {
         // Management according to what Android really allows for this app.
         rows += SettingRow.Header("mgmt_h", ctx.getString(R.string.app_manage_header))
         rows += SettingRow.Info("type", ctx.getString(R.string.app_type_title), ctx.getString(installTypeLabel(entry.installType)), R.drawable.ic_shield)
+        // Real identity of this entry as reported by Android (package, entry type, user profile).
+        val entrySource = ctx.getString(if (entry.isLeanback) R.string.am_source_tv else R.string.am_source_phone) +
+            (if (entry.isWorkProfile) " • " + ctx.str(R.string.am_source_profile_fmt, entry.userSerial.toInt()) else "")
+        rows += SettingRow.Info("pkg", ctx.getString(R.string.am_package), entry.packageName + "\n" + entrySource, R.drawable.ic_tag)
         rows += SettingRow.Action("info", ctx.getString(R.string.app_info), icon = R.drawable.ic_info, showChevron = false) { close(); openAppInfo(ctx, entry) }
         when (entry.installType) {
             AppInstallType.USER -> rows += SettingRow.Action("uninstall", ctx.getString(R.string.app_uninstall), icon = R.drawable.ic_trash, danger = true, showChevron = false) {

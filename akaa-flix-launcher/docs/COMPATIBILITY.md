@@ -1,6 +1,6 @@
 # Device compatibility report
 
-**Version:** 1.1.0 (versionCode 3) · **minSdk** 23 (Android 6.0) · **targetSdk/compileSdk** 37 (Android 17)
+**Version:** 1.2.0 (versionCode 4) · **minSdk** 23 (Android 6.0) · **targetSdk/compileSdk** 37 (Android 17)
 
 This report separates what was **actually verified** from what is **expected but not yet tested**.
 No physical device or hardware-accelerated emulator was available in the build environment (the build host
@@ -22,28 +22,32 @@ has no KVM), so **nothing has been tested on real hardware yet**.
 
 | Suite | What it covers |
 |---|---|
-| Unit tests (53) | Home/Favorites independence and schema migration (old list → Home, Favorites empty), settings migration (3 rows, Medium icons, no icon style), French language value, weather parsing (Open-Meteo forecast with high/low, city search, BigDataCloud reverse geocoding), coordinate rounding, French Gregorian/Hijri texts, accent-insensitive search, install-type classification (user / system / updated / protected); Hijri calendar – **every day** of AH 1300–1600 (110,000+ days) compared with `java.time.chrono.HijrahDate`; tabular calendar continuity; date texts in Arabic/English, 12/24 h, Eastern digits, time zones; paging maths (incl. overflow regression); app filtering/sorting/search (Arabic normalisation), favourites, reorder, classifier (no Games/System categories); settings JSON round-trip and validation; backup never contains the PIN; PBKDF2 PIN hashing; 8K image decoded with sub-sampling to screen size; wallpaper badges; performance tiers for 1/2/4/8 GB; update-release parsing |
+| Unit tests (63) | Duplicate removal (profile copies, same-name stubs, different apps never merged), App manager protection tiers / action planning / command validation, start-up evaluation;  Home/Favorites independence and schema migration (old list → Home, Favorites empty), settings migration (3 rows, Medium icons, no icon style), French language value, weather parsing (Open-Meteo forecast with high/low, city search, BigDataCloud reverse geocoding), coordinate rounding, French Gregorian/Hijri texts, accent-insensitive search, install-type classification (user / system / updated / protected); Hijri calendar – **every day** of AH 1300–1600 (110,000+ days) compared with `java.time.chrono.HijrahDate`; tabular calendar continuity; date texts in Arabic/English, 12/24 h, Eastern digits, time zones; paging maths (incl. overflow regression); app filtering/sorting/search (Arabic normalisation), favourites, reorder, classifier (no Games/System categories); settings JSON round-trip and validation; backup never contains the PIN; PBKDF2 PIN hashing; 8K image decoded with sub-sampling to screen size; wallpaper badges; performance tiers for 1/2/4/8 GB; update-release parsing |
 | Integration (Robolectric) | Real `MainActivity` launched as HOME: HOME intent resolves to the launcher; installed apps discovered (nothing invented, launcher excluded, system app classified); **Home shows exactly 3 rows, below the logo and above the quick bar / remote art**; voice, notifications and Bluetooth controls absent; sidebar = Home, All apps, Favorites, Customize, Settings; Home ↔ Favorites independence through the real menu actions; D-pad: LEFT from the first card enters the sidebar on the **selected** item, RIGHT returns to the **same card**; every page opens; Wallpapers highlights Customize and Back returns to Customization, then Home; Back on Home does not exit; All apps lists every installed app in its own scrolling grid (> 3 rows); HOME intent returns to Home; settings (rows, Large icons, theme) survive recreation; crash guard |
 | Languages (Robolectric) | Every string resolves in Arabic, English and French; copyright and website texts; French typography |
 | Screenshot renders | Every page rendered at 1920×1080 (TV: Arabic, English, **French**) and 1233×2673 (phone portrait, Arabic), plus the About page and the neon focus state; compared visually with the reference images |
 
 Integration suite executed on these Android framework versions (Robolectric runs the real framework code of
-each version on the JVM):
+each version on the JVM). Requested compatibility matrix – **Robolectric result / real device**:
 
 | Android | API | Result |
 |---|---|---|
-| 6.0 Marshmallow | 23 | ✅ (Robolectric 4.14.1; system font – see note) |
-| 7.0 Nougat | 24 | ✅ |
-| 8.0 Oreo | 26 | ✅ |
-| 9 Pie | 28 | ✅ |
-| 10 | 29 | ✅ |
-| 11 | 30 | ✅ |
-| 12 | 31 | ✅ |
-| 13 | 33 | ✅ |
-| 14 | 34 | ✅ |
-| 15 | 35 | ✅ |
-| 16 | 36 | ✅ |
-| 17 | 37 | ✅ |
+| 6.0 Marshmallow | 23 | ✅ (Robolectric 4.14.1; system font – see note) · Shizuku not available (ADB commands shown) · device: not tested |
+| 7.0 Nougat | 24 | ✅ · device: not tested |
+| 8.0 Oreo | 26 | ✅ · device: not tested |
+| 9 Pie | 28 | ✅ · "Start with device" fallback available · device: not tested |
+| 10 | 29 | ✅ · HOME role · device: not tested |
+| 11 | 30 | ✅ · device: not tested |
+| 12 | 31 | ✅ · device: not tested |
+| 13 | 33 | ✅ · device: not tested |
+| 14 | 34 | ✅ · **Xiaomi TV Box MiTV-AFMU0: to be tested with docs/XIAOMI_TEST_PLAN.md** |
+| 15 | 35 | ✅ · device: not tested |
+| 16 | 36 | ✅ · device: not tested |
+| 17 | 37 | ✅ · device: not tested |
+
+API-level fallbacks: HOME role (29+) → preferred Home activity / Home settings (23–28); boot-broadcast start
+only on 23–28 (Android 10+ blocks background activity starts); `pm uninstall-system-updates` (29+) → App info;
+Shizuku API (24+) → ADB commands on 23; photo picker (Android 11+/Play services) → document picker.
 
 Bugs found and fixed by this matrix: a crash on first launch on Android 7–12 when the stored language differed
 (activity recreation), D-pad leaving the sidebar could land in the top bar, and an integer overflow in the

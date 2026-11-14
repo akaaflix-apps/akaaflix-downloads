@@ -48,6 +48,10 @@ data class SettingsState(
     val isDefaultLauncher: Boolean,
     val profile: DeviceProfile,
     val screenTimeoutMs: Long?,
+    val home: com.akaaflix.launcher.apps.home.HomeStatus,
+    val startup: com.akaaflix.launcher.apps.home.StartupState,
+    val bootLog: com.akaaflix.launcher.prefs.BootLog.Snapshot,
+    val shizuku: com.akaaflix.launcher.apps.privileged.Privileged.Status,
 )
 
 /** Actions the rows trigger (implemented by the fragment). */
@@ -81,6 +85,9 @@ interface SettingsActions {
     fun showText(title: Int, text: String)
     fun openWebsite()
     fun showDefaultLauncherGuide()
+    fun openAppManager()
+    fun makeDefaultWithShizuku()
+    fun showDiagnostics()
     fun exitSafeMode()
     fun system(which: String)
 }
@@ -118,9 +125,7 @@ object SettingsSections {
                 options = listOf(c.s(R.string.mode_auto), c.s(R.string.mode_tv), c.s(R.string.mode_touch)), selected = modes.indexOf(s.interfaceMode).coerceAtLeast(0)) { i -> a.edit { it.copy(interfaceMode = modes[i]) } },
             SettingRow.Choice("start", c.s(R.string.row_start_page), icon = R.drawable.ic_home,
                 options = listOf(c.s(R.string.nav_home), c.s(R.string.nav_all_apps), c.s(R.string.nav_favorites)), selected = start.indexOf(s.startPage).coerceAtLeast(0)) { i -> a.edit { it.copy(startPage = start[i]) } },
-            SettingRow.Action("default", c.s(R.string.row_default_launcher), c.s(if (st.isDefaultLauncher) R.string.row_default_launcher_yes else R.string.row_default_launcher_no), R.drawable.ic_home) { a.requestDefaultLauncher() },
-            SettingRow.Action("defaultGuide", c.s(R.string.row_default_guide), icon = R.drawable.ic_info) { a.showDefaultLauncherGuide() },
-            SettingRow.Toggle("autostart", c.s(R.string.set_quick_autostart), c.s(R.string.row_autostart_sub), R.drawable.ic_power, s.autoStartOnBoot) { v -> a.setAutoStart(v) },
+        ) + homeRows(c, s, st, a) + listOf(
             SettingRow.Header("h_layout", c.s(R.string.row_layout_header)),
             SettingRow.Choice("rows", c.s(R.string.row_home_rows), icon = R.drawable.ic_apps, options = listOf("1", "2", "3"), selected = s.homeRows - 1) { i -> a.edit { it.copy(homeRows = i + 1) } },
             SettingRow.Choice("cols", c.s(R.string.row_grid_columns), icon = R.drawable.ic_apps, options = cols.map { if (it == 0) c.s(R.string.auto) else it.toString() },
@@ -141,6 +146,45 @@ object SettingsSections {
                 selected = units.indexOf(s.weatherUnit).coerceAtLeast(0)) { i -> a.edit { it.copy(weatherUnit = units[i]) } },
         )
     }
+
+    /** Default Home + start-up: real system state, verified evidence, official actions. */
+    private fun homeRows(c: Context, s: LauncherSettings, st: SettingsState, a: SettingsActions): List<SettingRow> {
+        val h = st.home
+        val rows = mutableListOf<SettingRow>(SettingRow.Header("h_home_startup", c.s(R.string.hs_header)))
+        val current = when {
+            h.isDefault -> c.s(R.string.hs_current_akaa)
+            h.currentHomePackage != null -> c.str(R.string.hs_current_other, h.currentHomeLabel ?: h.currentHomePackage)
+            else -> c.s(R.string.hs_current_none)
+        }
+        rows += SettingRow.Info("homeStatus", c.s(R.string.hs_default_home), current, R.drawable.ic_home)
+        rows += SettingRow.Info("startup", c.s(R.string.hs_startup), startupText(c, st), R.drawable.ic_power)
+        if (!h.isDefault) {
+            rows += SettingRow.Action("default", c.s(R.string.row_default_launcher), c.s(R.string.hs_set_default_sub), R.drawable.ic_home) { a.requestDefaultLauncher() }
+            rows += SettingRow.Action("defaultShizuku", c.s(R.string.hs_set_default_shizuku), c.s(R.string.hs_set_default_shizuku_sub), R.drawable.ic_shield) { a.makeDefaultWithShizuku() }
+        }
+        rows += SettingRow.Action("defaultGuide", c.s(R.string.row_default_guide), icon = R.drawable.ic_info) { a.showDefaultLauncherGuide() }
+        // The boot-broadcast fallback exists only where Android still allows it (6–9).
+        if (Build.VERSION.SDK_INT < 29) {
+            rows += SettingRow.Toggle("autostart", c.s(R.string.set_quick_autostart), c.s(R.string.row_autostart_sub), R.drawable.ic_power, s.autoStartOnBoot) { v -> a.setAutoStart(v) }
+        }
+        return rows
+    }
+
+    fun startupText(c: Context, st: SettingsState): String {
+        val log = st.bootLog
+        return when (st.startup) {
+            com.akaaflix.launcher.apps.home.StartupState.VERIFIED -> c.str(R.string.hs_state_verified, duration(log.homeStartAtElapsedMs))
+            com.akaaflix.launcher.apps.home.StartupState.DEFAULT_PENDING -> c.s(R.string.hs_state_pending)
+            com.akaaflix.launcher.apps.home.StartupState.VERIFIED_FALLBACK -> c.s(R.string.hs_state_fallback_ok)
+            com.akaaflix.launcher.apps.home.StartupState.FALLBACK_PENDING -> c.s(R.string.hs_state_fallback_pending)
+            com.akaaflix.launcher.apps.home.StartupState.MANUFACTURER_STEPS -> c.s(R.string.hs_state_manufacturer)
+            com.akaaflix.launcher.apps.home.StartupState.NOT_DEFAULT ->
+                c.str(R.string.hs_state_not_default, st.home.currentHomeLabel ?: c.s(R.string.hs_other_launcher))
+        }
+    }
+
+    /** m:ss after boot. */
+    fun duration(ms: Long): String { val sec = (ms / 1000).coerceAtLeast(0); return "${sec / 60}:" + String.format(java.util.Locale.US, "%02d", sec % 60) }
 
     private fun appearanceRows(c: Context, s: LauncherSettings, a: SettingsActions): List<SettingRow> {
         val presets = ThemeCatalog.presets
@@ -187,6 +231,7 @@ object SettingsSections {
         val labels = listOf(R.string.sort_custom, R.string.sort_az, R.string.sort_za, R.string.sort_installed, R.string.sort_most_used, R.string.sort_recent).map { c.s(it) }
         val hidden = st.custom.hidden.count { k -> st.apps.any { it.key == k } }
         return listOf(
+            SettingRow.Action("manager", c.s(R.string.am_title), c.s(R.string.am_title_sub), R.drawable.ic_apps) { a.openAppManager() },
             SettingRow.Header("h_home_apps", c.s(R.string.row_home_header)),
             SettingRow.Action("home", c.s(R.string.row_edit_home_apps), icon = R.drawable.ic_home) { a.editHomeApps() },
             SettingRow.Action("reorderHome", c.s(R.string.row_reorder_home_apps), icon = R.drawable.ic_move) { a.reorderHomeApps() },
@@ -357,6 +402,7 @@ object SettingsSections {
             SettingRow.Header("h_legal", c.s(R.string.row_privacy)),
             SettingRow.Action("privacy", c.s(R.string.row_privacy), icon = R.drawable.ic_shield) { a.showText(R.string.row_privacy, c.s(R.string.row_privacy_text)) },
             SettingRow.Action("licenses", c.s(R.string.row_licenses), icon = R.drawable.ic_info) { a.showText(R.string.row_licenses, c.s(R.string.licenses_text)) },
+            SettingRow.Action("diagnostics", c.s(R.string.dg_title), c.s(R.string.dg_sub), R.drawable.ic_cpu) { a.showDiagnostics() },
         )
         return rows
     }

@@ -221,3 +221,35 @@ image is downloaded at runtime.
 notification access, accessibility). Approximate location is an ordinary runtime permission that the user must
 grant. The installation result on a real device has not been tested (§9 still applies).
 
+## 12. v1.2.0 security review
+
+`release/AkaaFlixLauncher-v1.2.0-release.apk` – 7,108,760 bytes – SHA-256
+`38df5a608c7b7cce6d3d492683cbd9dd56eb689e1c6d02906d7f9fba2a291b56`. `apksigner`: Verifies, v1 + v2 + v3, same
+persistent RSA-4096 key (certificate SHA-256 `8ee47c47…73cdf`). `zipalign`: OK. Native libraries: none.
+
+**New permissions** – `QUERY_ALL_PACKAGES` (install-time, App manager package list, data stays on the device) and
+`moe.shizuku.manager.permission.API_V23` (declared by the Shizuku provider library; only meaningful when the user
+installed Shizuku). No new runtime or special-access permission; still no SMS, notification-listener,
+accessibility, overlay, device-admin or usage-access permission.
+
+**New components** – `rikka.shizuku.ShizukuProvider` (exported, protected by
+`android.permission.INTERACT_ACROSS_USERS_FULL`, which only the system and Shizuku hold; disabled below
+Android 7.0) and the Shizuku *user service* `ShellService` (not a manifest component: Shizuku starts it in its
+own process with the shell/root identity, only after the user granted permission in Shizuku).
+
+**Code scan delta** – `ProcessBuilder` 0 → 1 (inside `ShellService` only: runs `pm` / `cmd`, binary
+allow-list, argv array – no shell interpretation – and package names validated against a strict pattern; an
+injection attempt is rejected in a unit test); installed-package enumeration 0 → 1 (`PackageInventory`);
+reflection 67 → 68 (Shizuku library). Unchanged: SMS, accessibility, notification listener, dynamic code
+loading, native code, WebView, device identifiers, accounts, contacts, camera/microphone, overlay,
+PackageInstaller, device admin = 0. Network endpoints unchanged.
+
+**Safety of package actions** – critical packages (core Android, Google Play services, WebView, input methods,
+mainline modules, persistent apps, the launcher) are never disabled or removed; pre-installed and Home apps
+require an explicit warning that explains how to undo; removal is per-user (`pm uninstall -k --user N`,
+restorable with `pm install-existing`). Nothing runs without Shizuku being started by the user.
+
+**Play Protect** – none of the capabilities targeted by enhanced fraud protection (SMS, notification access,
+accessibility) were added. Shizuku-based app managers are an established category; the result on the Xiaomi
+box has not been observed.
+

@@ -141,7 +141,7 @@ adb connect <tv-ip-address>:5555
 ```
 
 ```bash
-adb install -r release/AkaaFlixLauncher-v1.1.0-release.apk
+adb install -r release/AkaaFlixLauncher-v1.2.0-release.apk
 ```
 
 Updating from v1.0.1 keeps all settings (same signing key): the old single app list becomes the Home
@@ -177,14 +177,44 @@ Google TV runs Android 10 or newer, where only the default Home app is started a
 Google's launcher unless it is disabled as above; this is an operating-system restriction a normal app cannot
 bypass.
 
+## Xiaomi / Google TV boxes (no Home chooser)
+
+1. Install the APK and open Akaa Flix once from the apps row.
+2. Settings → Interface settings → **Home app & start-up** shows what Android reports.
+3. If "Set as default launcher" opens nothing, use **Make default with Shizuku** (after starting Shizuku), or:
+
+```bash
+adb shell cmd role add-role-holder --user 0 android.app.role.HOME com.akaaflix.launcher
+```
+
+4. If the Google TV launcher still opens on Home, disable it (undo with `pm enable`):
+
+```bash
+adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
+```
+
+5. Reboot once: the start-up row then shows "Verified" when Android opened Akaa Flix after the restart.
+
+Evidence script: `./tools/device_check.sh` (read-only by default). Full test list: `docs/XIAOMI_TEST_PLAN.md`.
+
+## Shizuku (optional advanced app management)
+
+Shizuku lets the App manager run `pm` / `cmd` commands with ADB rights **after** the user allows it in
+Shizuku's own dialog: install Shizuku, start it (Wireless debugging on Android 11+, or
+`adb shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh`), then
+Settings → App management → App manager → Advanced access → Allow. Without root it must be started again after
+every reboot. Android 6.0 is not supported by the Shizuku library – the App manager shows ADB commands there.
+
 ## Pre-installed (system) apps
 
-A normal launcher can uninstall only apps the user installed (Android shows its own confirmation). For
-pre-installed apps the app menu shows the installation type and opens Android's App info screen, where
-**Disable** / **Uninstall updates** appear only if the device allows them. Protected core apps (Settings,
-System UI, package installer, persistent apps) cannot be removed by any normal app.
+A normal launcher can uninstall only apps the user installed (Android shows its own confirmation). The App
+manager (Settings → App management) lists every package with its real state. Without Shizuku, pre-installed
+apps open Android's App info screen (Disable / Uninstall updates appear only if the device allows them) and the
+exact ADB command is shown; with Shizuku they can be disabled, enabled, removed for the current user and
+restored directly. Critical components (System UI, Settings, package installer, permission controller, Google
+Play services, WebView, input methods, mainline modules, the launcher) are information-only.
 
-Optional, outside the launcher (not implemented in the APK, use only on devices you administer):
+The same commands from a computer (use only on devices you administer):
 
 ```bash
 adb shell pm disable-user --user 0 <package>
@@ -198,11 +228,10 @@ adb shell pm uninstall -k --user 0 <package>
 adb shell cmd package install-existing <package>
 ```
 
-The first two hide/remove a system app for the main user (reversible with the third command or a factory
-reset). Fleet deployments can use a **Device Owner** app provisioned on a freshly reset device
-(`DevicePolicyManager.setApplicationHidden`) or ship Akaa Flix as a privileged system app in OEM firmware.
-Akaa Flix Launcher does not declare device-admin or root features – adding them would also trigger Google
-Play Protect warnings.
+The first two disable / remove a system app for the main user (reversible with `pm enable` / the third
+command or a factory reset). Fleet deployments can use a **Device Owner** app provisioned on a freshly reset
+device (`DevicePolicyManager.setApplicationHidden`) or ship Akaa Flix as a privileged system app in OEM
+firmware. Akaa Flix Launcher does not declare device-admin or root features.
 
 ## Weather
 

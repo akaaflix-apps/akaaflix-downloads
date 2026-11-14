@@ -30,13 +30,15 @@ data class DeviceSummary(
     val screenWidthPx: Int,
     val screenHeightPx: Int,
     val densityDpi: Int,
-    val refreshRateHz: Int,
+    val refreshRateHz: Float,
     val cores: Int,
     val abi: String,
+    /** Every ABI the device supports, e.g. "arm64-v8a, armeabi-v7a, armeabi". */
+    val abis: String,
     val uptimeMs: Long,
 )
 
-/** Read-only device facts available to any app without special permissions. */
+/** Read-only device facts from Android APIs (no hard-coded or sample values). */
 class DeviceInfoProvider(context: Context) {
     private val appContext = context.applicationContext
 
@@ -69,9 +71,10 @@ class DeviceInfoProvider(context: Context) {
             screenWidthPx = metrics.widthPixels,
             screenHeightPx = metrics.heightPixels,
             densityDpi = metrics.densityDpi,
-            refreshRateHz = display.refreshRate.toInt(),
+            refreshRateHz = display.refreshRate,
             cores = Runtime.getRuntime().availableProcessors(),
             abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "",
+            abis = Build.SUPPORTED_ABIS.joinToString(", "),
             uptimeMs = SystemClock.elapsedRealtime(),
         )
     }

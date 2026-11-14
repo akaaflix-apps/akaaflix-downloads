@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The Shizuku API library supports Android 7.0+; its provider stays disabled on Android 6. -->
+    <bool name="shizuku_supported">false</bool>
+</resources>

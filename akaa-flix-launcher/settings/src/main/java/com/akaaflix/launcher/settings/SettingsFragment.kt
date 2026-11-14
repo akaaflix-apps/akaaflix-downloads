@@ -46,6 +46,7 @@ import com.akaaflix.launcher.core.ui.dialog.LauncherDialog
 import com.akaaflix.launcher.core.ui.dialog.PinDialog
 import com.akaaflix.launcher.core.ui.dpi
 import com.akaaflix.launcher.core.ui.glass
+import com.akaaflix.launcher.core.ui.rows.SettingRow
 import com.akaaflix.launcher.core.ui.rows.SettingRowsAdapter
 import com.akaaflix.launcher.core.ui.tint
 import com.akaaflix.launcher.core.util.Bytes
@@ -85,6 +86,8 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
     private val info by lazy { DeviceInfoProvider(requireContext()) }
     private val rowsAdapter = SettingRowsAdapter()
     private var section: SettingsSection? = null
+    /** Settings → App management → App manager (sub page of the Apps section). */
+    private var manager: AppManagerPage? = null
     private val refreshTick = MutableStateFlow(0)
     private var quickDraft: LauncherSettings? = null
 
@@ -140,6 +143,7 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             }
         }
         b.applyChanges.setOnClickListener { applyQuick() }
+        if (Build.VERSION.SDK_INT >= 29) b.qtAutostart.setOnClickListener { requestDefaultLauncher() }
         val quick = mapOf(
             b.qtAutostart to { s: LauncherSettings -> s.copy(autoStartOnBoot = !s.autoStartOnBoot) },
             b.qtNetwork to { s: LauncherSettings -> s.copy(showNetworkStatus = !s.showNetworkStatus) },
@@ -147,7 +151,7 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             b.qtMotion to { s: LauncherSettings -> s.copy(motionEnabled = !s.motionEnabled) },
             b.qtAnimated to { s: LauncherSettings -> s.copy(animatedWallpaper = !s.animatedWallpaper) },
         )
-        quick.forEach { (v, t) -> v.setOnClickListener { quickDraft = t(quickDraft ?: prefs.settings.value); renderQuick() } }
+        quick.forEach { (v, t) -> if (v !== b.qtAutostart || Build.VERSION.SDK_INT < 29) v.setOnClickListener { quickDraft = t(quickDraft ?: prefs.settings.value); renderQuick() } }
         b.detailBack.setOnClickListener { closeDetail() }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -208,19 +212,29 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
 
     private fun state(): SettingsState {
         val ctx = requireContext()
+        val home = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
+        val log = com.akaaflix.launcher.prefs.BootLog.read(ctx)
+        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(home, log, Build.VERSION.SDK_INT, prefs.settings.value.autoStartOnBoot)
         return SettingsState(prefs.settings.value, prefs.apps.value, apps.apps.value, network.state.value, bluetooth.state.value,
-            apps.isDefaultLauncher(), DevicePerformance.profile(ctx), info.screenTimeoutMs())
+            home.isDefault, DevicePerformance.profile(ctx), info.screenTimeoutMs(), home, startup, log,
+            com.akaaflix.launcher.apps.privileged.Privileged.status(ctx))
     }
 
     private fun renderAll() {
         if (_b == null) return
         renderQuick()
+        val m = manager
+        if (m != null) { rowsAdapter.submitList(m.rows()); return }
         section?.let { rowsAdapter.submitList(SettingsSections.build(requireContext(), it, state(), this)) }
     }
 
     private fun renderQuick() {
         val s = quickDraft ?: prefs.settings.value
-        b.qtAutostartSwitch.setChecked(s.autoStartOnBoot, true)
+        if (Build.VERSION.SDK_INT >= 29) {
+            // Android 10+: start-up is decided by the default Home app – show that real state instead of a switch.
+            (b.qtAutostart.getChildAt(0) as? TextView)?.setText(R.string.hs_quick_default)
+            b.qtAutostartSwitch.setChecked(com.akaaflix.launcher.apps.home.HomeStatus.read(requireContext()).isDefault, true)
+        } else b.qtAutostartSwitch.setChecked(s.autoStartOnBoot, true)
         b.qtNetworkSwitch.setChecked(s.showNetworkStatus, true)
         b.qtClockSwitch.setChecked(s.showClockDate, true)
         b.qtMotionSwitch.setChecked(s.motionEnabled, true)
@@ -274,6 +288,11 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
     }
 
     private fun closeDetail() {
+        if (manager != null) {
+            manager = null
+            section?.let { sec -> b.detailTitle.setText(sec.title); b.detailIcon.setImageResource(sec.icon); b.detailIcon.tint(LauncherUi.palette.accentLight); rowsAdapter.submitList(SettingsSections.build(requireContext(), sec, state(), this)) { b.detailList.post { firstFocusableRow()?.requestFocus() } } }
+            return
+        }
         val sec = section ?: return
         section = null
         b.detailContainer.isVisible = false
@@ -282,7 +301,7 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         b.tiles.getChildAt(sec.ordinal)?.requestFocus()
     }
 
-    override fun onBackPressed(): Boolean { if (section != null) { closeDetail(); return true }; return false }
+    override fun onBackPressed(): Boolean { if (section != null || manager != null) { closeDetail(); return true }; return false }
 
     override fun canLeave(proceed: () -> Unit): Boolean {
         val d = quickDraft ?: return true
@@ -520,5 +539,70 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         }
     }
 
-    override fun onDestroyView() { super.onDestroyView(); _b = null }
+    override fun openAppManager() {
+        val m = AppManagerPage(this) { if (_b != null && manager != null) renderAll() }
+        manager = m
+        b.detailTitle.setText(R.string.am_title)
+        b.detailIcon.setImageResource(R.drawable.ic_apps)
+        b.detailIcon.tint(LauncherUi.palette.accentLight)
+        m.reload()
+        b.detailList.post { b.detailList.scrollToPosition(0); firstFocusableRow()?.requestFocus() }
+    }
+
+    /** Uses the user's Shizuku service to make Akaa Flix the default Home, then verifies with Android. */
+    override fun makeDefaultWithShizuku() {
+        val ctx = requireContext()
+        val pkg = ctx.packageName
+        val user = com.akaaflix.launcher.apps.privileged.PackageCommands.currentUser()
+        val cmd = if (Build.VERSION.SDK_INT >= 29) com.akaaflix.launcher.apps.privileged.PackageCommands.setHomeRole(pkg, user)
+            else com.akaaflix.launcher.apps.privileged.PackageCommands.setHomeActivity("$pkg/com.akaaflix.launcher.MainActivity", user)
+        val st = com.akaaflix.launcher.apps.privileged.Privileged.status(ctx)
+        if (!st.ready) {
+            val home = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
+            val extra = if (home.googleTvLauncher) "\n" + com.akaaflix.launcher.apps.privileged.PackageCommands.asAdb(listOf("pm", "disable-user", "--user", user.toString(), com.akaaflix.launcher.apps.home.HomeStatus.GOOGLE_TV_LAUNCHER)) else ""
+            LauncherDialog(ctx).title(R.string.hs_set_default_shizuku).icon(R.drawable.ic_shield)
+                .message(getString(R.string.am_shizuku_help) + "\n\n" + str(R.string.hs_adb_default, com.akaaflix.launcher.apps.privileged.PackageCommands.asAdb(cmd) + extra))
+                .button(R.string.close)
+                .apply { if (st.state == com.akaaflix.launcher.apps.privileged.Privileged.State.PERMISSION_REQUIRED) button(R.string.weather_allow, primary = true) {
+                    com.akaaflix.launcher.apps.privileged.Privileged.requestPermission { ok -> view?.post { if (ok && _b != null) makeDefaultWithShizuku() } }
+                } }
+                .show()
+            return
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val r = com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, cmd)
+            val home = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
+            if (_b == null) return@launch
+            refreshTick.value++
+            if (home.isDefault) Dialogs.info(ctx, getString(R.string.hs_set_default_shizuku), getString(R.string.hs_shizuku_verified))
+            else Dialogs.info(ctx, getString(R.string.hs_set_default_shizuku),
+                str(R.string.hs_shizuku_not_accepted, com.akaaflix.launcher.apps.privileged.PackageCommands.asAdb(cmd), r.output.take(300).ifBlank { r.code.toString() }))
+        }
+    }
+
+    override fun showDiagnostics() {
+        val ctx = requireContext()
+        val st = state()
+        val rep = apps.report.value
+        val s = info.summary()
+        val yes = getString(R.string.dg_yes); val no = getString(R.string.dg_no)
+        fun t(ms: Long) = if (ms <= 0) getString(R.string.dg_never) else java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT).format(Date(ms))
+        val removed = rep.removed.joinToString("\n") { r -> "${r.entry.label} – ${r.entry.packageName} (user ${r.entry.userSerial}, ${r.reason.name.lowercase()})" }.ifBlank { getString(R.string.dg_none) }
+        val rows = listOf(
+            SettingRow.Info("ver", getString(R.string.row_version), "v${AppConfig.versionName} (${AppConfig.versionCode}) • ${if (AppConfig.isDebug) "debug" else "release"}", R.drawable.ic_logo_mark),
+            SettingRow.Info("dev", getString(R.string.info_model), "${s.manufacturer} ${s.model} • Android ${s.androidRelease} (API ${s.sdkInt}) • ${if (s.isTv) "TV" else "phone/tablet"}", R.drawable.ic_tv),
+            SettingRow.Info("home", getString(R.string.hs_default_home), (if (st.home.isDefault) yes else no) + " • " + (st.home.currentHomePackage ?: getString(R.string.hs_current_none)) +
+                (if (st.home.roleAvailable) " • role ${if (st.home.roleHeld) yes else no}" else "") + (if (st.home.googleTvLauncher) " • Google TV" else ""), R.drawable.ic_home),
+            SettingRow.Info("cands", getString(R.string.dg_home_apps), st.home.candidates.joinToString("\n") { "${it.second} (${it.first})" }.ifBlank { getString(R.string.dg_none) }, R.drawable.ic_apps),
+            SettingRow.Info("startup", getString(R.string.hs_startup), SettingsSections.startupText(ctx, st), R.drawable.ic_power),
+            SettingRow.Info("boot", getString(R.string.dg_boot_broadcast), if (st.bootLog.bootBroadcastThisBoot) yes else no, R.drawable.ic_power),
+            SettingRow.Info("lastHome", getString(R.string.dg_last_home), t(st.bootLog.lastHomeIntentAt), R.drawable.ic_home),
+            SettingRow.Info("disc", getString(R.string.dg_discovery), str(R.string.dg_discovery_fmt, rep.profiles, rep.launcherActivities, rep.tvActivities, rep.shown), R.drawable.ic_apps),
+            SettingRow.Info("dups", getString(R.string.dg_duplicates), removed, R.drawable.ic_eye_off),
+            SettingRow.Info("shizuku", getString(R.string.am_shizuku), st.shizuku.state.name.lowercase() + (if (st.shizuku.uid >= 0) " • uid ${st.shizuku.uid}" else ""), R.drawable.ic_shield),
+        )
+        Dialogs.rows(ctx, getString(R.string.dg_title), rows, icon = R.drawable.ic_cpu, widthDp = 600) { d, _ -> d.button(R.string.close, primary = true) }
+    }
+
+    override fun onDestroyView() { com.akaaflix.launcher.apps.privileged.Privileged.release(); super.onDestroyView(); _b = null }
 }

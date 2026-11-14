@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import com.akaaflix.launcher.prefs.BootLog
 import com.akaaflix.launcher.prefs.BootPrefs
 
 /**
@@ -16,10 +17,15 @@ import com.akaaflix.launcher.prefs.BootPrefs
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        // Evidence for the start-up status screen (all versions): the broadcast reached the launcher.
+        BootLog.recordBootBroadcast(context)
+        // Android 10+ only starts the default Home app; a broadcast receiver cannot (and must not try to) open an activity.
         if (Build.VERSION.SDK_INT >= 29) return
         if (!BootPrefs.autoStart(context) || isDefaultHome(context)) return
         try {
+            // singleTask activity + CLEAR_TOP: a second boot broadcast never creates a duplicate launcher.
             context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
+            BootLog.recordFallbackLaunch(context)
         } catch (_: Exception) {}
     }
 

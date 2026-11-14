@@ -76,6 +76,14 @@ class ScreenshotTest {
         activity.navigate(LauncherPage.SETTINGS, android.os.Bundle().apply { putString("open_section", "about") })
         settle(1500)
         capture(root, "${prefix}_08_settings_about")
+        activity.navigate(LauncherPage.HOME)
+        settle(500)
+        activity.navigate(LauncherPage.SETTINGS, android.os.Bundle().apply { putString("open_section", "interface") })
+        settle(1500)
+        capture(root, "${prefix}_10_settings_home_startup")
+        (activity.supportFragmentManager.findFragmentByTag("page_secondary") as? com.akaaflix.launcher.settings.SettingsFragment)?.openAppManager()
+        settle(2500)
+        capture(root, "${prefix}_11_app_manager")
         // Neon focus on a Home card. Robolectric starts in touch mode (no focus is drawn there, as on a
         // phone); requestFocusFromTouch leaves touch mode like the first D-pad press on a TV remote.
         activity.navigate(LauncherPage.HOME)

@@ -62,6 +62,11 @@ class AppRepository private constructor(context: Context) {
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
 
+    /** What the last discovery saw (for Settings → About → Diagnostics). */
+    data class DiscoveryReport(val profiles: Int, val launcherActivities: Int, val tvActivities: Int, val shown: Int, val removed: List<AppDedup.Removed>)
+    private val _report = MutableStateFlow(DiscoveryReport(0, 0, 0, 0, emptyList()))
+    val report: StateFlow<DiscoveryReport> = _report.asStateFlow()
+
     private var refreshJob: Job? = null
     private var started = false
 
@@ -120,9 +125,12 @@ class AppRepository private constructor(context: Context) {
 
     private fun query(): List<AppEntry> {
         val byPackage = LinkedHashMap<String, AppEntry>()
-        for (user in userManager.userProfiles) {
+        var launcherCount = 0
+        val profiles = try { userManager.userProfiles } catch (_: Exception) { listOf(Process.myUserHandle()) }
+        for (user in profiles) {
             val serial = userManager.getSerialNumberForUser(user)
             val list: List<LauncherActivityInfo> = try { launcherApps.getActivityList(null, user) } catch (_: Exception) { emptyList() }
+            launcherCount += list.size
             for (lai in list) {
                 val pkg = lai.componentName.packageName
                 if (isOwnPackage(pkg)) continue
@@ -157,8 +165,27 @@ class AppRepository private constructor(context: Context) {
                     true, ai.applicationInfo, false)
             }
         }
-        return byPackage.values.sortedBy { it.label.lowercase() }
+        // One entry per real app: drop other-profile copies and same-name stubs / aliases (see AppDedup).
+        val result = AppDedup.dedupe(byPackage.values.toList(), myUserSerial, isTv, ::apkBytes, ::signerDigest)
+        _report.value = DiscoveryReport(profiles.size, launcherCount, leanback.size, result.apps.size, result.removed)
+        return result.apps.sortedBy { it.label.lowercase() }
     }
+
+    /** Installed APK size (base + splits) – used to tell a real app from a launcher stub. */
+    private fun apkBytes(e: AppEntry): Long = try {
+        val ai = pm.getApplicationInfo(e.packageName, 0)
+        (listOf(ai.sourceDir) + (ai.splitSourceDirs?.toList() ?: emptyList())).sumOf { p -> p?.let { java.io.File(it).length() } ?: 0L }
+    } catch (_: Exception) { 0L }
+
+    /** SHA-256 of the package's signing certificate (same developer check). */
+    @Suppress("DEPRECATION")
+    private fun signerDigest(e: AppEntry): String? = try {
+        val sig = if (Build.VERSION.SDK_INT >= 28) {
+            val info = pm.getPackageInfo(e.packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo
+            (if (info?.hasMultipleSigners() == true) info.apkContentsSigners else info?.signingCertificateHistory)?.firstOrNull()
+        } else pm.getPackageInfo(e.packageName, PackageManager.GET_SIGNATURES).signatures?.firstOrNull()
+        sig?.toByteArray()?.let { b -> java.security.MessageDigest.getInstance("SHA-256").digest(b).joinToString("") { "%02x".format(it) } }
+    } catch (_: Exception) { null }
 
     private fun entryFrom(pkg: String, cls: String, serial: Long, label: String?, leanback: Boolean,
                           ai: android.content.pm.ApplicationInfo, work: Boolean): AppEntry {
@@ -230,10 +257,7 @@ class AppRepository private constructor(context: Context) {
     fun uninstallIntent(entry: AppEntry): Intent = Intent(Intent.ACTION_DELETE, Uri.fromParts("package", entry.packageName, null))
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-    fun isDefaultLauncher(): Boolean = try {
-        val ri = pm.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY)
-        ri?.activityInfo?.packageName == appContext.packageName
-    } catch (_: Exception) { false }
+    fun isDefaultLauncher(): Boolean = com.akaaflix.launcher.apps.home.HomeStatus.read(appContext).isDefault
 
     fun hasPlayStore(): Boolean = try { pm.getPackageInfo("com.android.vending", 0); true } catch (_: Exception) { false }
 

@@ -170,10 +170,41 @@ open class LauncherIntegrationTest {
         assertTrue("All apps is not limited to the Home row count", (repoApps.size + allLm.spanCount - 1) / allLm.spanCount > 3)
         assertTrue("All apps scrolls vertically", grid.canScrollVertically(1) || grid.computeVerticalScrollRange() <= grid.height)
 
-        // 5. HOME intent while on another page goes back to Home.
+        // 5. HOME intent while on another page goes back to Home, and is recorded as start-up evidence.
         controller.newIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
         settle(400)
         assertEquals(LauncherPage.HOME, activity.currentPage())
+        val log = com.akaaflix.launcher.prefs.BootLog.read(ctx)
+        assertTrue("HOME intent recorded", log.homeStartThisBoot && log.lastHomeIntentAt > 0)
+        val homeStatus = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
+        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(homeStatus, log, android.os.Build.VERSION.SDK_INT, false)
+        if (homeStatus.isDefault) assertEquals(com.akaaflix.launcher.apps.home.StartupState.VERIFIED, startup)
+        else assertTrue(startup != com.akaaflix.launcher.apps.home.StartupState.VERIFIED)
+
+        // 5b. Settings → Interface: real Home / start-up rows; the boot switch exists only on Android 6–9.
+        activity.navigate(LauncherPage.SETTINGS, android.os.Bundle().apply { putString("open_section", "interface") })
+        settle(1200)
+        val settingsFragment = activity.supportFragmentManager.findFragmentByTag("page_secondary") as com.akaaflix.launcher.settings.SettingsFragment
+        val detail = settingsFragment.requireView().findViewById<RecyclerView>(com.akaaflix.launcher.settings.R.id.detailList)
+        val rowsNow = { (detail.adapter as com.akaaflix.launcher.core.ui.rows.SettingRowsAdapter).currentList }
+        assertTrue(rowsNow().any { it.id == "homeStatus" } && rowsNow().any { it.id == "startup" })
+        assertEquals(android.os.Build.VERSION.SDK_INT < 29, rowsNow().any { it.id == "autostart" })
+
+        // 5c. App manager lists every installed package (user and pre-installed) with Shizuku status.
+        settingsFragment.openAppManager()
+        settle(2500)
+        val managerRows = rowsNow()
+        assertTrue(managerRows.any { it.id == "shizuku" })
+        assertTrue("user app listed", managerRows.any { it.id == "pkg_com.example.videoplayer" })
+        assertTrue("pre-installed app listed", managerRows.any { it.id == "pkg_" + TestApps.SYSTEM_SAMPLE })
+        val shizukuState = com.akaaflix.launcher.apps.privileged.Privileged.status(ctx).state
+        assertTrue("no elevated access without Shizuku", shizukuState != com.akaaflix.launcher.apps.privileged.Privileged.State.READY)
+        settingsFragment.showDiagnostics()
+        settle(400)
+        activity.onBackPressedDispatcher.onBackPressed()   // closes nothing harmful: dialog or manager
+        settle(300)
+        activity.navigate(LauncherPage.HOME)
+        settle(400)
 
         // 6. Settings persist across activity recreation.
         runBlocking { prefs.update { it.copy(homeRows = 2, iconSize = "large", themeId = "royal_blue") } }
