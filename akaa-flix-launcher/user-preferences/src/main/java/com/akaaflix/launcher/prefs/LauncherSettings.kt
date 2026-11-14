@@ -21,7 +21,7 @@ data class LauncherSettings(
     val cardStyle: String = "glass",             // glass | solid | outline | minimal
     val useTvBanners: Boolean = true,
     val showAppLabels: Boolean = true,
-    val iconSize: String = "medium",             // medium | large
+    val iconSize: String = "large",              // always large (Medium removed in v1.4)
     val gridColumns: Int = 0,                    // 0 = automatic
     val homeRows: Int = 3,                       // 1..3 (three by default)
     val showHomeLogo: Boolean = true,
@@ -134,7 +134,8 @@ data class LauncherSettings(
     companion object {
         const val SCHEMA = 2
         val LANGUAGES = listOf("system", "ar", "en", "fr")
-        val ICON_SIZES = listOf("medium", "large")
+        /** Icon size is locked to Large; any stored older value ("medium", "small") loads as Large. */
+        val ICON_SIZES = listOf("large")
         const val DEFAULT_WALLPAPER = "builtin:default_pyramids"
         val ROTATION_INTERVALS = intArrayOf(15, 30, 60, 180, 360, 720, 1440)
 

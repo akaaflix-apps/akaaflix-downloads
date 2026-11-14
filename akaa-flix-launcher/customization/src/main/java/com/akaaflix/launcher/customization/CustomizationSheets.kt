@@ -14,7 +14,7 @@ object CustomizationSheets {
         val cols = listOf(0, 5, 6, 7, 8)
         val colLabels = cols.map { if (it == 0) c.getString(R.string.auto) else it.toString() }
         val sizes = LauncherSettings.ICON_SIZES
-        val sizeLabels = listOf(c.getString(R.string.size_medium), c.getString(R.string.size_large))
+        val sizeLabels = listOf(c.getString(R.string.size_large))
         val start = listOf("home", "all_apps", "favorites")
         val startLabels = listOf(c.getString(R.string.nav_home), c.getString(R.string.nav_all_apps), c.getString(R.string.nav_favorites))
         val modes = listOf("auto", "tv", "touch")
@@ -54,7 +54,7 @@ object CustomizationSheets {
     fun apps(c: Context, s: LauncherSettings, update: ((LauncherSettings) -> LauncherSettings) -> Unit,
              editHome: () -> Unit, reorderHome: () -> Unit, editFavorites: () -> Unit): List<SettingRow> {
         val sizes = LauncherSettings.ICON_SIZES
-        val sizeLabels = listOf(c.getString(R.string.size_medium), c.getString(R.string.size_large))
+        val sizeLabels = listOf(c.getString(R.string.size_large))
         val cards = listOf("glass", "solid", "outline", "minimal")
         val cardLabels = listOf(R.string.card_glass, R.string.card_solid, R.string.card_outline, R.string.card_minimal).map { c.getString(it) }
         return listOf(

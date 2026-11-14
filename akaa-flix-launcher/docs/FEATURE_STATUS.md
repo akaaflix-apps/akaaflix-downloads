@@ -1,6 +1,21 @@
 # Akaa Flix Launcher – completed and unsupported features
 
-## v1.3.0 additions (Home button service, Shizuku connection)
+## v1.4.0 final changes
+
+Full report: [V1.4_DELIVERY_REPORT.md](V1.4_DELIVERY_REPORT.md). Verified with JVM and Robolectric tests;
+**not yet run on the Xiaomi box** (tests 16–22 in [XIAOMI_TEST_PLAN.md](XIAOMI_TEST_PLAN.md)).
+
+| Requirement | Status | Evidence / notes |
+|---|---|---|
+| Official default HOME (ROLE_HOME), Home button opens Akaa Flix when default | ✅ (logic) / ⏳ device | HOME + DEFAULT intent filter, RoleManager request; if Android does not grant it (Google TV shows no screen) the launcher says so and offers Home settings / Shizuku / ADB, then verifies with Android |
+| Icon size locked to Large, Medium removed | ✅ | Customization shows only Large; stored Medium loads as Large; `FinalChangesTest`, `PreferencesTest` |
+| Backup / restore fixed | ✅ (logic) / ⏳ device | Works without a document picker (Google TV stub detected); Download/AkaaFlix + internal copy; restore list; `FinalChangesTest` |
+| Privacy sections removed | ✅ | About: Privacy header + row removed (licences/diagnostics under "Information"); notifications privacy note removed; test |
+| Top-right gear opens Android Settings | ✅ | Same icon; opens `Settings.ACTION_SETTINGS`; test |
+| Accessibility service | Removed | Play Protect blocked v1.3.0 because of it; removed at the owner's choice. HOME relies on ROLE_HOME only |
+| Release APK only | ✅ | No debug APK built or delivered |
+
+## v1.3.0 additions (Home button service, Shizuku connection) – service removed in v1.4.0
 
 Full report: [V1.3_DELIVERY_REPORT.md](V1.3_DELIVERY_REPORT.md). Verified with JVM and Robolectric tests;
 **not yet run on the Xiaomi box** (tests 16–22 in [XIAOMI_TEST_PLAN.md](XIAOMI_TEST_PLAN.md)).

@@ -139,7 +139,7 @@ adb connect <tv-ip-address>:5555
 ```
 
 ```bash
-adb install -r release/AkaaFlixLauncher-v1.3.0-release.apk
+adb install -r release/AkaaFlixLauncher-v1.4.0-release.apk
 ```
 
 Updating from v1.0.1 keeps all settings (same signing key): the old single app list becomes the Home
@@ -151,15 +151,15 @@ removed wallpaper falls back to the Egyptian Pyramids default.
 Inside the launcher: **Settings → Interface settings → Set as default launcher** (system role dialog on
 Android 10+, Home settings on older/TV devices) and **Default launcher setup guide** (step-by-step text in
 Arabic, English and French). Once Akaa Flix is the default Home app, Android starts it after every boot and
-the remote Home button returns to it. Only where the firmware offers no Home chooser, the optional
-**Home button service** (an accessibility service the user turns on) takes the Home key – see below.
+the remote Home button returns to it. Akaa Flix uses only Android's official HOME role / Home setting for
+this; it does not take over the Home key in any other way.
 
 | Device | How |
 |---|---|
 | Phone / tablet (Android 6–9) | Press Home → choose **Akaa Flix Launcher** → *Always*. Or Settings → Apps → Default apps → Home app. |
 | Phone / tablet (Android 10+) | Settings → Apps → Default apps → Home app, or in the launcher: Settings → Interface settings → *Set as default launcher* (opens the system role dialog). |
 | Android TV (AOSP / most TV boxes) | Press Home and pick the launcher when asked, or Settings → Apps → Default apps / Home (names vary by vendor). |
-| Google TV (Xiaomi TV Box, Chromecast with Google TV, recent Sony/TCL Google TV) | Google TV does **not** offer a home-app chooser. Turn on the **Home button service**: Settings → Accessibility → Services → Akaa Flix Launcher → Enable → OK (or in the launcher: Settings → Interface settings → Home button service → Open Accessibility settings). Alternatively use Shizuku / ADB as below. |
+| Google TV (Xiaomi TV Box, Chromecast with Google TV, recent Sony/TCL Google TV) | Google TV does **not** offer a home-app chooser. In the launcher: Settings → Interface settings → *Set as default launcher*; when Android shows nothing, choose *Other ways* → the HOME role is granted through Shizuku or with the ADB command below, then verified. |
 
 Google TV via ADB (advanced – this disables Google's launcher for the current user; re-enable with the second command):
 
@@ -180,32 +180,33 @@ bypass.
 
 1. Install the APK and open Akaa Flix once from the apps row.
 2. Settings → Interface settings → **Home app & start-up** shows what Android reports.
-3. Recommended (like other TV launchers): turn on the **Home button service** – Android Settings →
-   Accessibility → Services → *Akaa Flix Launcher* → Enable → OK. Android's warning text is generic; the
-   service only receives the Home key and the name of the app in front (no screen content, no typed text).
-   From then on the Home button opens Akaa Flix, and after a restart Akaa Flix opens by itself (the
-   start-up row shows "Verified … after the last restart" once observed).
-   If the Enable switch is greyed out ("restricted setting", Android 13+ for apps installed from a file):
-
-```bash
-adb shell appops set --user 0 com.akaaflix.launcher ACCESS_RESTRICTED_SETTINGS allow
-```
-
-   With Shizuku running, the launcher's **Turn on with Shizuku** button does this and turns the service on
-   (keeping every other enabled accessibility service).
-4. Alternative without the service: if "Set as default launcher" opens nothing, use **Make default with Shizuku** (after starting Shizuku), or:
+3. **Set as default launcher** asks Android for the HOME role. Google TV usually shows no screen; the launcher
+   then says so and offers **Other ways**: Android's Home settings where they exist, otherwise **Make default
+   with Shizuku** (after starting Shizuku), or from a computer / an ADB app:
 
 ```bash
 adb shell cmd role add-role-holder --user 0 android.app.role.HOME com.akaaflix.launcher
 ```
 
-5. If the Google TV launcher still opens on Home with that alternative, disable it (undo with `pm enable`):
+4. If the Google TV launcher still opens on Home, disable it (undo with `pm enable`):
 
 ```bash
 adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
 ```
 
-6. Reboot once: the start-up row then shows "Verified" when Akaa Flix was opened after the restart.
+5. Reboot once: the start-up row then shows "Verified" when Android opened Akaa Flix after the restart.
+
+## Backup and restore
+
+About → **Backup settings** writes the backup itself – it does not need a file picker (Google TV has none; its
+placeholder only says "You don't have an app that can do this"):
+
+- a copy inside the launcher (restore at any time on this device, kept across updates);
+- `Download/AkaaFlix/AkaaFlixLauncher-backup-<date>.json` (Android 10+; Android 6–9: the launcher's folder
+  under `Android/data`) – copy it to move the settings to another device.
+
+About → **Restore settings from backup** lists those backups by date. Where a document picker or a file
+manager is installed, *Other file…* opens any backup file. The PIN is never stored in a backup.
 
 Evidence script: `./tools/device_check.sh` (read-only by default). Full test list: `docs/XIAOMI_TEST_PLAN.md`.
 

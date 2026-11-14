@@ -66,6 +66,8 @@ class CustomizationFragment : Fragment(), BackHandler, LeaveGuard {
         listOf(b.toggleMotion, b.toggleClock, b.toggleFavBar, b.iconSizeCard).forEach { it.glass(GlassDrawable.Variant.PANEL, 16f, 3f) }
         listOf(b.toggleMotion, b.toggleClock, b.toggleFavBar).forEach { FocusEffects.attach(it, 1.04f) }
         listOf(b.sizeMedium, b.sizeLarge).forEach { it.glass(GlassDrawable.Variant.CHIP, 15f, 2f); FocusEffects.attach(it, 1.08f) }
+        // Icon size is locked to Large: the Medium option is removed.
+        b.sizeMedium.visibility = View.GONE
         b.restoreButton.glass(GlassDrawable.Variant.CHIP, 22f, 3f)
         b.saveButton.glass(GlassDrawable.Variant.PRIMARY, 22f, 3f)
         listOf(b.restoreButton, b.saveButton).forEach { FocusEffects.attach(it, 1.05f); it.sizeDrawables(18f) }
@@ -89,7 +91,6 @@ class CustomizationFragment : Fragment(), BackHandler, LeaveGuard {
         b.toggleMotion.setOnClickListener { vm.update { it.copy(motionEnabled = !it.motionEnabled) } }
         b.toggleClock.setOnClickListener { vm.update { it.copy(showClockDate = !it.showClockDate) } }
         b.toggleFavBar.setOnClickListener { vm.update { it.copy(showFavoritesBar = !it.showFavoritesBar) } }
-        b.sizeMedium.setOnClickListener { vm.update { it.copy(iconSize = "medium") } }
         b.sizeLarge.setOnClickListener { vm.update { it.copy(iconSize = "large") } }
 
         b.restoreButton.setOnClickListener {
@@ -128,8 +129,7 @@ class CustomizationFragment : Fragment(), BackHandler, LeaveGuard {
         b.toggleMotionSwitch.setChecked(d.motionEnabled, true)
         b.toggleClockSwitch.setChecked(d.showClockDate, true)
         b.toggleFavBarSwitch.setChecked(d.showFavoritesBar, true)
-        b.sizeMedium.isActivated = d.iconSize != "large"
-        b.sizeLarge.isActivated = d.iconSize == "large"
+        b.sizeLarge.isActivated = true
         val cal = Calendar.getInstance()
         val h = cal.get(Calendar.HOUR_OF_DAY); val m = cal.get(Calendar.MINUTE)
         b.preview.clock = if (d.clockFormat == "24") String.format(java.util.Locale.US, "%02d:%02d", h, m) else "${if (h % 12 == 0) 12 else h % 12}:" + String.format(java.util.Locale.US, "%02d", m)

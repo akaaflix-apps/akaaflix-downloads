@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         })
         super.onCreate(savedInstanceState)
 
-        if (isAndroidHomeIntent(intent)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
+        if (intent?.hasCategory(Intent.CATEGORY_HOME) == true) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
@@ -133,7 +133,8 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         }
         b.topBar.onBrandClick = { if (current == LauncherPage.HOME) navigate(LauncherPage.SETTINGS, Bundle().apply { putString("open_section", "profiles") }) else navigate(LauncherPage.HOME) }
         b.topBar.onWifiClick = { SystemShortcuts.network(this) }
-        b.topBar.onSettingsClick = { navigate(LauncherPage.SETTINGS) }
+        // Top-right gear: the device's own Android Settings (launcher settings stay in the sidebar).
+        b.topBar.onSettingsClick = { SystemShortcuts.system(this) }
         b.wallpaper.resolver = { id -> wallpapers.resolve(id) }
         b.root.setOnTouchListener { _, e -> if (peeking && e.action == MotionEvent.ACTION_DOWN) { endPeek(); true } else false }
 
@@ -205,13 +206,9 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         if (::b.isInitialized && level >= TRIM_MEMORY_BACKGROUND && (quality.mode == "light" || level >= TRIM_MEMORY_COMPLETE)) b.wallpaper.releaseMemory()
     }
 
-    /** HOME from Android itself; launches made by Akaa Flix's accessibility service are recorded by the service. */
-    private fun isAndroidHomeIntent(i: Intent?) = i?.hasCategory(Intent.CATEGORY_HOME) == true &&
-        i.getStringExtra(com.akaaflix.launcher.apps.home.HomeAccess.EXTRA_SOURCE) == null
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (isAndroidHomeIntent(intent)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) com.akaaflix.launcher.prefs.BootLog.recordHomeStart(this)
         if (intent.action == Intent.ACTION_MAIN && (intent.hasCategory(Intent.CATEGORY_HOME) || intent.hasCategory(Intent.CATEGORY_LAUNCHER) || intent.hasCategory(Intent.CATEGORY_LEANBACK_LAUNCHER))) {
             if (peeking) endPeek()
             if (current != LauncherPage.HOME) navigate(LauncherPage.HOME)

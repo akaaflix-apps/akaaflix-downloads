@@ -26,7 +26,7 @@ class PreferencesTest {
         assertEquals(3, s.homeRows)
         assertEquals("original", s.iconShape)
         assertEquals("ar", s.language)
-        assertEquals("medium", s.iconSize)
+        assertEquals("large", s.iconSize)
         assertEquals(2, s.hijriAdjust)
         assertEquals(1.4f, s.fontScale)
     }
@@ -36,17 +36,22 @@ class PreferencesTest {
         assertEquals("ar", d.language)
         assertEquals(LauncherSettings.DEFAULT_WALLPAPER, d.wallpaperId)
         assertEquals(3, d.homeRows)
-        assertEquals("medium", d.iconSize)
+        assertEquals("icon size is locked to Large", "large", d.iconSize)
         assertTrue(d.weatherEnabled)
         assertFalse(d.hasWeatherLocation)
         assertEquals("manual", d.weatherLocationMode)
         assertFalse(d.hasPin)
     }
 
+    @Test fun storedMediumIconSizeLoadsAsLarge() {
+        assertEquals("large", LauncherSettings.fromJson(JSONObject().put("v", 2).put("iconSize", "medium")).iconSize)
+        assertEquals("large", LauncherSettings.fromJson(JSONObject().put("v", 2).put("iconSize", "large")).iconSize)
+    }
+
     @Test fun frenchIsAValidLanguage() {
         assertEquals("fr", LauncherSettings.fromJson(JSONObject().put("language", "fr")).language)
         assertEquals(listOf("system", "ar", "en", "fr"), LauncherSettings.LANGUAGES)
-        assertEquals(listOf("medium", "large"), LauncherSettings.ICON_SIZES)
+        assertEquals(listOf("large"), LauncherSettings.ICON_SIZES)
     }
 
     @Test fun schema1SettingsMigrate() {
@@ -56,7 +61,7 @@ class PreferencesTest {
         val s = LauncherSettings.fromJson(o)
         assertEquals(3, s.homeRows)
         assertEquals("original", s.iconShape)
-        assertEquals("medium", s.iconSize)
+        assertEquals("large", s.iconSize)
         assertEquals("manual", s.weatherLocationMode)
         assertTrue(s.hasWeatherLocation)
         assertEquals(LauncherSettings.SCHEMA, JSONObject(s.toJson().toString()).getInt("v"))

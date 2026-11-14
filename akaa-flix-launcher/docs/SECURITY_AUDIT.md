@@ -253,7 +253,7 @@ restorable with `pm install-existing`). Nothing runs without Shizuku being start
 accessibility) were added. Shizuku-based app managers are an established category; the result on the Xiaomi
 box has not been observed.
 
-## 13. v1.3.0 security review
+## 13. v1.3.0 security review (superseded – the accessibility service was removed in v1.4.0, see §14)
 
 `release/AkaaFlixLauncher-v1.3.0-release.apk` – 7,131,169 bytes – SHA-256
 `5ccc4726c141e1dadce2803fa46ca27f30a8e166c8e960758a204491ddf60ad4`. `apksigner`: Verifies, v1 + v2 + v3, same persistent RSA-4096 key (certificate SHA-256

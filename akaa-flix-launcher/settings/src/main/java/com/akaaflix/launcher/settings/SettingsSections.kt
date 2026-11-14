@@ -52,8 +52,6 @@ data class SettingsState(
     val startup: com.akaaflix.launcher.apps.home.StartupState,
     val bootLog: com.akaaflix.launcher.prefs.BootLog.Snapshot,
     val shizuku: com.akaaflix.launcher.apps.privileged.Privileged.Status,
-    /** Akaa Flix's Home-button accessibility service, as Android reports it. */
-    val access: com.akaaflix.launcher.apps.home.AccessState = com.akaaflix.launcher.apps.home.AccessState.OFF,
 )
 
 /** Actions the rows trigger (implemented by the fragment). */
@@ -89,8 +87,6 @@ interface SettingsActions {
     fun showDefaultLauncherGuide()
     fun openAppManager()
     fun makeDefaultWithShizuku()
-    /** Explains and opens Settings → Accessibility for the Home-button service. */
-    fun openHomeAccessibility()
     fun showDiagnostics()
     fun exitSafeMode()
     fun system(which: String)
@@ -134,7 +130,7 @@ object SettingsSections {
             SettingRow.Choice("rows", c.s(R.string.row_home_rows), icon = R.drawable.ic_apps, options = listOf("1", "2", "3"), selected = s.homeRows - 1) { i -> a.edit { it.copy(homeRows = i + 1) } },
             SettingRow.Choice("cols", c.s(R.string.row_grid_columns), icon = R.drawable.ic_apps, options = cols.map { if (it == 0) c.s(R.string.auto) else it.toString() },
                 selected = cols.indexOf(s.gridColumns).coerceAtLeast(0)) { i -> a.edit { it.copy(gridColumns = cols[i]) } },
-            SettingRow.Choice("size", c.s(R.string.row_icon_size), icon = R.drawable.ic_image, options = listOf(c.s(R.string.size_medium), c.s(R.string.size_large)),
+            SettingRow.Choice("size", c.s(R.string.row_icon_size), icon = R.drawable.ic_image, options = listOf(c.s(R.string.size_large)),
                 selected = sizes.indexOf(s.iconSize).coerceAtLeast(0)) { i -> a.edit { it.copy(iconSize = sizes[i]) } },
             SettingRow.Toggle("labels", c.s(R.string.row_show_labels), icon = R.drawable.ic_text_size, checked = s.showAppLabels) { v -> a.edit { it.copy(showAppLabels = v) } },
             SettingRow.Toggle("sidebarLabels", c.s(R.string.row_sidebar_labels), icon = R.drawable.ic_sliders, checked = s.showSidebarLabels) { v -> a.edit { it.copy(showSidebarLabels = v) } },
@@ -162,15 +158,6 @@ object SettingsSections {
         }
         rows += SettingRow.Info("homeStatus", c.s(R.string.hs_default_home), current, R.drawable.ic_home)
         rows += SettingRow.Info("startup", c.s(R.string.hs_startup), startupText(c, st), R.drawable.ic_power)
-        // The Home-button service matters only while Android does not open Akaa Flix for Home itself.
-        if (!h.isDefault || st.access != com.akaaflix.launcher.apps.home.AccessState.OFF) {
-            rows += SettingRow.Action("a11y", c.s(R.string.hs_a11y_title), accessText(c, st.access), R.drawable.ic_remote,
-                value = c.s(when (st.access) {
-                    com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_on
-                    com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_not_running
-                    com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_off
-                })) { a.openHomeAccessibility() }
-        }
         if (!h.isDefault) {
             rows += SettingRow.Action("default", c.s(R.string.row_default_launcher), c.s(R.string.hs_set_default_sub), R.drawable.ic_home) { a.requestDefaultLauncher() }
             rows += SettingRow.Action("defaultShizuku", c.s(R.string.hs_set_default_shizuku), c.s(R.string.hs_set_default_shizuku_sub), R.drawable.ic_shield) { a.makeDefaultWithShizuku() }
@@ -183,20 +170,11 @@ object SettingsSections {
         return rows
     }
 
-    fun accessText(c: Context, a: com.akaaflix.launcher.apps.home.AccessState): String = c.s(when (a) {
-        com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_sub_on
-        com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_sub_not_running
-        com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_sub_off
-    })
-
     fun startupText(c: Context, st: SettingsState): String {
         val log = st.bootLog
         return when (st.startup) {
             com.akaaflix.launcher.apps.home.StartupState.VERIFIED -> c.str(R.string.hs_state_verified, duration(log.homeStartAtElapsedMs))
             com.akaaflix.launcher.apps.home.StartupState.DEFAULT_PENDING -> c.s(R.string.hs_state_pending)
-            com.akaaflix.launcher.apps.home.StartupState.VERIFIED_SERVICE -> c.str(R.string.hs_state_service_verified, duration(log.serviceStartAtElapsedMs))
-            com.akaaflix.launcher.apps.home.StartupState.SERVICE_PENDING -> c.s(R.string.hs_state_service_pending)
-            com.akaaflix.launcher.apps.home.StartupState.SERVICE_NOT_RUNNING -> c.s(R.string.hs_a11y_sub_not_running)
             com.akaaflix.launcher.apps.home.StartupState.VERIFIED_FALLBACK -> c.s(R.string.hs_state_fallback_ok)
             com.akaaflix.launcher.apps.home.StartupState.FALLBACK_PENDING -> c.s(R.string.hs_state_fallback_pending)
             com.akaaflix.launcher.apps.home.StartupState.MANUFACTURER_STEPS -> c.s(R.string.hs_state_manufacturer)
@@ -342,7 +320,6 @@ object SettingsSections {
     private fun notificationRows(c: Context, s: LauncherSettings, st: SettingsState, a: SettingsActions) = listOf(
         SettingRow.Action("system", c.s(R.string.row_notif_system), icon = R.drawable.ic_bell) { a.system("notifications") },
         SettingRow.Toggle("updates", c.s(R.string.row_auto_update_check), icon = R.drawable.ic_download, checked = s.autoCheckUpdates) { v -> a.edit { it.copy(autoCheckUpdates = v) } },
-        SettingRow.Info("note", c.s(R.string.row_notif_note), null, R.drawable.ic_shield),
     ).also { @Suppress("UNUSED_VARIABLE") val unused = st }
 
     private fun dateRows(c: Context, s: LauncherSettings, a: SettingsActions): List<SettingRow> {
@@ -421,8 +398,7 @@ object SettingsSections {
             SettingRow.Header("h_backup", c.s(R.string.row_backup_header)),
             SettingRow.Action("backup", c.s(R.string.row_backup), icon = R.drawable.ic_upload) { a.backup() },
             SettingRow.Action("restore", c.s(R.string.row_restore), icon = R.drawable.ic_download) { a.restore() },
-            SettingRow.Header("h_legal", c.s(R.string.row_privacy)),
-            SettingRow.Action("privacy", c.s(R.string.row_privacy), icon = R.drawable.ic_shield) { a.showText(R.string.row_privacy, c.s(R.string.row_privacy_text)) },
+            SettingRow.Header("h_legal", c.s(R.string.row_info_header)),
             SettingRow.Action("licenses", c.s(R.string.row_licenses), icon = R.drawable.ic_info) { a.showText(R.string.row_licenses, c.s(R.string.licenses_text)) },
             SettingRow.Action("diagnostics", c.s(R.string.dg_title), c.s(R.string.dg_sub), R.drawable.ic_cpu) { a.showDiagnostics() },
         )

@@ -4,8 +4,10 @@ import com.akaaflix.launcher.core.util.str
 
 import android.app.role.RoleManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
 import android.text.InputType
 import android.view.Gravity
@@ -103,7 +105,24 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             restoreFrom(text)
         }
     }
-    private val roleRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { refreshTick.value++ }
+    /** Any file app (ACTION_GET_CONTENT) when the system document picker is missing. */
+    private val pickBackup = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) viewLifecycleOwner.lifecycleScope.launch {
+            val text = withContext(Dispatchers.IO) { try { requireContext().contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) } } catch (_: Exception) { null } }
+            restoreFrom(text)
+        }
+    }
+    private val roleRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        refreshTick.value++
+        val ctx = context ?: return@registerForActivityResult
+        // The answer comes from Android: if the HOME role was not granted, say so and offer the other official paths.
+        if (_b != null && !com.akaaflix.launcher.apps.home.HomeStatus.read(ctx).isDefault) {
+            LauncherDialog(ctx).title(R.string.row_default_launcher).icon(R.drawable.ic_home).message(R.string.hs_role_not_granted)
+                .button(R.string.close)
+                .button(R.string.hs_other_ways, primary = true) { defaultHomeFallback() }
+                .show()
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _b = FragmentSettingsBinding.inflate(inflater, container, false)
@@ -214,11 +233,10 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         val ctx = requireContext()
         val home = com.akaaflix.launcher.apps.home.HomeStatus.read(ctx)
         val log = com.akaaflix.launcher.prefs.BootLog.read(ctx)
-        val access = com.akaaflix.launcher.apps.home.HomeAccess.state(ctx)
-        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(home, log, Build.VERSION.SDK_INT, prefs.settings.value.autoStartOnBoot, access)
+        val startup = com.akaaflix.launcher.apps.home.Startup.evaluate(home, log, Build.VERSION.SDK_INT, prefs.settings.value.autoStartOnBoot)
         return SettingsState(prefs.settings.value, prefs.apps.value, apps.apps.value, network.state.value, bluetooth.state.value,
             home.isDefault, DevicePerformance.profile(ctx), info.screenTimeoutMs(), home, startup, log,
-            com.akaaflix.launcher.apps.privileged.Privileged.status(ctx), access)
+            com.akaaflix.launcher.apps.privileged.Privileged.status(ctx))
     }
 
     private fun renderAll() {
@@ -327,15 +345,36 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
 
     override fun setSort(mode: String) = prefs.editApps { it.copy(sortMode = mode) }
 
+    /** Official path: Android's HOME role request (Android 10+), then Android's Home settings. */
     override fun requestDefaultLauncher() {
         val ctx = requireContext()
+        if (com.akaaflix.launcher.apps.home.HomeStatus.read(ctx).isDefault) {
+            refreshTick.value++
+            Dialogs.info(ctx, getString(R.string.row_default_launcher), getString(R.string.hs_already_default))
+            return
+        }
         if (Build.VERSION.SDK_INT >= 29) {
             val rm = ctx.getSystemService(RoleManager::class.java)
             if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
-                try { roleRequest.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME)); return } catch (_: Exception) {}
+                val i = rm.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                if (BackupFiles.hasRealHandler(ctx, i)) try { roleRequest.launch(i); return } catch (_: Exception) {}
             }
         }
-        if (!SystemShortcuts.homeSettings(ctx)) Dialogs.info(ctx, getString(R.string.row_default_launcher), getString(R.string.default_launcher_help))
+        defaultHomeFallback()
+    }
+
+    /**
+     * Android's Home settings where the firmware has them (real screens only, not TV stubs); otherwise
+     * (Google TV: no chooser) the HOME role through the user's Shizuku or the ADB command, verified after.
+     */
+    private fun defaultHomeFallback() {
+        val ctx = context ?: return
+        val screens = buildList {
+            add(Intent(Settings.ACTION_HOME_SETTINGS))
+            if (Build.VERSION.SDK_INT >= 24) add(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
+        }
+        for (i in screens) if (BackupFiles.hasRealHandler(ctx, i) && SafeIntents.start(ctx, i)) return
+        makeDefaultWithShizuku()
     }
 
     override fun setAutoStart(enabled: Boolean) {
@@ -471,28 +510,50 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         }
     }
 
-    private fun backupFileName() = "AkaaFlixLauncher-backup-" + SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(Date()) + ".json"
+    private fun backupFileName() = BackupFiles.PREFIX + SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date()) + ".json"
 
+    /**
+     * Always written by the launcher (internal copy + Download/AkaaFlix), so it works on TV builds whose
+     * document picker is only a stub. Where a real picker exists, the user can also choose a location.
+     */
     override fun backup() {
-        try { createBackup.launch(backupFileName()); return } catch (_: Exception) {}
-        // No document picker (common on TV boxes): write to the app's external files folder.
         val ctx = requireContext()
+        val name = backupFileName()
         viewLifecycleOwner.lifecycleScope.launch {
-            val f = withContext(Dispatchers.IO) {
-                try { File(ctx.getExternalFilesDir(null) ?: ctx.filesDir, backupFileName()).also { it.writeText(prefs.exportBackup()) } } catch (_: Exception) { null }
-            }
-            if (f != null) Dialogs.info(ctx, getString(R.string.row_backup), str(R.string.backup_saved_to, f.absolutePath)) else toast(R.string.backup_failed)
+            val json = prefs.exportBackup()
+            val where = withContext(Dispatchers.IO) { BackupFiles.save(ctx, name, json) }
+            if (_b == null) return@launch
+            if (where == null) { toast(R.string.backup_failed); return@launch }
+            val d = LauncherDialog(ctx).title(R.string.row_backup).icon(R.drawable.ic_upload).message(str(R.string.backup_saved_to, where))
+            if (BackupFiles.hasRealHandler(ctx, BackupFiles.createDocumentIntent(name)))
+                d.button(R.string.backup_copy_elsewhere) { try { createBackup.launch(name) } catch (_: Exception) { toast(R.string.backup_failed) } }
+            d.button(R.string.ok, primary = true).show()
         }
     }
 
     override fun restore() {
-        try { openBackup.launch(arrayOf("application/json", "text/plain", "application/octet-stream")); return } catch (_: Exception) {}
         val ctx = requireContext()
-        val dir = ctx.getExternalFilesDir(null) ?: ctx.filesDir
-        val files = dir.listFiles { f -> f.name.endsWith(".json") }?.sortedByDescending { it.lastModified() }.orEmpty()
-        if (files.isEmpty()) { Dialogs.info(ctx, getString(R.string.row_restore), str(R.string.restore_none_found, dir.absolutePath)); return }
-        Dialogs.choose(ctx, getString(R.string.restore_pick_title), files.map { it.name }, -1) { i ->
-            viewLifecycleOwner.lifecycleScope.launch { restoreFrom(withContext(Dispatchers.IO) { try { files[i].readText() } catch (_: Exception) { null } }) }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val list = withContext(Dispatchers.IO) { BackupFiles.list(ctx) }
+            if (_b == null) return@launch
+            val canOpen = BackupFiles.hasRealHandler(ctx, BackupFiles.openDocumentIntent())
+            val canGet = !canOpen && BackupFiles.hasRealHandler(ctx, BackupFiles.getContentIntent())
+            val other = canOpen || canGet
+            fun pickFile() = try {
+                if (canOpen) openBackup.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) else pickBackup.launch("*/*")
+            } catch (_: Exception) { toast(R.string.restore_failed) }
+            if (list.isEmpty()) {
+                if (other) pickFile()
+                else Dialogs.info(ctx, getString(R.string.row_restore), str(R.string.restore_none_found, Environment.DIRECTORY_DOWNLOADS + "/" + BackupFiles.FOLDER))
+                return@launch
+            }
+            val labels = list.map { BackupFiles.label(it.name) } + (if (other) listOf(getString(R.string.restore_other_file)) else emptyList())
+            Dialogs.choose(ctx, getString(R.string.restore_pick_title), labels, -1) { i ->
+                if (i >= list.size) pickFile()
+                else Dialogs.confirm(ctx, getString(R.string.row_restore), str(R.string.restore_confirm_fmt, labels[i]), getString(R.string.row_restore)) {
+                    viewLifecycleOwner.lifecycleScope.launch { restoreFrom(withContext(Dispatchers.IO) { list[i].read() }) }
+                }
+            }
         }
     }
 
@@ -581,62 +642,6 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         }
     }
 
-    /** Home-button service: real state, the manual steps (like any accessibility app), optional Shizuku. */
-    override fun openHomeAccessibility() {
-        val ctx = requireContext()
-        val access = com.akaaflix.launcher.apps.home.HomeAccess.state(ctx)
-        val shizuku = com.akaaflix.launcher.apps.privileged.Privileged.status(ctx)
-        val user = com.akaaflix.launcher.apps.privileged.PackageCommands.currentUser()
-        val off = access == com.akaaflix.launcher.apps.home.AccessState.OFF
-        val msg = buildString {
-            append(getString(when (access) {
-                com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_help
-                com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_help_on
-                com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_help_not_running
-            }))
-            if (off && Build.VERSION.SDK_INT >= 33) {
-                val adb = com.akaaflix.launcher.apps.privileged.PackageCommands.asAdb(
-                    com.akaaflix.launcher.apps.privileged.PackageCommands.allowRestrictedSettings(ctx.packageName, user))
-                append("\n\n").append(str(if (com.akaaflix.launcher.apps.home.HomeAccess.restrictedSettingsBlocked(ctx)) R.string.hs_a11y_restricted else R.string.hs_a11y_restricted_maybe, adb))
-            }
-            append("\n\n").append(getString(R.string.hs_a11y_privacy))
-        }
-        LauncherDialog(ctx).title(R.string.hs_a11y_title).icon(R.drawable.ic_remote)
-            .message(msg)
-            .button(R.string.close)
-            .apply { if (off && shizuku.ready) button(R.string.hs_a11y_shizuku) { enableAccessibilityWithShizuku() } }
-            .button(R.string.hs_a11y_open, primary = true) {
-                if (com.akaaflix.launcher.apps.home.HomeAccess.settingsIntents(ctx).none { SafeIntents.start(ctx, it) })
-                    Toast.makeText(ctx, R.string.app_launch_failed, Toast.LENGTH_SHORT).show()
-            }
-            .show()
-    }
-
-    /** Same commands as from a computer, run through the user's Shizuku; the result is read back from Android. */
-    private fun enableAccessibilityWithShizuku() {
-        val ctx = requireContext()
-        val pkg = ctx.packageName
-        val user = com.akaaflix.launcher.apps.privileged.PackageCommands.currentUser()
-        viewLifecycleOwner.lifecycleScope.launch {
-            val P = com.akaaflix.launcher.apps.privileged.PackageCommands
-            if (Build.VERSION.SDK_INT >= 33) com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, P.allowRestrictedSettings(pkg, user))
-            val current = try { Settings.Secure.getString(ctx.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) } catch (_: Exception) { null }
-            val cmd = try { P.setAccessibilityServices(com.akaaflix.launcher.apps.home.HomeAccess.withService(current, pkg), user) } catch (_: IllegalArgumentException) { null }
-            val r = if (cmd == null) null else com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, cmd)
-            if (r?.ok == true) com.akaaflix.launcher.apps.privileged.Privileged.exec(ctx, P.accessibilityOn(user))
-            kotlinx.coroutines.delay(1500)   // Android binds the service asynchronously
-            if (_b == null) return@launch
-            refreshTick.value++
-            val state = com.akaaflix.launcher.apps.home.HomeAccess.state(ctx)
-            when {
-                state == com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> Dialogs.info(ctx, getString(R.string.hs_a11y_title), getString(R.string.hs_a11y_shizuku_ok))
-                state == com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> Dialogs.info(ctx, getString(R.string.hs_a11y_title), getString(R.string.hs_a11y_help_not_running))
-                else -> Dialogs.info(ctx, getString(R.string.hs_a11y_title), str(R.string.hs_a11y_shizuku_failed,
-                    (r?.output ?: "").take(300).ifBlank { r?.code?.toString() ?: "-" }))
-            }
-        }
-    }
-
     override fun showDiagnostics() {
         val ctx = requireContext()
         val st = state()
@@ -654,12 +659,6 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             SettingRow.Info("startup", getString(R.string.hs_startup), SettingsSections.startupText(ctx, st), R.drawable.ic_power),
             SettingRow.Info("boot", getString(R.string.dg_boot_broadcast), if (st.bootLog.bootBroadcastThisBoot) yes else no, R.drawable.ic_power),
             SettingRow.Info("lastHome", getString(R.string.dg_last_home), t(st.bootLog.lastHomeIntentAt), R.drawable.ic_home),
-            SettingRow.Info("a11y", getString(R.string.hs_a11y_title), getString(when (st.access) {
-                com.akaaflix.launcher.apps.home.AccessState.ON_RUNNING -> R.string.hs_a11y_on
-                com.akaaflix.launcher.apps.home.AccessState.ON_NOT_RUNNING -> R.string.hs_a11y_not_running
-                com.akaaflix.launcher.apps.home.AccessState.OFF -> R.string.hs_a11y_off
-            }) + " • " + getString(R.string.dg_service_start) + ": " + (if (st.bootLog.serviceStartThisBoot) SettingsSections.duration(st.bootLog.serviceStartAtElapsedMs) else no) +
-                " • " + getString(R.string.dg_service_last) + ": " + t(st.bootLog.lastServiceLaunchAt), R.drawable.ic_remote),
             SettingRow.Info("disc", getString(R.string.dg_discovery), str(R.string.dg_discovery_fmt, rep.profiles, rep.launcherActivities, rep.tvActivities, rep.shown), R.drawable.ic_apps),
             SettingRow.Info("dups", getString(R.string.dg_duplicates), removed, R.drawable.ic_eye_off),
             SettingRow.Info("shizuku", getString(R.string.am_shizuku), st.shizuku.state.name.lowercase() + (if (st.shizuku.uid >= 0) " • uid ${st.shizuku.uid}" else ""), R.drawable.ic_shield),

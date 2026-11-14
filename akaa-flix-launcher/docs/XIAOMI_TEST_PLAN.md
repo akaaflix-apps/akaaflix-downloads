@@ -4,8 +4,8 @@ These tests need the physical box. The build environment has no device, so **non
 are filled in by the developer**; the launcher itself records evidence (Settings → About → Diagnostics)
 and `tools/device_check.sh` prints what Android reports over ADB.
 
-Install: uninstall v1.0.0 if present, then install `release/AkaaFlixLauncher-v1.3.0-release.apk`
-(updates v1.0.1 / v1.1.0 / v1.2.0 in place).
+Install: uninstall v1.0.0 if present, then install `release/AkaaFlixLauncher-v1.4.0-release.apk`
+(updates v1.0.1 – v1.3.0 in place; if v1.3.0 was blocked by Play Protect, just install v1.4.0).
 
 | # | Test | How | Expected | Evidence |
 |---|---|---|---|---|
@@ -24,13 +24,13 @@ Install: uninstall v1.0.0 if present, then install `release/AkaaFlixLauncher-v1.
 | 13 | Protected packages | App manager → System UI / Settings / Google Play services | Information only, "Protected", no disable/remove | Screenshot |
 | 14 | Remote keys | D-pad Up/Down/Left/Right, OK, Back, Home, long-press OK on cards | Neon focus always visible on the selected card; Back never leaves the launcher; long-press opens app options | Settings → Remote control → Remote button test |
 | 15 | Memory / long run | Leave on Home 1 h, navigate, open apps | No crash, smooth focus; `dumpsys meminfo com.akaaflix.launcher` PSS stays stable | Script "Memory" before/after |
-| 16 | Home button service listed | Android Settings → Accessibility → Services | "Akaa Flix Launcher" appears (Off), like Monet | Photo |
-| 17 | Manual activation | Akaa Flix Launcher → Enable → OK on Android's warning | Switch stays on. If greyed out: run the `appops … ACCESS_RESTRICTED_SETTINGS allow` command from BUILD_AND_INSTALL.md, then retry | Photo |
-| 18 | Status detection | Akaa Flix → Settings → Interface → Home app & start-up → Home button service | Shows "On" (and "Off" again after turning it off in Android settings) | Photos of both |
-| 19 | Home key with the service | Open any app (YouTube…), press Home | Akaa Flix opens immediately, Google TV Home does not stay on screen. Diagnostics → Home button service → "last launch" updates | Video / photo |
-| 20 | Start-up with the service | Restart the box | Akaa Flix comes to the front after Google TV starts (a short flash of Google TV Home is possible). Start-up row: "Verified: the Home button service opened Akaa Flix m:ss after the last restart" | Photo of the row |
-| 21 | Service turned off | Turn the service off, press Home | Google TV Home opens normally (nothing intercepted) | – |
+| 16 | Installs without Play Protect block | Install v1.4.0 from USB / file manager | Normal install (v1.3.0's block came from the accessibility service, removed in v1.4.0) | Photo if a warning appears |
+| 17 | Top-right gear | Press the gear at the top right of Home | Android's own Settings open; Back returns to Akaa Flix | Photo |
+| 18 | Icon size | Customization → Icon size | Only "Large" is shown and selected; icons are large on Home / All apps | Photo |
+| 19 | Privacy sections | Settings → About Launcher; Settings → Notifications | No "Privacy" header or row, no privacy note | Photos |
+| 20 | Backup / restore | About → Backup settings → OK; change e.g. Home rows; About → Restore settings from backup → pick the date → Restore | Backup message shows Download/AkaaFlix/…json; after restore the earlier settings are back | Photos |
+| 21 | Default HOME (official) | Interface → Set as default launcher | Either Android's dialog, or the message "Android did not make Akaa Flix the default…" with Other ways → Shizuku / ADB command; after granting: "Verified", Home button opens Akaa Flix | Photos |
 | 22 | Shizuku reconnection | Start Shizuku, allow Akaa Flix, then stop Shizuku (or restart) | App manager shows "Shizuku stopped…" and the row becomes "Not running"; after starting Shizuku again, "Check again" → "Shizuku connected" | Photos |
 
 Report back: screenshots of Diagnostics, the Home & start-up rows and the output of
-`./tools/device_check.sh` before and after the tests (it also prints the accessibility service state).
+`./tools/device_check.sh` before and after the tests.

@@ -1,6 +1,6 @@
 # Device compatibility report
 
-**Version:** 1.3.0 (versionCode 5) · **minSdk** 23 (Android 6.0) · **targetSdk/compileSdk** 37 (Android 17)
+**Version:** 1.4.0 (versionCode 6) · **minSdk** 23 (Android 6.0) · **targetSdk/compileSdk** 37 (Android 17)
 
 This report separates what was **actually verified** from what is **expected but not yet tested**.
 No physical device or hardware-accelerated emulator was available in the build environment (the build host
@@ -45,11 +45,9 @@ each version on the JVM). Requested compatibility matrix – **Robolectric resul
 | 16 | 36 | ✅ · device: not tested |
 | 17 | 37 | ✅ · device: not tested |
 
-Home button service (accessibility): key filtering exists since Android 4.3, so it works on every supported
-version (API 23+); starting Akaa Flix from it is allowed on Android 10+ because Android exempts services it has
-bound for accessibility from background-start limits. Android 13+ may grey out the switch for apps installed
-from a file ("restricted settings" – lift it with App info or the `appops` command). Robolectric tests:
-API 24, 28, 29, 31, 34, 35, 36. Real binding by Android is **not** simulated – device test required.
+Backups do not depend on a document picker: Download/AkaaFlix through MediaStore (Android 10+, no permission),
+the launcher's own folder on Android 6–9, plus an internal copy on every version. TV "framework package stubs"
+placeholders are recognised and never treated as a picker or a Home settings screen.
 
 API-level fallbacks: HOME role (29+) → preferred Home activity / Home settings (23–28); boot-broadcast start
 only on 23–28 (Android 10+ blocks background activity starts); `pm uninstall-system-updates` (29+) → App info;
