@@ -253,3 +253,39 @@ restorable with `pm install-existing`). Nothing runs without Shizuku being start
 accessibility) were added. Shizuku-based app managers are an established category; the result on the Xiaomi
 box has not been observed.
 
+## 13. v1.3.0 security review
+
+`release/AkaaFlixLauncher-v1.3.0-release.apk` – 7,131,169 bytes – SHA-256
+`5ccc4726c141e1dadce2803fa46ca27f30a8e166c8e960758a204491ddf60ad4`. `apksigner`: Verifies, v1 + v2 + v3, same persistent RSA-4096 key (certificate SHA-256
+`8ee47c47…73cdf`). `zipalign`: OK. Native libraries: none. Only the release APK is delivered.
+
+**New component – accessibility service** `com.akaaflix.launcher.apps.home.HomeAccessibilityService`, added at
+the owner's explicit request (Google TV offers no Home-app chooser). Exported only to holders of
+`android.permission.BIND_ACCESSIBILITY_SERVICE` (Android itself). Configuration checked inside the APK:
+`accessibilityEventTypes=0x20` (window state changed), `accessibilityFlags=0x20` (key filtering),
+`canRetrieveWindowContent=false`, `isAccessibilityTool=false`. It acts on `KEYCODE_HOME` only (every other key
+returns `false` immediately and is not stored) and on the package/class name of new windows (to recognise
+another launcher's Home activity). It stores only launch timestamps (start-up evidence) in private
+preferences and has no network access. It is **off until the user turns it on** in Android's Accessibility
+settings, where Android shows its own warning.
+
+**Optional Shizuku path** – only after the user started Shizuku, granted Akaa Flix in Shizuku and pressed
+"Turn on with Shizuku": `cmd appops set --user N <pkg> ACCESS_RESTRICTED_SETTINGS allow` (Android 13+) and
+`cmd settings put --user N secure enabled_accessibility_services <list>` where the list is the current list plus
+Akaa Flix, validated against a strict component-list pattern (injection attempts rejected in unit tests), then
+`accessibility_enabled 1`. Also new: `pm uninstall --user N <pkg>` for user-installed apps, after a confirmation
+that states it cannot be undone.
+
+**Code scan delta (v1.2.0 → v1.3.0)** – accessibility service references 0 → 5 (the service above);
+`Settings.Secure.getString` 0 → 2 (both read `enabled_accessibility_services` to show the service state – no
+Android ID or other identifier). Unchanged: SMS, notification listener, dynamic code loading, native code,
+WebView, accounts, contacts, camera/microphone, overlay, PackageInstaller, device admin = 0; shell exec 1
+(Shizuku `ShellService`, `pm`/`cmd` allow-list); network endpoints unchanged.
+
+**Play Protect – changed risk.** v1.0.1 removed every capability that Google Play Protect's enhanced fraud
+protection targets in sideloaded apps (SMS, notification listener, accessibility). v1.3.0 deliberately adds an
+accessibility service again. In regions where that protection is active, installing the APK from a browser or
+file manager can be blocked or warned about; installing over ADB is not affected by that check. Nothing in
+the APK hides or disguises the service. On Google Play, an accessibility service that is not an accessibility
+tool requires a policy declaration.
+

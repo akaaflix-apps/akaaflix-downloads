@@ -24,8 +24,11 @@ that are really installed, with their real icons or Android TV banners. French a
 
 | File | Notes |
 |---|---|
-| [`release/AkaaFlixLauncher-v1.2.0-release.apk`](release/) | R8-minified release build (7.11 MB), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. Installs over v1.0.1 / v1.1.0 and keeps their settings. |
-| [`release/AkaaFlixLauncher-v1.2.0-debug.apk`](release/) | Debug build (`com.akaaflix.launcher.debug`, installs next to the release build, Android debug key) for testing only. |
+| [`release/AkaaFlixLauncher-v1.3.0-release.apk`](release/) | R8-minified release build (7.13 MB), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. Installs over v1.0.1 / v1.1.0 / v1.2.0 and keeps their settings. Release build only – no debug APK is shipped. |
+
+v1.3.0: optional **Home button service** (accessibility, turned on by the user) so the remote's Home button
+and start-up open Akaa Flix on Google TV / Xiaomi boxes; live Shizuku connection with reconnection; Shizuku
+uninstall for user 0 – see [docs/V1.3_DELIVERY_REPORT.md](docs/V1.3_DELIVERY_REPORT.md).
 
 v1.2.0: duplicate-entry fix (Play Store), real default-Home and start-up status with verification, App manager
 for user and pre-installed apps with optional Shizuku, accurate device information, diagnostics – see
