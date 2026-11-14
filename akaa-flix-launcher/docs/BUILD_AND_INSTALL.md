@@ -66,12 +66,20 @@ python3 tools/generate_strings.py
 ```
 
 ```bash
+python3 tools/import_pdf_wallpapers.py
+```
+
+```bash
 python3 tools/generate_icons.py
 ```
 
-`tools/strings_source.py` is the single source of every English/Arabic string. Brand assets and the
-procedural wallpapers can be rebuilt with `tools/extract_logo.py`, `tools/generate_brand_assets.py` and
-`tools/generate_wallpapers.py` (Python 3, numpy, Pillow, scipy) from the images in `docs/reference/`.
+`tools/strings_source.py` (English + Arabic) and `tools/strings_fr.py` (French) are the single source of
+every interface string; the generator checks that all three languages have the same keys and placeholders.
+`tools/import_pdf_wallpapers.py` extracts the approved wallpapers from
+`design-assets/wallpapers/akaa-flix-wallpapers.pdf` (embedded images, native resolution, WebP q90; page 7 –
+a contact sheet – is skipped). Brand assets can be rebuilt with `tools/extract_logo.py` and
+`tools/generate_brand_assets.py`; the v1.0 procedural wallpapers (`tools/generate_wallpapers.py`) now live in
+`design-assets/legacy-wallpapers/` and are not packaged.
 
 ## Release signing
 
@@ -91,7 +99,7 @@ Create your permanent key once and keep it safe (every update must be signed wit
 keytool -genkeypair -v -keystore ~/keys/akaaflix-launcher.jks -alias akaalauncher -keyalg RSA -keysize 3072 -validity 10000
 ```
 
-The release key used for `release/AkaaFlixLauncher-v1.0.1-release.apk` (PKCS12, RSA 4096, valid until 2056,
+The release key used for the release APKs (v1.0.1 and later) (PKCS12, RSA 4096, valid until 2056,
 alias `akaaflix-launcher`) was handed to the project owner together with its password; it is **not** in Git.
 Certificate fingerprint (public – use it to check downloads):
 
@@ -114,7 +122,7 @@ Signature schemes v1 (needed by Android 6.0), v2 and v3 are enabled. Keep the ke
 losing them means future updates cannot be installed over existing installations.
 
 > v1.0.0 was signed with a temporary key that no longer exists. If v1.0.0 is installed anywhere, uninstall it
-> before installing v1.0.1.
+> before installing v1.0.1 or later.
 
 Verify a signature:
 
@@ -133,10 +141,19 @@ adb connect <tv-ip-address>:5555
 ```
 
 ```bash
-adb install -r release/AkaaFlixLauncher-v1.0.1-release.apk
+adb install -r release/AkaaFlixLauncher-v1.1.0-release.apk
 ```
 
+Updating from v1.0.1 keeps all settings (same signing key): the old single app list becomes the Home
+screen list, Favorites start empty, Home switches to three rows, the icon size becomes Medium, and a
+removed wallpaper falls back to the Egyptian Pyramids default.
+
 ## Making it the default launcher
+
+Inside the launcher: **Settings → Interface settings → Set as default launcher** (system role dialog on
+Android 10+, Home settings on older/TV devices) and **Default launcher setup guide** (step-by-step text in
+Arabic, English and French). Once Akaa Flix is the default Home app, Android starts it after every boot and
+the remote Home button returns to it – the launcher never intercepts the Home key itself.
 
 | Device | How |
 |---|---|
@@ -160,6 +177,41 @@ Google TV runs Android 10 or newer, where only the default Home app is started a
 Google's launcher unless it is disabled as above; this is an operating-system restriction a normal app cannot
 bypass.
 
+## Pre-installed (system) apps
+
+A normal launcher can uninstall only apps the user installed (Android shows its own confirmation). For
+pre-installed apps the app menu shows the installation type and opens Android's App info screen, where
+**Disable** / **Uninstall updates** appear only if the device allows them. Protected core apps (Settings,
+System UI, package installer, persistent apps) cannot be removed by any normal app.
+
+Optional, outside the launcher (not implemented in the APK, use only on devices you administer):
+
+```bash
+adb shell pm disable-user --user 0 <package>
+```
+
+```bash
+adb shell pm uninstall -k --user 0 <package>
+```
+
+```bash
+adb shell cmd package install-existing <package>
+```
+
+The first two hide/remove a system app for the main user (reversible with the third command or a factory
+reset). Fleet deployments can use a **Device Owner** app provisioned on a freshly reset device
+(`DevicePolicyManager.setApplicationHidden`) or ship Akaa Flix as a privileged system app in OEM firmware.
+Akaa Flix Launcher does not declare device-admin or root features – adding them would also trigger Google
+Play Protect warnings.
+
+## Weather
+
+Open-Meteo is used without an API key (free tier: non-commercial use). For commercial distribution set
+`akaa.weather.apiKey` (customer endpoint). Any key compiled into an APK can be extracted from it; if the key
+must stay secret, route requests through your own server instead. City detection uses Android's Geocoder or,
+when the device has no geocoder, BigDataCloud's free client-side reverse-geocoding endpoint (coordinates are
+rounded to about 1 km first).
+
 ## Optional configuration (`gradle.properties`)
 
 | Property | Default | Purpose |
@@ -169,12 +221,14 @@ bypass.
 | `akaa.weather.apiKey` | empty | Open-Meteo customer API key. The free endpoint is for non-commercial use; set a key for commercial distribution |
 
 To publish an update so that *Check for updates* finds it, create a GitHub release in the configured repository
-with a tag like `launcher-v1.0.1` and attach the APK.
+with a tag like `launcher-v1.1.0` and attach the APK.
 
 ## Google Play Protect
 
 v1.0.0 was blocked by Play Protect's enhanced fraud protection because it contained a notification listener.
-v1.0.1 removes it and requests no sensitive permission (docs/SECURITY_AUDIT.md). Play Protect may still show its
+v1.0.1 removed it. v1.1.0 adds only the optional approximate-location permission for the weather city (asked
+at runtime, never at startup) – not one of the capabilities enhanced fraud protection blocks (SMS,
+notification access, accessibility) (docs/SECURITY_AUDIT.md). Play Protect may still show its
 standard prompt for apps from developers it does not know yet; that is expected for sideloaded apps and must
 not be worked around by disabling Play Protect. See the recommendations in the audit (developer verification,
 store distribution).

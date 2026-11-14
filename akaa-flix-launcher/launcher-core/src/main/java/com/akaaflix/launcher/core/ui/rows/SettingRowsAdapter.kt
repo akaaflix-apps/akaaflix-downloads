@@ -22,12 +22,15 @@ import com.akaaflix.launcher.core.ui.tint
 
 class SettingRowsAdapter : ListAdapter<SettingRow, RecyclerView.ViewHolder>(Diff) {
 
-    override fun getItemViewType(position: Int) = if (getItem(position) is SettingRow.Header) 0 else 1
+    override fun getItemViewType(position: Int) = when (getItem(position)) { is SettingRow.Header -> 0; is SettingRow.Hero -> 2; else -> 1 }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inf = LayoutInflater.from(parent.context)
-        return if (viewType == 0) HeaderVH(ItemSettingHeaderBinding.inflate(inf, parent, false))
-        else RowVH(ItemSettingRowBinding.inflate(inf, parent, false))
+        return when (viewType) {
+            0 -> HeaderVH(ItemSettingHeaderBinding.inflate(inf, parent, false))
+            2 -> HeroVH(parent.context)
+            else -> RowVH(ItemSettingRowBinding.inflate(inf, parent, false))
+        }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -38,6 +41,40 @@ class SettingRowsAdapter : ListAdapter<SettingRow, RecyclerView.ViewHolder>(Diff
                 setTextColor(LauncherUi.palette.accentLight)
             }
             is RowVH -> holder.bind(row)
+            is HeroVH -> holder.bind(row as SettingRow.Hero)
+        }
+    }
+
+    /** Logo, name and caption lines, centred (programmatic layout, no extra XML). */
+    class HeroVH(context: android.content.Context) : RecyclerView.ViewHolder(LinearLayout(context)) {
+        private val root = itemView as LinearLayout
+        private val image = android.widget.ImageView(context).apply { scaleType = android.widget.ImageView.ScaleType.FIT_CENTER; importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO }
+        private val title = androidx.appcompat.widget.AppCompatTextView(context).apply { setTextAppearance(R.style.TextAppearance_Akaa_Section); textSize = 18f; gravity = android.view.Gravity.CENTER }
+        private val lines = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; gravity = android.view.Gravity.CENTER_HORIZONTAL }
+
+        init {
+            root.orientation = LinearLayout.VERTICAL
+            root.gravity = android.view.Gravity.CENTER_HORIZONTAL
+            root.layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            val ctx = context
+            root.setPadding(0, ctx.dpi(4f), 0, ctx.dpi(10f))
+            root.addView(image, LinearLayout.LayoutParams(ctx.dpi(240f), ctx.dpi(70f)))
+            root.addView(title, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = ctx.dpi(6f) })
+            root.addView(lines, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = ctx.dpi(2f) })
+            root.isFocusable = false
+        }
+
+        fun bind(h: SettingRow.Hero) {
+            image.setImageResource(h.image)
+            title.text = h.title
+            root.contentDescription = (listOf(h.title) + h.lines).joinToString(", ")
+            lines.removeAllViews()
+            h.lines.forEach { t ->
+                lines.addView(androidx.appcompat.widget.AppCompatTextView(root.context).apply {
+                    text = t; setTextAppearance(R.style.TextAppearance_Akaa_Small); textSize = 12f; gravity = android.view.Gravity.CENTER
+                    setTextColor(ContextCompat.getColor(root.context, R.color.text_primary))
+                })
+            }
         }
     }
 
@@ -147,7 +184,7 @@ class SettingRowsAdapter : ListAdapter<SettingRow, RecyclerView.ViewHolder>(Diff
                     b.rowValue.text = row.value
                     b.rowRoot.isClickable = false
                 }
-                is SettingRow.Header -> Unit
+                is SettingRow.Header, is SettingRow.Hero -> Unit
             }
         }
     }

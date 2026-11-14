@@ -2,20 +2,17 @@ package com.akaaflix.launcher
 
 import com.akaaflix.launcher.core.util.str
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.speech.RecognizerIntent
 import android.text.format.DateFormat
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.ConfigurationCompat
@@ -51,7 +48,6 @@ import com.akaaflix.launcher.device.clock.ClockTicker
 import com.akaaflix.launcher.device.clock.DateConfig
 import com.akaaflix.launcher.device.clock.DateTextFormatter
 import com.akaaflix.launcher.device.clock.HijriCalendar
-import com.akaaflix.launcher.device.status.BluetoothMonitor
 import com.akaaflix.launcher.device.status.NetworkMonitor
 import com.akaaflix.launcher.device.system.SystemShortcuts
 import com.akaaflix.launcher.device.update.UpdateChecker
@@ -81,7 +77,6 @@ class MainActivity : AppCompatActivity(), LauncherHost {
     private val wallpapers by lazy { WallpaperRepository.get(this) }
     private lateinit var clock: ClockTicker
     private lateinit var network: NetworkMonitor
-    private lateinit var bluetooth: BluetoothMonitor
     private lateinit var rotation: WallpaperRotation
     private lateinit var quality: QualityProfile
     private var current = LauncherPage.HOME
@@ -90,11 +85,10 @@ class MainActivity : AppCompatActivity(), LauncherHost {
     private var resumed = false
     private var peeking = false
     private var pinUnlockedUntil = 0L
-    private var voiceCallback: ((String) -> Unit)? = null
     private var safeModeShown = false
-
-    private val voice = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-        res.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { voiceCallback?.invoke(it) }
+    private var permissionCallback: ((Boolean) -> Unit)? = null
+    private val permissionRequest = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
+        permissionCallback?.invoke(granted); permissionCallback = null
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -123,7 +117,6 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         val portrait = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         clock = ClockTicker(this)
         network = NetworkMonitor(this)
-        bluetooth = BluetoothMonitor(this)
         rotation = WallpaperRotation(lifecycleScope, wallpapers, prefs) { ::quality.isInitialized && quality.videoWallpapers }
 
         b.sidebar.setup(horizontal = portrait)
@@ -139,7 +132,6 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         }
         b.topBar.onBrandClick = { if (current == LauncherPage.HOME) navigate(LauncherPage.SETTINGS, Bundle().apply { putString("open_section", "profiles") }) else navigate(LauncherPage.HOME) }
         b.topBar.onWifiClick = { SystemShortcuts.network(this) }
-        b.topBar.onBluetoothClick = { SystemShortcuts.bluetooth(this) }
         b.topBar.onSettingsClick = { navigate(LauncherPage.SETTINGS) }
         b.wallpaper.resolver = { id -> wallpapers.resolve(id) }
         b.root.setOnTouchListener { _, e -> if (peeking && e.action == MotionEvent.ACTION_DOWN) { endPeek(); true } else false }
@@ -163,7 +155,6 @@ class MainActivity : AppCompatActivity(), LauncherHost {
                 launch { prefs.settings.collect { applySettings(it, initial = false) } }
                 launch { clock.now.collect { updateClock(it) } }
                 launch { network.state.collect { b.topBar.bindNetwork(it) } }
-                launch { bluetooth.state.collect { b.topBar.bindBluetooth(it) } }
             }
         }
         if (s.safeMode && !safeModeShown) { safeModeShown = true; Toast.makeText(this, CoreR.string.safe_mode_toast, Toast.LENGTH_LONG).show() }
@@ -189,7 +180,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
 
     override fun onStart() {
         super.onStart()
-        clock.start(); network.start(); bluetooth.start()
+        clock.start(); network.start()
         b.wallpaper.setActive(true)
         rotation.onVisible()
         maybeAutoCheckUpdates()
@@ -199,7 +190,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
     override fun onPause() { resumed = false; super.onPause() }
 
     override fun onStop() {
-        clock.stop(); network.stop(); bluetooth.stop()
+        clock.stop(); network.stop()
         b.wallpaper.setActive(false)
         rotation.onHidden()
         pinUnlockedUntil = 0L
@@ -256,6 +247,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         if (!initial && prev != null && (prev.rotationEnabled != s.rotationEnabled || prev.rotationIntervalMin != s.rotationIntervalMin) &&
             lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) rotation.onVisible()
 
+        com.akaaflix.launcher.device.weather.WeatherRefreshJob.sync(this, s.weatherEnabled && s.hasWeatherLocation)
         b.topBar.setClockVisible(s.showClockDate)
         b.topBar.setStatusVisible(s.showNetworkStatus)
         b.sidebar.setLabelsVisible(s.showSidebarLabels)
@@ -283,8 +275,8 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         val use24 = when (s.clockFormat) { "24" -> true; "12" -> false; else -> DateFormat.is24HourFormat(this) }
         val method = if (s.hijriMethod == "tabular") HijriCalendar.Method.TABULAR else HijriCalendar.Method.UMM_AL_QURA
         val t = DateTextFormatter.format(now, TimeZone.getDefault(), DateConfig(use24, method, s.hijriAdjust, s.numerals == "eastern"))
-        val arabic = ConfigurationCompat.getLocales(resources.configuration)[0]?.language == "ar"
-        b.topBar.bindDate(t, arabic, s.bilingualDate, s.showHijri)
+        val lang = ConfigurationCompat.getLocales(resources.configuration)[0]?.language ?: "en"
+        b.topBar.bindDate(t, lang, s.bilingualDate, s.showHijri)
     }
 
     private fun maybeAutoCheckUpdates() {
@@ -334,7 +326,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         fm.findFragmentByTag(TAG_PAGE)?.let { tx.remove(it) }
         val home = fm.findFragmentByTag(TAG_HOME)
         if (page == LauncherPage.HOME) {
-            if (home == null) tx.add(R.id.content, HomeFragment(), TAG_HOME) else tx.show(home)
+            if (home == null) tx.add(R.id.content, HomeFragment().apply { arguments = args }, TAG_HOME) else tx.show(home)
         } else {
             if (home != null) tx.hide(home)
             val f: Fragment = when (page) {
@@ -354,6 +346,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         b.root.clearContentMemory()
         b.sidebar.select(page)
         updateChrome(page)
+        if (page == LauncherPage.HOME && args != null && home != null) (home as? com.akaaflix.launcher.core.nav.ArgsReceiver)?.onNavigationArgs(args)
         if (focusInContent) b.content.post { focusFirstInContent(page) }
     }
 
@@ -378,7 +371,7 @@ class MainActivity : AppCompatActivity(), LauncherHost {
     private fun handleBack() {
         if (peeking) { endPeek(); return }
         if ((pageFragment() as? BackHandler)?.onBackPressed() == true) return
-        if (current != LauncherPage.HOME) { navigate(LauncherPage.HOME); return }
+        if (current != LauncherPage.HOME) { navigate(current.backTarget); return }
         // A launcher never exits on Back.
         if (prefs.settings.value.backOnHome == "focus_first") homeFragment()?.focusDefault()
     }
@@ -432,19 +425,10 @@ class MainActivity : AppCompatActivity(), LauncherHost {
         b.headerArt.animate().alpha(if (secondary) 1f else 0f).setDuration(200).start()
     }
 
-    override fun startVoiceSearch(onResult: (String) -> Unit) {
-        voiceCallback = onResult
-        val lang = ConfigurationCompat.getLocales(resources.configuration)[0]?.toLanguageTag() ?: "ar"
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, lang)
-            .putExtra(RecognizerIntent.EXTRA_PROMPT, getString(CoreR.string.voice_prompt))
-        try { voice.launch(intent) } catch (_: ActivityNotFoundException) {
-            if (!SafeIntents.start(this, Intent(Intent.ACTION_ASSIST), Intent("android.intent.action.VOICE_ASSIST"), Intent(Intent.ACTION_SEARCH_LONG_PRESS)))
-                Toast.makeText(this, CoreR.string.voice_not_available, Toast.LENGTH_LONG).show()
-        } catch (_: SecurityException) {
-            Toast.makeText(this, CoreR.string.voice_not_available, Toast.LENGTH_LONG).show()
-        }
+    override fun requestPermission(permission: String, onResult: (granted: Boolean) -> Unit) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this, permission) == android.content.pm.PackageManager.PERMISSION_GRANTED) { onResult(true); return }
+        permissionCallback = onResult
+        try { permissionRequest.launch(permission) } catch (_: Exception) { permissionCallback = null; onResult(false) }
     }
 
     override fun recreateUi() = recreate()

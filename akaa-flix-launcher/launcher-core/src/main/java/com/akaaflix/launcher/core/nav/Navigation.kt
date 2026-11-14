@@ -4,7 +4,14 @@ import android.os.Bundle
 import androidx.annotation.DrawableRes
 import androidx.fragment.app.Fragment
 
-enum class LauncherPage { HOME, ALL_APPS, FAVORITES, CUSTOMIZATION, WALLPAPERS, SETTINGS }
+enum class LauncherPage {
+    HOME, ALL_APPS, FAVORITES, CUSTOMIZATION, WALLPAPERS, SETTINGS;
+
+    /** Sidebar item that represents this page (Wallpapers lives under Customization). */
+    val navItem: LauncherPage get() = if (this == WALLPAPERS) CUSTOMIZATION else this
+    /** Page that Back returns to (Home for top-level pages). */
+    val backTarget: LauncherPage get() = if (this == WALLPAPERS) CUSTOMIZATION else HOME
+}
 
 /** Header shown in the centre of the top bar. [showLogo] = the big Akaa Flix logo (home). */
 data class PageHeader(
@@ -25,7 +32,8 @@ interface LauncherHost {
     fun previewWallpaper(wallpaperId: String?)
     /** Fades the page UI so the wallpaper can be seen (wallpaper "Preview" button). */
     fun peekBehindUi()
-    fun startVoiceSearch(onResult: (String) -> Unit)
+    /** Shows the system runtime-permission dialog (registered by the activity). */
+    fun requestPermission(permission: String, onResult: (granted: Boolean) -> Unit)
     fun recreateUi()
 }
 
@@ -37,6 +45,9 @@ interface KeyInterceptor { fun onInterceptKey(event: android.view.KeyEvent): Boo
 
 /** Pages with unsaved changes. Return false to block navigation and call [proceed] later. */
 interface LeaveGuard { fun canLeave(proceed: () -> Unit): Boolean }
+
+/** Retained pages (Home) that receive navigation arguments without being recreated. */
+interface ArgsReceiver { fun onNavigationArgs(args: android.os.Bundle) }
 
 /** Fragments that react to the remote Menu key. */
 interface MenuKeyHandler { fun onMenuKey(): Boolean }

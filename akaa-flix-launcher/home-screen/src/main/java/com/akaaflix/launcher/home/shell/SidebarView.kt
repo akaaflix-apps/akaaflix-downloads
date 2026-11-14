@@ -20,7 +20,8 @@ import com.akaaflix.launcher.core.ui.tint
 
 /**
  * Navigation rail of the reference: curved glass panel with Home, All apps, Favorites,
- * Customization, Wallpapers and Settings. Becomes a bottom bar in portrait ([horizontal]).
+ * Customization and Settings (Wallpapers is opened from Customization). Becomes a bottom bar in
+ * portrait ([horizontal]).
  */
 class SidebarView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
     private val d = resources.displayMetrics.density
@@ -45,7 +46,6 @@ class SidebarView @JvmOverloads constructor(context: Context, attrs: AttributeSe
             LauncherPage.ALL_APPS to (R.drawable.ic_apps to R.string.nav_all_apps),
             LauncherPage.FAVORITES to (R.drawable.ic_star to R.string.nav_favorites),
             LauncherPage.CUSTOMIZATION to (R.drawable.ic_sliders to R.string.nav_customization),
-            LauncherPage.WALLPAPERS to (R.drawable.ic_layers to R.string.nav_wallpapers),
             LauncherPage.SETTINGS to (R.drawable.ic_settings to R.string.nav_settings),
         ).forEach { (page, res) ->
             val item = NavItemView(context, res.first, context.getString(res.second), horizontal)
@@ -59,8 +59,8 @@ class SidebarView @JvmOverloads constructor(context: Context, attrs: AttributeSe
     }
 
     fun select(page: LauncherPage) {
-        selectedPage = page
-        items.forEach { (p, v) -> v.isActivated = p == page; v.refreshTint() }
+        selectedPage = page.navItem
+        items.forEach { (p, v) -> v.isActivated = p == selectedPage; v.refreshTint() }
     }
 
     fun itemFor(page: LauncherPage): View? = items[page]

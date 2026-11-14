@@ -3,6 +3,7 @@ package com.akaaflix.launcher.apps
 import com.akaaflix.launcher.apps.model.AppCategory
 import com.akaaflix.launcher.apps.model.AppEntry
 import com.akaaflix.launcher.apps.model.AppFilter
+import com.akaaflix.launcher.apps.model.AppInstallType
 import com.akaaflix.launcher.prefs.AppCustomization
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -29,9 +30,38 @@ class AppListsTest {
     }
 
     @Test fun hiddenAppsDisappearEverywhere() {
-        val c = AppCustomization(hidden = setOf(vlc.key), favorites = listOf(vlc.key, yt.key))
+        val c = AppCustomization(hidden = setOf(vlc.key), favorites = listOf(vlc.key, yt.key), homeApps = listOf(files.key, vlc.key))
         assertFalse(AppLists.visible(all, c, AppFilter.ALL, "", "az").contains(vlc))
         assertEquals(listOf(yt), AppLists.favorites(all, c))
+        assertEquals(listOf(files), AppLists.homeApps(all, c))
+    }
+
+    @Test fun homeAppsAndFavoritesResolveIndependently() {
+        val c = AppCustomization(homeApps = listOf(yt.key, files.key), favorites = listOf(vlc.key))
+        assertEquals(listOf(yt, files), AppLists.homeApps(all, c))
+        assertEquals(listOf(vlc), AppLists.favorites(all, c))
+        assertEquals("uninstalled keys are ignored", listOf(yt), AppLists.homeApps(listOf(yt), c))
+    }
+
+    @Test fun searchIgnoresFrenchAccents() {
+        val tele = app("com.example.tele", "Télévision", AppCategory.ENTERTAINMENT)
+        assertEquals(listOf(tele), AppLists.visible(listOf(tele, yt), AppCustomization(), AppFilter.ALL, "television", "az"))
+        assertEquals(listOf(tele), AppLists.visible(listOf(tele, yt), AppCustomization(), AppFilter.ALL, "TÉLÉ", "az"))
+        assertEquals(listOf(arabic), AppLists.visible(all, AppCustomization(), AppFilter.ALL, "القرآن", "az"))
+    }
+
+    @Test fun installTypeFromFlags() {
+        val none = emptySet<String>()
+        val sys = android.content.pm.ApplicationInfo.FLAG_SYSTEM
+        val upd = android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP
+        val per = android.content.pm.ApplicationInfo.FLAG_PERSISTENT
+        assertEquals(AppInstallType.USER, AppRepository.installTypeOf("x.y", 0, none))
+        assertEquals(AppInstallType.SYSTEM, AppRepository.installTypeOf("x.y", sys, none))
+        assertEquals(AppInstallType.UPDATED_SYSTEM, AppRepository.installTypeOf("x.y", sys or upd, none))
+        assertEquals(AppInstallType.PROTECTED, AppRepository.installTypeOf("x.y", sys or per, none))
+        assertEquals(AppInstallType.PROTECTED, AppRepository.installTypeOf("com.android.settings", sys, setOf("com.android.settings")))
+        assertTrue(AppInstallType.USER.canUninstall)
+        assertFalse(AppInstallType.SYSTEM.canUninstall)
     }
 
     @Test fun userCategoryOverride() {
@@ -67,8 +97,8 @@ class AppListsTest {
         assertEquals(listOf("b", "c", "a"), AppLists.move(listOf("a", "b", "c"), "a", 99))
     }
 
-    @Test fun defaultFavoritesOnlyUseInstalledApps() {
-        val favs = AppLists.defaultFavorites(all, 11, Locale.ENGLISH)
+    @Test fun defaultHomeAppsOnlyUseInstalledApps() {
+        val favs = AppLists.defaultHomeApps(all, 11, Locale.ENGLISH)
         assertEquals(yt.key, favs.first())   // preferred package first
         assertEquals(all.size, favs.size)    // never invents apps
         assertTrue(favs.containsAll(all.map { it.key }))

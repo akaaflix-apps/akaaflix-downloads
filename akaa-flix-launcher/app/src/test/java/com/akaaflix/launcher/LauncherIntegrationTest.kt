@@ -7,6 +7,8 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.akaaflix.launcher.apps.AppRepository
+import com.akaaflix.launcher.apps.model.AppInstallType
+import com.akaaflix.launcher.apps.ui.AppActions
 import com.akaaflix.launcher.apps.ui.AppCardView
 import com.akaaflix.launcher.core.nav.LauncherPage
 import com.akaaflix.launcher.home.shell.NavItemView
@@ -73,15 +75,60 @@ open class LauncherIntegrationTest {
         val activity = controller.get()
         val root = activity.findViewById<com.akaaflix.launcher.remote.NavigationRootLayout>(R.id.root)
 
-        // 1. Real installed apps are discovered and shown on Home (favourites + "Add app").
-        assertTrue(AppRepository.get(ctx).apps.value.any { it.packageName == "com.netflix.ninja" })
+        // 1. Real installed apps are discovered and shown on Home ("Add app" card last); nothing invented.
+        val repoApps = AppRepository.get(ctx).apps.value
+        assertTrue(repoApps.any { it.packageName == "com.example.videoplayer" })
+        assertFalse("no app that is not installed", repoApps.any { it.packageName == "com.android.vending" })
         val cards = root.findAll(AppCardView::class.java).filter { it.isShown }
         assertTrue("home cards: ${cards.size}", cards.size >= 6)
-        assertTrue(cards.any { it.contentDescription == "Netflix" })
-        assertFalse("launcher itself is never listed", AppRepository.get(ctx).apps.value.any { it.packageName.startsWith("com.akaaflix.launcher") })
+        assertFalse("launcher itself is never listed", repoApps.any { it.packageName.startsWith("com.akaaflix.launcher") })
+        assertEquals(AppInstallType.SYSTEM, repoApps.first { it.packageName == TestApps.SYSTEM_SAMPLE }.installType)
+        assertEquals(AppInstallType.USER, repoApps.first { it.packageName == "com.example.music" }.installType)
+
+        // 1b. Home: exactly three rows by default, between the header and the bottom controls.
+        val home = activity.supportFragmentManager.findFragmentByTag("page_home")!!.requireView()
+        val homeGrid = home.findViewById<RecyclerView>(com.akaaflix.launcher.home.R.id.grid)
+        val lm = homeGrid.layoutManager as androidx.recyclerview.widget.GridLayoutManager
+        val rows = (homeGrid.adapter!!.itemCount + lm.spanCount - 1) / lm.spanCount
+        assertEquals("home rows", 3, rows)
+        val gridBox = home.findViewById<View>(com.akaaflix.launcher.home.R.id.gridContainer)
+        val bar = home.findViewById<View>(com.akaaflix.launcher.home.R.id.bottomBar)
+        assertTrue("grid (${gridBox.bottom}) must end above the quick bar (${bar.top})", gridBox.bottom <= bar.top)
+        val decor = home.findViewById<View>(com.akaaflix.launcher.home.R.id.remoteDecor)
+        assertTrue("grid must end above the remote art", !decor.isShown || gridBox.bottom <= decor.top)
+        val topBar = root.findViewById<View>(R.id.topBar)
+        val logo = topBar.findViewById<View>(com.akaaflix.launcher.home.R.id.homeLogo)
+        val logoBottom = IntArray(2).also { logo.getLocationInWindow(it) }[1] + logo.height
+        val gridTop = IntArray(2).also { gridBox.getLocationInWindow(it) }[1]
+        assertTrue("grid ($gridTop) starts below the logo ($logoBottom)", gridTop >= logoBottom)
+        // Removed controls are gone (voice, notifications, Bluetooth icon).
+        assertTrue(home.findViewById<View>(com.akaaflix.launcher.home.R.id.searchBtn).isShown)
+        assertEquals(0, root.findAll(View::class.java).count { it.contentDescription == "Bluetooth status" || it.contentDescription == "Voice search" || it.contentDescription == "Notifications" })
+
+        // 1c. Sidebar: Home, All apps, Favorites, Customize, Settings (no Wallpapers item).
+        val nav = root.findAll(NavItemView::class.java)
+        assertEquals(listOf("Home", "All apps", "Favorites", "Customize", "Settings"), nav.map { it.contentDescription.toString() })
+
+        // 1d. Home and Favorites are independent; nothing is a favourite automatically.
+        val custom0 = prefs.apps.value
+        assertTrue("home seeded with real apps", custom0.homeApps.isNotEmpty())
+        assertTrue("no automatic favourites", custom0.favorites.isEmpty())
+        val music = repoApps.first { it.packageName == "com.example.music" }
+        AppActions.toggleFavorite(ctx, music)
+        settle(300)
+        assertTrue(music.key in prefs.apps.value.favorites)
+        assertEquals("adding a favourite does not change Home", custom0.homeApps, prefs.apps.value.homeApps)
+        val homeApp = repoApps.first { it.key == custom0.homeApps.first() }
+        AppActions.toggleHome(ctx, homeApp)
+        settle(300)
+        assertFalse(homeApp.key in prefs.apps.value.homeApps)
+        assertTrue("removing from Home does not change Favorites", music.key in prefs.apps.value.favorites)
+        AppActions.toggleHome(ctx, homeApp)
+        settle(600)
 
         // 2. D-pad routing: content → sidebar lands on the SELECTED item; sidebar → content restores focus.
-        val first = cards.first()
+        // (Cards are looked up again: the Home list changed above, so views were re-bound.)
+        val first = homeGrid.findViewHolderForAdapterPosition(0)!!.itemView
         assertTrue(first.requestFocus())
         val left = first.focusSearch(View.FOCUS_LEFT)
         assertNotNull(left)
@@ -93,12 +140,18 @@ open class LauncherIntegrationTest {
         val backRight = left.focusSearch(View.FOCUS_RIGHT)
         assertTrue("RIGHT from the sidebar restores the last focused card", backRight === first)
 
-        // 3. Every page opens; Back returns to Home; Back on Home never exits.
+        // 3. Every page opens; Back returns to Home (Wallpapers -> Customization -> Home); Back on Home never exits.
         for (page in listOf(LauncherPage.ALL_APPS, LauncherPage.FAVORITES, LauncherPage.CUSTOMIZATION, LauncherPage.WALLPAPERS, LauncherPage.SETTINGS)) {
             activity.navigate(page)
             settle(700)
             assertEquals(page, activity.currentPage())
             assertTrue(root.findViewById<View>(R.id.content).let { c -> (c as android.view.ViewGroup).childCount > 0 })
+            if (page == LauncherPage.WALLPAPERS) {
+                assertTrue("Wallpapers highlights Customize in the sidebar", nav.first { it.contentDescription == "Customize" }.isActivated)
+                activity.onBackPressedDispatcher.onBackPressed()
+                settle(300)
+                assertEquals(LauncherPage.CUSTOMIZATION, activity.currentPage())
+            }
             activity.onBackPressedDispatcher.onBackPressed()
             settle(300)
             assertEquals(LauncherPage.HOME, activity.currentPage())
@@ -107,12 +160,15 @@ open class LauncherIntegrationTest {
         settle(200)
         assertFalse("a launcher must not finish on Back", activity.isFinishing)
 
-        // 4. All Apps lists every app (no hard-coded data) and supports filters.
+        // 4. All Apps lists every app (no hard-coded data) in its own scrolling grid (more than 3 rows).
         activity.navigate(LauncherPage.ALL_APPS)
         settle(900)
         val page = activity.supportFragmentManager.findFragmentByTag("page_secondary")!!.requireView()
         val grid = page.findViewById<RecyclerView>(com.akaaflix.launcher.apps.R.id.grid)
-        assertTrue("all apps grid items: ${grid.adapter?.itemCount}", (grid.adapter?.itemCount ?: 0) >= 20)
+        assertEquals("all apps = every installed app", repoApps.size, grid.adapter?.itemCount)
+        val allLm = grid.layoutManager as androidx.recyclerview.widget.GridLayoutManager
+        assertTrue("All apps is not limited to the Home row count", (repoApps.size + allLm.spanCount - 1) / allLm.spanCount > 3)
+        assertTrue("All apps scrolls vertically", grid.canScrollVertically(1) || grid.computeVerticalScrollRange() <= grid.height)
 
         // 5. HOME intent while on another page goes back to Home.
         controller.newIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
@@ -120,11 +176,12 @@ open class LauncherIntegrationTest {
         assertEquals(LauncherPage.HOME, activity.currentPage())
 
         // 6. Settings persist across activity recreation.
-        runBlocking { prefs.update { it.copy(homeRows = 1, themeId = "royal_blue") } }
+        runBlocking { prefs.update { it.copy(homeRows = 2, iconSize = "large", themeId = "royal_blue") } }
         settle(300)
         controller.recreate()
         settle(1500)
-        assertEquals(1, prefs.settings.value.homeRows)
+        assertEquals(2, prefs.settings.value.homeRows)
+        assertEquals("large", prefs.settings.value.iconSize)
         assertEquals("royal_blue", prefs.settings.value.themeId)
         assertEquals(LauncherPage.HOME, controller.get().currentPage())
 

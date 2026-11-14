@@ -19,7 +19,18 @@ data class DateTexts(
     val hijriAr: String,       // "28 جمادى الأولى 1448 هـ"
     val hijriEn: String,       // "28 Jumada Al-Awwal 1448 H"
     val hijri: HijriDate,
-)
+    val gregorianFr: String = "",   // "Dimanche 8 novembre 2026"
+    val hijriFr: String = "",       // "28 Joumada al-Oula 1448 H"
+) {
+    /** Gregorian date text for a UI language ("ar", "fr", anything else = English). */
+    fun gregorian(lang: String) = when (lang) { "ar" -> gregorianAr; "fr" -> gregorianFr; else -> gregorianEn }
+    fun hijriText(lang: String) = when (lang) { "ar" -> hijriAr; "fr" -> hijriFr; else -> hijriEn }
+
+    companion object {
+        /** Second language of the bilingual date pill: English under Arabic, Arabic under English/French. */
+        fun secondaryLanguage(primary: String) = if (primary == "ar") "en" else "ar"
+    }
+}
 
 /**
  * Locale-independent date text builder (identical output on every Android version, matching the
@@ -32,6 +43,9 @@ object DateTextFormatter {
     private val MONTHS_EN = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
     val HIJRI_AR = arrayOf("محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة")
     val HIJRI_EN = arrayOf("Muharram", "Safar", "Rabi Al-Awwal", "Rabi Al-Thani", "Jumada Al-Awwal", "Jumada Al-Thani", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu Al-Qi'dah", "Dhu Al-Hijjah")
+    private val DAYS_FR = arrayOf("Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi")
+    private val MONTHS_FR = arrayOf("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre")
+    val HIJRI_FR = arrayOf("Mouharram", "Safar", "Rabia al-Awal", "Rabia ath-Thani", "Joumada al-Oula", "Joumada ath-Thania", "Rajab", "Chaabane", "Ramadan", "Chawwal", "Dhou al-Qi'da", "Dhou al-Hijja")
 
     fun localEpochDay(millis: Long, tz: TimeZone): Long = Math.floorDiv(millis + tz.getOffset(millis), 86_400_000L)
 
@@ -63,6 +77,8 @@ object DateTextFormatter {
             hijriAr = Numerals.localize("${hd.day} ${HIJRI_AR[hd.month - 1]} ${hd.year} هـ", e),
             hijriEn = "${hd.day} ${HIJRI_EN[hd.month - 1]} ${hd.year} H",
             hijri = hd,
+            gregorianFr = "${DAYS_FR[dow]} ${if (day == 1) "1er" else day.toString()} ${MONTHS_FR[month]} $year",
+            hijriFr = "${hd.day} ${HIJRI_FR[hd.month - 1]} ${hd.year} H",
         )
     }
 }

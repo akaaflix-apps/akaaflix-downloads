@@ -10,15 +10,22 @@ import org.robolectric.Shadows.shadowOf
 
 /** Registers fake launchable apps in Robolectric's PackageManager (test data only). */
 object TestApps {
+    /**
+     * Brand-neutral sample apps (test data only – the launcher itself never creates entries; on a
+     * device every card comes from PackageManager / LauncherApps).
+     */
     val SAMPLE = listOf(
-        "com.akaaflix.player" to "Akaa Player", "com.google.android.youtube.tv" to "YouTube", "com.netflix.ninja" to "Netflix",
-        "com.disney.disneyplus" to "Disney+", "com.amazon.amazonvideo.livingroom" to "Prime Video", "com.apple.atve.androidtv.appletv" to "Apple TV",
-        "com.android.vending" to "Google Play", "com.android.chrome" to "Chrome", "com.example.files" to "Files", "com.android.tv.settings" to "Settings",
-        "com.example.miracast" to "Miracast", "org.videolan.vlc" to "VLC", "com.mxtech.videoplayer.ad" to "MX Player", "org.xbmc.kodi" to "Kodi",
-        "com.stremio.one" to "Stremio", "com.nst.iptvsmarterstvbox" to "IPTV Smarters", "com.esaba.downloader" to "Downloader",
-        "com.ghisler.android.totalcommander" to "Solid Explorer", "org.telegram.messenger" to "Telegram", "com.whatsapp" to "WhatsApp",
-        "com.opera.browser" to "Opera", "com.example.airscreen" to "AirScreen", "ru.zdevs.zarchiver" to "ZArchiver",
+        "com.example.videoplayer" to "Video Player", "com.example.livetv" to "Live TV", "com.example.movies" to "Movies",
+        "com.example.series" to "Series", "com.example.music" to "Music", "com.example.radio" to "Radio",
+        "com.example.photos" to "Photos", "com.example.browser" to "Browser", "com.example.files" to "Files",
+        "com.example.news" to "News", "com.example.weather" to "Weather", "com.example.kids" to "Kids",
+        "com.example.sports" to "Sports", "com.example.podcasts" to "Podcasts", "com.example.cooking" to "Cooking",
+        "com.example.fitness" to "Fitness", "com.example.calendar" to "Calendar", "com.example.notes" to "Notes",
+        "com.example.gallery" to "Gallery", "com.example.downloads" to "Downloads", "com.example.quran" to "Quran",
+        "com.example.documentaries" to "Documentaries", "com.example.games" to "Arcade",
     )
+    /** Pre-installed sample (FLAG_SYSTEM) used to check system-app handling. */
+    const val SYSTEM_SAMPLE = "com.example.vendorsettings"
 
     /**
      * androidx.core declares and requests a signature permission for not-exported dynamic receivers
@@ -28,11 +35,12 @@ object TestApps {
         shadowOf(context.applicationContext as android.app.Application).grantPermissions(context.packageName + ".DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
     }
 
-    fun install(context: Context, leanback: Boolean, apps: List<Pair<String, String>> = SAMPLE) {
+    fun install(context: Context, leanback: Boolean, apps: List<Pair<String, String>> = SAMPLE + (SYSTEM_SAMPLE to "Vendor Settings")) {
         grantReceiverPermission(context)
         val spm = shadowOf(context.packageManager)
         for ((pkg, label) in apps) {
-            val ai = ApplicationInfo().apply { packageName = pkg; name = label; nonLocalizedLabel = label; enabled = true; flags = 0 }
+            val sysFlags = if (pkg == SYSTEM_SAMPLE) ApplicationInfo.FLAG_SYSTEM else 0
+            val ai = ApplicationInfo().apply { packageName = pkg; name = label; nonLocalizedLabel = label; enabled = true; flags = sysFlags }
             val pi = PackageInfo().apply { packageName = pkg; applicationInfo = ai; firstInstallTime = 1_700_000_000_000L; lastUpdateTime = firstInstallTime; versionName = "1" }
             spm.installPackage(pi)
             val cn = ComponentName(pkg, "$pkg.MainActivity")

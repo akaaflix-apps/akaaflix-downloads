@@ -74,7 +74,10 @@ class AllAppsViewModel(app: Application) : AndroidViewModel(app) {
     fun setSort(mode: String) = prefs.editApps { it.copy(sortMode = mode) }
 }
 
-/** "All apps" page from the reference: search, filter chips (All / Entertainment / Tools), paged grid. */
+/**
+ * "All apps" page from the reference: search, filter chips (All / Entertainment / Tools) and its own
+ * vertically scrolling grid (independent of the Home screen's row limit).
+ */
 class AllAppsFragment : Fragment(), BackHandler, MenuKeyHandler, KeyInterceptor {
     private var _b: FragmentAllAppsBinding? = null
     private val b get() = _b!!
@@ -109,13 +112,17 @@ class AllAppsFragment : Fragment(), BackHandler, MenuKeyHandler, KeyInterceptor 
         listOf(b.chipAll, b.chipEntertainment, b.chipTools, b.storeButton).forEach { it.styleAsChip() }
         b.moveHint.glass(GlassDrawable.Variant.PANEL, 16f)
 
-        val pager = PagerViews(b.pagerControls, b.root.findViewById(com.akaaflix.launcher.apps.R.id.prevPage),
-            b.root.findViewById(com.akaaflix.launcher.apps.R.id.nextPage), b.root.findViewById(com.akaaflix.launcher.apps.R.id.pageIndicator))
-        grid = AppGridController(this, b.grid, if (portrait) null else pager, { w, h ->
+        // Scrolling grid: children are clipped to the list, the padding leaves room for the focus zoom.
+        val padH = requireContext().dpi(8f)
+        b.grid.clipChildren = true
+        b.grid.clipToPadding = false
+        b.grid.setPadding(padH, requireContext().dpi(8f), padH, requireContext().dpi(18f))
+        grid = AppGridController(this, b.grid, null, { w, _ ->
             val s = vm.state.value.settings
             val scale = iconScale(s)
-            if (portrait) GridSizing.scrolling(w, requireContext().dpi(84f * scale), 1.08f, s.gridColumns, 3, 6)
-            else GridSizing.paged(w, h, requireContext().dpi((if (isTv) 112f else 120f) * scale), 0.64f, s.gridColumns, 3, 10)
+            val inner = w - 2 * padH
+            if (portrait) GridSizing.scrolling(inner, requireContext().dpi(84f * scale), 1.08f, s.gridColumns, 3, 6)
+            else GridSizing.scrolling(inner, requireContext().dpi((if (isTv) 112f else 120f) * scale), 0.64f, s.gridColumns, 3, 10)
         }, object : AppGridAdapter.Callbacks {
             override fun onItemClick(item: GridItem, view: View) {
                 if (move.active) return
@@ -135,7 +142,7 @@ class AllAppsFragment : Fragment(), BackHandler, MenuKeyHandler, KeyInterceptor 
                 (item as? GridItem.App)?.let { showMenu(it.entry, view) }; return true
             }
         })
-        if (portrait) b.pagerControls.visibility = View.GONE
+        b.pagerControls.visibility = View.GONE
 
         b.searchInclude.searchEdit.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -169,7 +176,7 @@ class AllAppsFragment : Fragment(), BackHandler, MenuKeyHandler, KeyInterceptor 
         }
     }
 
-    private fun iconScale(s: LauncherSettings) = when (s.iconSize) { "small" -> 0.88f; "large" -> 1.15f; else -> 1f }
+    private fun iconScale(s: LauncherSettings) = if (s.iconSize == "large") 1.15f else 1f
 
     private fun render(s: AllAppsState) {
         val prev = lastState
@@ -178,7 +185,7 @@ class AllAppsFragment : Fragment(), BackHandler, MenuKeyHandler, KeyInterceptor 
         b.chipAll.isActivated = vm.filter.value == AppFilter.ALL
         b.chipEntertainment.isActivated = vm.filter.value == AppFilter.ENTERTAINMENT
         b.chipTools.isActivated = vm.filter.value == AppFilter.TOOLS
-        grid.setConfig(CardConfig(iconShape = s.settings.iconShape, showLabels = s.settings.showAppLabels,
+        grid.setConfig(CardConfig(iconShape = "original", showLabels = s.settings.showAppLabels,
             useBanners = s.settings.useTvBanners, cardStyle = s.settings.cardStyle, iconScale = iconScale(s.settings)))
         if (prev != null && (prev.settings.gridColumns != s.settings.gridColumns || prev.settings.iconSize != s.settings.iconSize)) grid.relayout()
         if (move.active) return

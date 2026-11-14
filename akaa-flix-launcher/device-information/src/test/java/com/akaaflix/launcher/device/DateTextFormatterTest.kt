@@ -24,6 +24,19 @@ class DateTextFormatterTest {
     }
 
     @Test
+    fun frenchDates() {
+        val t = DateTextFormatter.format(millis, cairo, DateConfig(use24Hour = true))
+        assertEquals("Samedi 14 novembre 2026", t.gregorianFr)
+        assertEquals("4 Joumada ath-Thania 1448 H", t.hijriFr)
+        assertEquals(t.gregorianFr, t.gregorian("fr"))
+        assertEquals(t.hijriAr, t.hijriText("ar"))
+        assertEquals("ar", com.akaaflix.launcher.device.clock.DateTexts.secondaryLanguage("fr"))
+        assertEquals("en", com.akaaflix.launcher.device.clock.DateTexts.secondaryLanguage("ar"))
+        val first = java.time.ZonedDateTime.of(2026, 11, 1, 10, 0, 0, 0, java.time.ZoneId.of("Africa/Cairo")).toInstant().toEpochMilli()
+        assertEquals("Dimanche 1er novembre 2026", DateTextFormatter.format(first, cairo, DateConfig(use24Hour = true)).gregorianFr)
+    }
+
+    @Test
     fun twentyFourHourAndEasternDigits() {
         val t = DateTextFormatter.format(millis, cairo, DateConfig(use24Hour = true, easternDigits = true))
         assertEquals("٠٠:٤٥", t.time)

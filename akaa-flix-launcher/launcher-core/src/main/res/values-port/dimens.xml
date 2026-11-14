@@ -6,4 +6,5 @@
     <dimen name="content_start">12dp</dimen>
     <dimen name="content_end">12dp</dimen>
     <dimen name="home_grid_top">176dp</dimen>
+    <dimen name="home_bottom_reserve">196dp</dimen>
 </resources>

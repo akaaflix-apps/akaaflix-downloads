@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Audited builds | v1.0.0 (versionCode 1, blocked by Play Protect) → **v1.0.1** (versionCode 2) |
+| Audited builds | v1.0.0 (versionCode 1, blocked by Play Protect) → v1.0.1 (versionCode 2) → **v1.1.0** (versionCode 3, §11) |
 | Date | 14 Nov 2026 |
 | Package | `com.akaaflix.launcher` |
-| Release APK | `release/AkaaFlixLauncher-v1.0.1-release.apk` — SHA-256 `1c32ca926bd5d1fb7ca3dd42888de2f75093c100e76c10e1b2a11a7918fa618d` |
+| Release APK | v1.0.1: SHA-256 `1c32ca926bd5d1fb7ca3dd42888de2f75093c100e76c10e1b2a11a7918fa618d` (Git history) · **v1.1.0: `release/AkaaFlixLauncher-v1.1.0-release.apk` — SHA-256 `e9117920b29421424ddb7b96a8f8129f1a585201db2a76884e82382a3357925c`** |
 | Signing certificate | `CN=Akaa Flix Launcher, O=Akaa Flix, C=EG`, RSA 4096, SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf` |
 | Method | `aapt2` manifest/permission dump, `apksigner`, `zipalign`, `dexdump` scan of the release DEX de-obfuscated with the R8 mapping, Gradle dependency tree, Robolectric test matrix |
 
@@ -170,3 +170,54 @@ on physical devices (see COMPATIBILITY.md).
    v1.0.1, use Google's Play Protect appeal process for developers. Do not ask users to disable Play Protect.
 4. Keep `docs/SECURITY_AUDIT.md` in step with the manifest when features are added. Any future feature needing
    notification access, Accessibility or SMS will trigger enhanced fraud protection again.
+
+## 11. v1.1.0 security review (feature update)
+
+Same method as above, applied to `release/AkaaFlixLauncher-v1.1.0-release.apk` (7,054,902 bytes,
+SHA-256 `e9117920b29421424ddb7b96a8f8129f1a585201db2a76884e82382a3357925c`).
+
+**Signing / integrity** – `apksigner verify`: Verifies, v1 + v2 + v3 true, signer
+`CN=Akaa Flix Launcher, O=Akaa Flix, C=EG`, RSA 4096, certificate SHA-256
+`8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf` (same persistent key as v1.0.1, so it updates
+in place). `zipalign -c -P 16 4`: OK. Native libraries: none. minSdk 23, targetSdk 37, locales en/ar/fr.
+
+**Permissions (aapt2)** – v1.0.1 list plus one optional runtime permission:
+
+| Permission | Type | Use |
+|---|---|---|
+| `ACCESS_COARSE_LOCATION` | runtime (dangerous), **optional** | "Detect my location" for the weather city. Requested only after the user taps it and reads an explanation (AR/EN/FR); one approximate fix (last known ≤ 6 h or a single `getCurrentLocation`), no listener kept, no background location (`ACCESS_BACKGROUND_LOCATION` not declared), coordinates rounded to 0.01° (≈ 1 km) before use or storage; only city name + rounded coordinates are stored. Denying it leaves manual city search. |
+
+Unchanged: `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `BLUETOOTH` (≤ API 30, status in Settings
+only), `REQUEST_DELETE_PACKAGES`, `RECEIVE_BOOT_COMPLETED` (Android 6–9 auto-start; also keeps the persisted
+weather job after reboot), androidx `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (signature). Still **no** SMS,
+notification-listener, accessibility, overlay, storage/media, contacts, camera, microphone, usage-access or
+device-admin permission. Removed with the voice button: the `RECOGNIZE_SPEECH` package query and the optional
+microphone feature. Added queries: `VIEW` + `BROWSABLE` + `https` (About → official website).
+
+**Components** – v1.0.1 components plus `WeatherRefreshJob` (`JobService`, `exported=false`, protected by
+`android.permission.BIND_JOB_SERVICE`, so only the system's JobScheduler can bind it). No other new component.
+
+**DEX scan** (`dexdump` of the release DEX, same patterns as §5):
+
+| Pattern | v1.0.1 | v1.1.0 | Notes |
+|---|---|---|---|
+| SMS, accessibility, notification listener, dynamic code loading, shell exec, native code, WebView, device identifiers, accounts, contacts, camera/microphone, overlay, PackageInstaller, installed-package enumeration, device admin | 0 | 0 | |
+| Location (`getLastKnownLocation` / `requestLocationUpdates`) | 2 | 5 | +3: the weather city detection (`ApproxLocation`) and `LocationManagerCompat.getCurrentLocation` (single update, removed after the first fix/timeout). The 2 existing hits are AppCompat's auto-night helper, which the launcher never enables. R8 merges small lambda classes, so one hit carries a merged class name in the mapping |
+| Geocoder `getFromLocation` | 0 | 1 | city name for the detected coordinates (device geocoder) |
+| HTTP (`URL.openConnection`) | 2 | 2 | `WeatherRepository` and `UpdateChecker` |
+| Clipboard read / reflection | 1 / 67 | 1 / 67 | unchanged (AppCompat text paste / AndroidX internals) |
+
+**Network endpoints in the code** – `api.open-meteo.com`, `customer-api.open-meteo.com` (only with an API key),
+`geocoding-api.open-meteo.com` (city search), `api.bigdatacloud.net/data/reverse-geocode-client` (city name when
+the device has no geocoder; rounded coordinates + UI language only), `api.github.com` (update check). All HTTPS;
+cleartext traffic remains disabled. No API key is committed: `akaa.weather.apiKey` is read from Gradle properties
+at build time (and, like any key in an APK, is extractable from a distributed APK).
+
+**Data** – Home apps, favourites, settings and the weather cache stay in app-private storage
+(`allowBackup=false`, data-extraction rules exclude everything). The PDF wallpapers are bundled resources; no
+image is downloaded at runtime.
+
+**Play Protect assessment** – v1.1.0 does not add any capability that enhanced fraud protection targets (SMS,
+notification access, accessibility). Approximate location is an ordinary runtime permission that the user must
+grant. The installation result on a real device has not been tested (§9 still applies).
+

@@ -29,7 +29,10 @@ import com.akaaflix.launcher.prefs.SettingsRepository
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-/** Favorites page: the user's favourite apps (reorderable) and the launcher's recently used apps. */
+/**
+ * Favorites page: the apps the user marked as favourite (reorderable) and the launcher's recently
+ * used apps. Favorites are independent of the Home screen apps.
+ */
 class FavoritesFragment : Fragment(), BackHandler, MenuKeyHandler, KeyInterceptor {
     private var _b: FragmentFavoritesBinding? = null
     private val b get() = _b!!
@@ -46,7 +49,7 @@ class FavoritesFragment : Fragment(), BackHandler, MenuKeyHandler, KeyIntercepto
             grid.setItems(order.mapNotNull { byKey[it] }.map { GridItem.App(it, false, it.key == movingKey) }, focusId = movingKey ?: grid.focusedItem()?.id)
         }
         override fun commit(order: List<String>) {
-            prefs.editApps { c -> c.copy(favorites = order + c.favorites.filter { it !in order }, favoritesInitialized = true) }
+            prefs.editApps { c -> c.copy(favorites = order + c.favorites.filter { it !in order }) }
             Toast.makeText(requireContext(), R.string.move_mode_done, Toast.LENGTH_SHORT).show()
         }
         override fun onModeChanged(active: Boolean) { b.moveHint.isVisible = active; grid.allowEdgePaging = !active }
@@ -103,7 +106,8 @@ class FavoritesFragment : Fragment(), BackHandler, MenuKeyHandler, KeyIntercepto
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(repo.apps, prefs.apps, prefs.settings) { a, c, s -> Triple(a, c, s) }.collect { (apps, custom, s) ->
-                    val cfg = CardConfig(iconShape = s.iconShape, showLabels = s.showAppLabels, useBanners = s.useTvBanners, cardStyle = s.cardStyle)
+                    val cfg = CardConfig(iconShape = "original", showLabels = s.showAppLabels, useBanners = s.useTvBanners, cardStyle = s.cardStyle,
+                        iconScale = if (s.iconSize == "large") 1.15f else 1f)
                     grid.setConfig(cfg); recent.setConfig(cfg)
                     if (!move.active) {
                         val favs = AppLists.favorites(apps, custom)

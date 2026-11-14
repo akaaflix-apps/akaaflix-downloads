@@ -26,7 +26,7 @@ import com.akaaflix.launcher.core.ui.tint
 @SuppressLint("ViewConstructor")
 class AppCardView(context: Context) : ViewGroup(context) {
     private val d = resources.displayMetrics.density
-    val glowPad = 6f * d
+    val glowPad = 8f * d
     val glass = GlassDrawable(14f * d, GlassDrawable.Variant.CARD, glowPad, d)
 
     val iconView = ImageView(context).apply {

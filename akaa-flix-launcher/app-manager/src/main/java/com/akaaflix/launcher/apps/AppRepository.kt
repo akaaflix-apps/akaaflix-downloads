@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.pm.PackageInfoCompat
 import com.akaaflix.launcher.apps.model.AppCategory
 import com.akaaflix.launcher.apps.model.AppEntry
+import com.akaaflix.launcher.apps.model.AppInstallType
 import com.akaaflix.launcher.core.perf.DevicePerformance
 import com.akaaflix.launcher.prefs.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -169,8 +170,15 @@ class AppRepository private constructor(context: Context) {
         val cleanLabel = (label ?: pkg).replace('\t', ' ').replace('\n', ' ').trim().ifEmpty { pkg }
         val sysCat = if (Build.VERSION.SDK_INT >= 26) ai.category else -1
         return AppEntry(AppEntry.key(pkg, cls, serial), pkg, cls, serial, cleanLabel, leanback, install, update, version,
-            AppClassifier.classify(sysCat, pkg, cleanLabel), work)
+            AppClassifier.classify(sysCat, pkg, cleanLabel), work, installTypeOf(pkg, ai.flags))
     }
+
+    /** Core packages Android does not let users disable, regardless of flags. */
+    private val protectedPackages = setOf("android", "com.android.systemui", "com.android.settings", "com.android.tv.settings",
+        "com.android.packageinstaller", "com.google.android.packageinstaller", "com.android.permissioncontroller",
+        "com.google.android.permissioncontroller", "com.android.phone", "com.android.shell")
+
+    private fun installTypeOf(pkg: String, flags: Int): AppInstallType = AppRepository.installTypeOf(pkg, flags, protectedPackages)
 
     // ---- launching -------------------------------------------------------------------------
 
@@ -260,10 +268,10 @@ class AppRepository private constructor(context: Context) {
         try {
             val tmp = File(cacheFile.parentFile, cacheFile.name + ".tmp")
             tmp.bufferedWriter().use { w ->
-                w.write("v1\n")
+                w.write("v2\n")
                 for (e in list) {
                     w.write(listOf(e.key, e.packageName, e.className, e.userSerial, e.label, if (e.isLeanback) 1 else 0,
-                        e.installTime, e.updateTime, e.versionCode, e.autoCategory.id, if (e.isWorkProfile) 1 else 0).joinToString("\t"))
+                        e.installTime, e.updateTime, e.versionCode, e.autoCategory.id, if (e.isWorkProfile) 1 else 0, e.installType.id).joinToString("\t"))
                     w.write("\n")
                 }
             }
@@ -274,16 +282,29 @@ class AppRepository private constructor(context: Context) {
     private fun loadCache(): List<AppEntry>? = try {
         if (!cacheFile.exists()) null else cacheFile.bufferedReader().useLines { lines ->
             val it = lines.iterator()
-            if (!it.hasNext() || it.next() != "v1") return@useLines null
+            if (!it.hasNext() || it.next() != "v2") return@useLines null
             it.asSequence().mapNotNull { line ->
                 val p = line.split('\t')
-                if (p.size < 11) null else AppEntry(p[0], p[1], p[2], p[3].toLong(), p[4], p[5] == "1", p[6].toLong(), p[7].toLong(),
-                    p[8].toLong(), AppCategory.of(p[9]) ?: AppCategory.OTHER, p[10] == "1")
+                if (p.size < 12) null else AppEntry(p[0], p[1], p[2], p[3].toLong(), p[4], p[5] == "1", p[6].toLong(), p[7].toLong(),
+                    p[8].toLong(), AppCategory.of(p[9]) ?: AppCategory.OTHER, p[10] == "1", AppInstallType.of(p[11]))
             }.toList()
         }
     } catch (_: Exception) { null }
 
     companion object {
+        /** Pure classification from ApplicationInfo flags (unit tested). */
+        fun installTypeOf(pkg: String, flags: Int, protectedPackages: Set<String>): AppInstallType {
+            val system = flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0
+            val updated = flags and android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
+            val persistent = flags and android.content.pm.ApplicationInfo.FLAG_PERSISTENT != 0
+            return when {
+                !system && !updated -> AppInstallType.USER
+                persistent || pkg in protectedPackages -> AppInstallType.PROTECTED
+                updated -> AppInstallType.UPDATED_SYSTEM
+                else -> AppInstallType.SYSTEM
+            }
+        }
+
         @Volatile private var instance: AppRepository? = null
         fun get(context: Context): AppRepository =
             instance ?: synchronized(this) { instance ?: AppRepository(context).also { instance = it } }
@@ -291,4 +312,4 @@ class AppRepository private constructor(context: Context) {
 }
 
 private fun com.akaaflix.launcher.prefs.AppCustomization.allKeys(): Set<String> =
-    (favorites + hidden + customOrder + locked + categories.keys + launchCounts.keys + lastLaunched.keys).toSet()
+    (homeApps + favorites + hidden + customOrder + locked + categories.keys + launchCounts.keys + lastLaunched.keys).toSet()

@@ -2,7 +2,7 @@
 
 A standalone Android **home-screen launcher** for Android TV, Google TV, Android TV boxes, tablets and
 phones, built from the approved *Akaa Flix Launcher* design (Egyptian-futuristic, Anubis, pyramids,
-purple/blue/silver/gold neon glass). Arabic-first (RTL) with full English (LTR).
+purple/blue/silver/gold neon glass). Arabic-first (RTL) with full English and French (LTR).
 
 It is **not** an IPTV app, media player or content platform: it lists and launches the apps that are
 installed on the device. Akaa Player (or any other app) appears only as a normal installed app.
@@ -15,18 +15,22 @@ installed on the device. Akaa Player (or any other app) appears only as a normal
 | **Settings** | **Home (English)** |
 | ![Settings](docs/screenshots/tv_ar_06_settings.jpg) | ![Home EN](docs/screenshots/tv_en_01_home.jpg) |
 
-*Screenshots are rendered by the Robolectric screenshot test (`ScreenshotTest`) with test apps, so app
-icons show Android's placeholder icon. On a device the launcher shows each app's real icon or its
-Android TV banner. Phone screenshots: `docs/screenshots/phone_ar_*.jpg`.*
+*Screenshots are rendered by the Robolectric screenshot test (`ScreenshotTest`) with brand-neutral sample
+apps (test data), so app icons show Android's placeholder icon. On a device the launcher shows only the apps
+that are really installed, with their real icons or Android TV banners. French and phone screenshots:
+`docs/screenshots/tv_fr_*.jpg`, `docs/screenshots/phone_ar_*.jpg`.*
 
 ## Downloads
 
 | File | Notes |
 |---|---|
-| [`release/AkaaFlixLauncher-v1.0.1-release.apk`](release/) | R8-minified release build (3.08 MB), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. |
+| [`release/AkaaFlixLauncher-v1.1.0-release.apk`](release/) | R8-minified release build (7.05 MB – includes the approved wallpaper collection), signed with the persistent release key (RSA 4096, v1+v2+v3). Certificate SHA-256 `8ee47c472321a9f0045b3193f1d70bbb2df0893ed92f65833d8635a763873cdf`. Installs over v1.0.1 and keeps its settings. |
+| [`release/AkaaFlixLauncher-v1.1.0-debug.apk`](release/) | Debug build (`com.akaaflix.launcher.debug`, installs next to the release build, Android debug key) for testing only. |
 
-v1.0.1 fixes the Google Play Protect "App blocked to protect your device" block of v1.0.0 – see
-[docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
+v1.1.0: neon remote focus, three-row Home, Favorites independent of Home, real weather with optional approximate
+location, approved wallpaper collection, French, About page with the official website, app management for
+user/system apps – see [docs/FEATURE_STATUS.md](docs/FEATURE_STATUS.md). v1.0.1 fixed the Google Play Protect
+block of v1.0.0 – see [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
 
 SHA-256 checksums: `release/SHA256SUMS.txt`. Install instructions: [docs/BUILD_AND_INSTALL.md](docs/BUILD_AND_INSTALL.md).
 
@@ -43,24 +47,30 @@ SHA-256 checksums: `release/SHA256SUMS.txt`. Install instructions: [docs/BUILD_A
   per-app neon under-glow from the icon's dominant colour.
 
 **Pages (as in the reference design)**
-- **Home** – logo, favourite apps (1–3 rows) with *Add app*, clock, Gregorian + Hijri date (Arabic and English),
-  Wi-Fi/Ethernet and Bluetooth status, optional weather widget, quick bar (search, voice search, all apps,
-  system notifications, device info).
-- **All apps** – search (Arabic-normalised), filters *All / Entertainment / Tools* (no Games or System
-  categories), sorting (custom, A–Z, Z–A, recently installed, most used, recently used), paging with D-pad edges,
-  arrows and swipe, app options menu (favourite, move, hide, PIN lock, category, app info, uninstall, app shortcuts).
-- **Favorites** – reorderable favourites and the launcher's recently-used apps.
+- **Home** – logo, the Home apps (three rows by default, fitted between header and quick bar) with *Add app*,
+  clock, Gregorian + Hijri date (Arabic / English / French), Wi-Fi/Ethernet status, weather widget (temperature,
+  condition, high/low, city), quick bar (search, all apps, device info). Reorder directly on Home.
+- **All apps** – search (Arabic letters and French accents normalised), filters *All / Entertainment / Tools*
+  (no Games or System categories), sorting (custom, A–Z, Z–A, recently installed, most used, recently used),
+  its own vertically scrolling grid, app options menu.
+- **Favorites** – optional favourites, completely independent of the Home screen (adding to Home never adds a
+  favourite and vice versa), plus the launcher's recently-used apps.
 - **Customization** – live miniature preview of unsaved changes; wallpapers, interface layout, colours & themes,
-  app cards & icon styles, focus/cursor, fonts; motion, clock and favourites-bar toggles; restore defaults / save.
-- **Wallpapers** – categories, favourites, resolution badges (8K/4K/2K/FHD/HD), preview behind the UI,
-  full-screen preview, add images/videos from the device, auto-rotation with intervals.
+  app cards, focus/cursor, fonts; motion, clock and Home-apps toggles; Medium/Large icon size; restore / save.
+- **Wallpapers** (from Customization) – the approved collection: Egyptian Pyramids Cinematic (default),
+  Animated Neon Pulse and the wallpapers of the approved PDF; categories, favourites, resolution badges,
+  preview behind the UI, full-screen preview, add images/videos from the device, auto-rotation.
+- **App management** – installation type (user / pre-installed / updated / protected); uninstall for user apps,
+  Android App info for system apps (disable / uninstall updates only where the device allows it).
 - **Settings** – 12 sections from the reference (interface, appearance, apps, profiles & parental controls,
   network, connected devices, remote control, notifications, date & time, language, power & performance,
   about/updates/backup), quick toggles panel, storage/RAM/device cards.
 
 **Platform features**
-- Remote-first navigation: predictable D-pad routing between sidebar, top bar and content, focus memory,
-  focus restoration after returning from apps, Menu-key and long-press actions, remote button test.
+- Remote-first navigation: neon focus (purple-magenta border, outer glow, inner light, zoom, smooth cross-fade),
+  predictable D-pad routing between sidebar, top bar and content, focus memory, focus restoration after
+  returning from apps, Menu-key and long-press actions, remote button test.
+- Languages: Arabic (RTL), English and French (LTR) for every screen, dialog and message.
 - Hijri calendar: embedded Umm al-Qura data (AH 1300–1600) validated day-by-day against the JDK, plus the
   arithmetical calendar and ±2-day adjustment. Western or Eastern Arabic numerals.
 - Performance tiers (1 GB → 8 GB+ RAM) with an automatic and a manual **lightweight mode**.
@@ -98,6 +108,8 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 - [Performance](docs/PERFORMANCE.md) – optimisations, tiers, lightweight mode
 - [Design specification](docs/DESIGN_SPEC.md) – measurements taken from the reference, decisions to confirm
 - [Security & Play Protect audit](docs/SECURITY_AUDIT.md) – permissions, components, dependencies, signing
+- [v1.1 feature status](docs/FEATURE_STATUS.md) – completed / unsupported features, control audit
+- [v1.1 implementation checklist](docs/IMPLEMENTATION_CHECKLIST_v1.1.md)
 
 ## Permissions
 
@@ -107,21 +119,24 @@ Requirements: minSdk **23** (Android 6.0), compileSdk/targetSdk **37** (Android 
 | `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` | Wi-Fi / Ethernet status icon |
 | `BLUETOOTH` (≤ Android 11) | Bluetooth on/off icon |
 | `REQUEST_DELETE_PACKAGES` | "Uninstall" in the app menu opens the system uninstall dialog |
-| `RECEIVE_BOOT_COMPLETED` | Optional "Start with device" on Android 6–9 when another app is the default Home |
+| `RECEIVE_BOOT_COMPLETED` | Optional "Start with device" on Android 6–9; keeps the weather refresh job scheduled after a restart |
+| `ACCESS_COARSE_LOCATION` (runtime, optional) | "Detect my location" for the weather city: asked only when the user taps it, after an explanation; one approximate fix, no tracking, no background location |
 
-No runtime ("dangerous") or special-access permission is requested: no location, contacts, camera, microphone,
-SMS, phone, storage/media, notification access, accessibility, overlay or usage access. Wallpapers are picked
-with the system photo/document picker (access to the chosen file only). Full details: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
-
-Voice search uses the system speech recogniser (the launcher never records audio itself).
+The only runtime permission is the optional approximate location above. No contacts, camera, microphone, SMS,
+phone, storage/media, notification access, accessibility, overlay, usage access or device-admin. Wallpapers
+are picked with the system photo/document picker (access to the chosen file only). Full details:
+[docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
 
 ## Privacy
 
 No accounts, ads, analytics or tracking. Everything works offline; the launcher contacts the network only for
-the weather widget (when enabled; city typed by the user, no GPS) and when the user checks for updates.
+the weather (Open-Meteo; city typed by the user or detected once from the approximate location, coordinates
+rounded to ~1 km) and when the user checks for updates.
 Settings stay on the device (Android cloud backup is disabled; use Settings → About → Back up settings).
 
 ## Licences
 
 Fonts Tajawal and Cairo – SIL OFL 1.1 (`docs/licenses/`). Icons – original, in the style of the ISC-licensed
-Lucide set. Bundled extra wallpapers are original renders made for this project (`tools/generate_wallpapers.py`). Akaa Flix branding and the default wallpaper come from the supplied references.
+Lucide set. Akaa Flix branding, the default wallpaper and the wallpaper collection
+(`design-assets/wallpapers/akaa-flix-wallpapers.pdf`) were supplied by the project owner; the Animated Neon Pulse
+is drawn procedurally. Weather data: Open-Meteo (CC BY 4.0).

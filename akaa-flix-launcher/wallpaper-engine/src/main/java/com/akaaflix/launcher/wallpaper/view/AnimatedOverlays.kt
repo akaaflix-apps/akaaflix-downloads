@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
 import android.os.SystemClock
 import android.view.View
 import androidx.core.graphics.ColorUtils
@@ -36,35 +35,64 @@ abstract class AnimatedOverlay(context: Context) : View(context) {
     abstract fun drawFrame(canvas: Canvas, t: Float)
 }
 
-/** "Neon Pulse": the floor rings of the Akaa Flix artwork pulse outward; stars twinkle. */
+/**
+ * "Animated Neon Pulse": purple and blue neon waves flowing slowly across a deep night gradient,
+ * with a gentle breathing glow. Lightweight: 7 polylines (57 points) stroked three times per frame
+ * at ~30 fps with preallocated paints/paths, no bitmaps, no blur filters, no allocation per frame.
+ * When animation is off (setting or low-RAM device) the static frame (wp_neon_waves) is shown instead.
+ */
 class NeonPulseOverlay(context: Context) : AnimatedOverlay(context) {
-    private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
+    private class Wave(val color: Int, val amp: Float, val freq: Float, val speed: Float, val phase: Float, val offset: Float)
+
+    private val waves = arrayOf(
+        Wave(0xFFE040FB.toInt(), 0.070f, 1.10f, 0.050f, 0.0f, 0.020f),
+        Wave(0xFFB15CFF.toInt(), 0.095f, 0.85f, -0.040f, 1.3f, -0.030f),
+        Wave(0xFF7C6CFF.toInt(), 0.080f, 1.35f, 0.065f, 2.1f, 0.050f),
+        Wave(0xFF4F8DFF.toInt(), 0.115f, 0.70f, -0.032f, 0.6f, 0.000f),
+        Wave(0xFF5B9BFF.toInt(), 0.065f, 1.65f, 0.075f, 3.0f, -0.060f),
+        Wave(0xFFD946EF.toInt(), 0.090f, 1.00f, -0.048f, 4.2f, 0.080f),
+        Wave(0xFF9F7AEA.toInt(), 0.055f, 1.90f, 0.058f, 5.0f, -0.012f),
+    )
+    private val bg = Paint()
+    private var bgH = -1f
+    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND }
+    private val path = android.graphics.Path()
     private val star = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val oval = RectF()
-    private val rnd = Random(42)
-    private val stars = Array(42) { floatArrayOf(rnd.nextFloat(), rnd.nextFloat() * 0.42f, rnd.nextFloat() * 6.28f, 0.6f + rnd.nextFloat() * 1.6f) }
+    private val rnd = Random(11)
+    private val stars = Array(36) { floatArrayOf(rnd.nextFloat(), rnd.nextFloat() * 0.38f, rnd.nextFloat() * 6.28f, 0.5f + rnd.nextFloat() * 1.4f) }
 
     override fun drawFrame(canvas: Canvas, t: Float) {
         val w = width.toFloat(); val h = height.toFloat()
-        val accent = LauncherUi.palette.accent
-        val cx = w * 0.5f; val cy = h * 0.88f
-        for (i in 0 until 3) {
-            val phase = ((t * 0.22f) + i / 3f) % 1f
-            val rx = w * (0.18f + phase * 0.55f)
-            val ry = rx * 0.20f
-            oval.set(cx - rx, cy - ry, cx + rx, cy + ry)
-            val a = ((1f - phase) * 200).toInt().coerceIn(0, 255)
-            ring.color = ColorUtils.setAlphaComponent(accent, a / 3)
-            ring.strokeWidth = 9f * density
-            canvas.drawOval(oval, ring)
-            ring.color = ColorUtils.setAlphaComponent(Color.WHITE, (a * 0.8f).toInt())
-            ring.strokeWidth = 1.6f * density
-            canvas.drawOval(oval, ring)
+        if (w <= 0f || h <= 0f) return
+        if (bgH != h) {
+            bgH = h
+            bg.shader = android.graphics.LinearGradient(0f, 0f, 0f, h,
+                intArrayOf(0xFF05010D.toInt(), 0xFF0D0322.toInt(), 0xFF140632.toInt(), 0xFF05010C.toInt()),
+                floatArrayOf(0f, 0.45f, 0.62f, 1f), android.graphics.Shader.TileMode.CLAMP)
         }
+        canvas.drawRect(0f, 0f, w, h, bg)
         for (s in stars) {
-            val a = (abs(sin(t * s[3] + s[2])) * 230).toInt()
-            star.color = Color.argb(a, 235, 225, 255)
-            canvas.drawCircle(s[0] * w, s[1] * h, 1.4f * density, star)
+            star.color = Color.argb((abs(sin(t * s[3] + s[2])) * 150).toInt(), 225, 215, 255)
+            canvas.drawCircle(s[0] * w, s[1] * h, 1.1f * density, star)
+        }
+        val cy = h * 0.56f
+        val breathe = 0.78f + 0.22f * sin(t * 1.2f)
+        val twoPi = 6.2831855f
+        val n = 56
+        for (wv in waves) {
+            path.rewind()
+            for (i in 0..n) {
+                val u = i / n.toFloat()
+                val env = 0.38f + 0.62f * u          // waves gather on the left and open to the right
+                val y = cy + h * (wv.offset * env + wv.amp * env * sin(u * wv.freq * twoPi + wv.phase + t * wv.speed * twoPi))
+                if (i == 0) path.moveTo(0f, y) else path.lineTo(u * w, y)
+            }
+            stroke.color = ColorUtils.setAlphaComponent(wv.color, (30 * breathe).toInt()); stroke.strokeWidth = 14f * density
+            canvas.drawPath(path, stroke)
+            stroke.color = ColorUtils.setAlphaComponent(wv.color, (72 * breathe).toInt()); stroke.strokeWidth = 5.5f * density
+            canvas.drawPath(path, stroke)
+            stroke.color = ColorUtils.setAlphaComponent(ColorUtils.blendARGB(wv.color, Color.WHITE, 0.38f), 235); stroke.strokeWidth = 1.7f * density
+            canvas.drawPath(path, stroke)
         }
     }
 }

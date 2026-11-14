@@ -6,7 +6,7 @@ import androidx.annotation.StringRes
 import java.io.File
 
 enum class WallpaperType { STATIC, VIDEO, ANIMATED }
-enum class WallpaperCategory { CINEMATIC, SPACE, NATURE, LANDMARKS, ABSTRACT, ANIMATED, MINE }
+enum class WallpaperCategory { CINEMATIC, SPACE, NATURE, LANDMARKS, MOSQUES, ABSTRACT, ANIMATED, MINE }
 
 data class Wallpaper(
     val id: String,

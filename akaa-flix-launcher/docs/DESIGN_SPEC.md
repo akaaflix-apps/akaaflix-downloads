@@ -105,3 +105,17 @@ composition, so it was not done without approval.
    wallpaper; it is a shortcut to remote-control settings (can be hidden).
 8. **Chips "Entertainment / Tools"** in All apps are filters only; there are no Games or System categories.
 9. **Icon style swatches** map to: original, rounded square, circle (white plate for legacy icons), square.
+
+## v1.1 changes requested by the project owner
+
+- Neon remote focus: purple-magenta tube border (coloured stroke + white core), controlled outer glow inside the
+  card margin, inner illumination, 8 % zoom (setting), ~150 ms cross-fade.
+- Bottom quick bar: search, all apps, device info (voice and notifications removed, remaining buttons re-spaced).
+- Top bar: clock, Wi-Fi, settings and the date pill (Bluetooth icon removed).
+- Sidebar: Home, All apps, Favorites, Customize, Settings (Wallpapers opened from Customization).
+- Home: three rows by default; grid top 134 dp, bottom reserve 92 dp on the 960×540 dp canvas; remote art
+  172×84 dp; card height fitted to the band.
+- Customization: Featured Wallpapers, chips, carousel and Icon Style removed; Icon size card (Medium / Large);
+  preview and tiles fill the freed height.
+- Wallpapers: approved collection only (Egyptian Pyramids Cinematic default, Animated Neon Pulse, PDF set).
+- About: logo, name, version, official website (Akaa Flix → https://akaaflix.com), copyright line.

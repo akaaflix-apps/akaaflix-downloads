@@ -57,8 +57,8 @@ class HomePreviewView @JvmOverloads constructor(context: Context, attrs: Attribu
     private val logo: Bitmap? by lazy {
         try { BitmapFactory.decodeResource(resources, R.drawable.akaa_logo, BitmapFactory.Options().apply { inSampleSize = 2 }) } catch (_: Exception) { null }
     }
-    private val navIcons = intArrayOf(R.drawable.ic_home, R.drawable.ic_apps, R.drawable.ic_star, R.drawable.ic_sliders, R.drawable.ic_layers, R.drawable.ic_settings)
-    private val barIcons = intArrayOf(R.drawable.ic_search, R.drawable.ic_mic, R.drawable.ic_apps, R.drawable.ic_bell, R.drawable.ic_info)
+    private val navIcons = intArrayOf(R.drawable.ic_home, R.drawable.ic_apps, R.drawable.ic_star, R.drawable.ic_sliders, R.drawable.ic_settings)
+    private val barIcons = intArrayOf(R.drawable.ic_search, R.drawable.ic_apps, R.drawable.ic_info)
     private val src = Rect()
     private val dst = RectF()
 
@@ -99,7 +99,7 @@ class HomePreviewView @JvmOverloads constructor(context: Context, attrs: Attribu
         } ?: canvas.drawColor(0xFF0B0418.toInt())
         // Sidebar + items
         sidebar.setBounds(0, 58, 96, 462); sidebar.draw(canvas)
-        val step = (462 - 58 - 44) / 6f
+        val step = (462 - 58 - 44) / navIcons.size.toFloat()
         for (i in navIcons.indices) {
             val cy = 80 + step * i + step / 2f
             if (i == 0) { navSel.setBounds(-20, (cy - 26).toInt(), 88, (cy + 26).toInt()); navSel.state = intArrayOf(android.R.attr.state_activated); navSel.draw(canvas) }
@@ -117,8 +117,7 @@ class HomePreviewView @JvmOverloads constructor(context: Context, attrs: Attribu
             text.textSize = 11f; text.textAlign = Paint.Align.CENTER
             canvas.drawText("•  ••••  •••••  ••••  |  ••  ••••  ••••  •", 806f, 76f, text)
         }
-        drawIcon(canvas, R.drawable.ic_wifi, 836f, 14f, 22f, Color.WHITE)
-        drawIcon(canvas, R.drawable.ic_bluetooth, 870f, 14f, 22f, Color.WHITE)
+        drawIcon(canvas, R.drawable.ic_wifi, 866f, 14f, 22f, Color.WHITE)
         circle.state = intArrayOf(); circle.setBounds(902, 8, 940, 46); circle.draw(canvas)
         drawIcon(canvas, R.drawable.ic_settings, 910f, 16f, 22f, Color.WHITE)
         // Brand pill
@@ -132,11 +131,11 @@ class HomePreviewView @JvmOverloads constructor(context: Context, attrs: Attribu
         if (s.showFavoritesBar) {
             val cols = 6; val rows = s.homeRows.coerceIn(1, 3)
             val left = 112f; val width = 838f
-            val cw = width / cols; val ch = cw * 0.74f
+            val cw = width / cols; val ch = minOf(cw * 0.74f, (540f - 134f - 92f) / rows)
             val iconPx = 72
             for (r in 0 until rows) for (c in 0 until cols) {
                 val idx = r * cols + c
-                val l = left + c * cw; val t = 188f + r * ch
+                val l = left + c * cw; val t = 134f + r * ch
                 card.state = if (idx == 0) intArrayOf(android.R.attr.state_focused) else intArrayOf()
                 card.glowTint = 0
                 val isAdd = idx == minOf(apps.size, rows * cols - 1)
@@ -147,14 +146,14 @@ class HomePreviewView @JvmOverloads constructor(context: Context, attrs: Attribu
                 canvas.save()
                 if (idx == 0) { val z = 1.06f; canvas.scale(z, z, l + cw / 2, t + ch / 2) }
                 card.draw(canvas)
-                val iconSize = ch * (if (s.showAppLabels) 0.42f else 0.55f) * when (s.iconSize) { "small" -> 0.88f; "large" -> 1.15f; else -> 1f }
+                val iconSize = ch * (if (s.showAppLabels) 0.42f else 0.55f) * (if (s.iconSize == "large") 1.15f else 1f)
                 val cx = l + cw / 2
                 val iy = t + ch / 2 - iconSize / 2 - (if (s.showAppLabels) 8f else 0f)
                 if (isAdd) drawIcon(canvas, R.drawable.ic_plus, cx - iconSize / 2, iy, iconSize, Color.WHITE)
                 else if (entry != null) {
-                    val bmp = icons.peekIcon(entry, iconPx, s.iconShape)
+                    val bmp = icons.peekIcon(entry, iconPx, "original")
                     if (bmp != null) { dst.set(cx - iconSize / 2, iy, cx + iconSize / 2, iy + iconSize); canvas.drawBitmap(bmp, null, dst, bmpPaint) }
-                    else request(entry, iconPx, s.iconShape)
+                    else request(entry, iconPx, "original")
                 }
                 if (s.showAppLabels) {
                     text.textAlign = Paint.Align.CENTER; text.textSize = 12f; text.typeface = typeface
@@ -167,11 +166,12 @@ class HomePreviewView @JvmOverloads constructor(context: Context, attrs: Attribu
         // Weather and action bar
         if (s.weatherEnabled) {
             chip.state = intArrayOf(); chip.setBounds(16, 470, 176, 526); chip.draw(canvas)
+            // Schematic only (no invented temperature in the miniature).
             drawIcon(canvas, R.drawable.ic_weather_partly_night, 28f, 478f, 40f, 0)
-            text.textAlign = Paint.Align.LEFT; text.textSize = 19f; canvas.drawText("22°", 78f, 504f, text)
+            text.textAlign = Paint.Align.LEFT; text.textSize = 19f; canvas.drawText("--°", 78f, 504f, text)
         }
         if (s.showBottomBar) {
-            val n = barIcons.size; val gap = 58f; val start = 480f - (n - 1) * gap / 2
+            val n = barIcons.size; val gap = 62f; val start = 480f - (n - 1) * gap / 2
             for (i in 0 until n) {
                 val cx = start + i * gap
                 circle.state = intArrayOf(); circle.setBounds((cx - 21).toInt(), 466, (cx + 21).toInt(), 508); circle.draw(canvas)

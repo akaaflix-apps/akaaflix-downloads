@@ -15,8 +15,8 @@ android {
         applicationId = "com.akaaflix.launcher"
         minSdk = rootProject.extra["akaa.minSdk"] as Int
         targetSdk = rootProject.extra["akaa.targetSdk"] as Int
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "UPDATE_REPO", "\"${prop("akaa.update.repo") ?: ""}\"")
         buildConfigField("String", "UPDATE_TAG_PREFIX", "\"${prop("akaa.update.tagPrefix") ?: "launcher-v"}\"")
@@ -61,7 +61,7 @@ android {
         buildConfig = true
     }
     androidResources {
-        localeFilters += listOf("en", "ar")
+        localeFilters += listOf("en", "ar", "fr")
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true

@@ -6,10 +6,15 @@ import org.json.JSONObject
 /**
  * Per-app user choices, keyed by the launcher app key ("package/activity#userSerial").
  * Launch statistics are the launcher's own history (no usage-access permission required).
+ *
+ * Home screen apps and Favorites are two independent lists: adding/removing an app in one never
+ * changes the other. (Schema 1 stored a single "favorites" list that was shown on Home; it is
+ * migrated to [homeApps] and Favorites starts empty – nothing is marked favourite automatically.)
  */
 data class AppCustomization(
+    val homeApps: List<String> = emptyList(),
+    val homeInitialized: Boolean = false,
     val favorites: List<String> = emptyList(),
-    val favoritesInitialized: Boolean = false,
     val hidden: Set<String> = emptySet(),
     val customOrder: List<String> = emptyList(),
     val locked: Set<String> = emptySet(),
@@ -19,8 +24,10 @@ data class AppCustomization(
     val sortMode: String = "custom",                     // custom | az | za | installed | most_used | recent
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
+        put("v", SCHEMA)
+        put("homeApps", JSONArray(homeApps))
+        put("homeInitialized", homeInitialized)
         put("favorites", JSONArray(favorites))
-        put("favoritesInitialized", favoritesInitialized)
         put("hidden", JSONArray(hidden.toList()))
         put("customOrder", JSONArray(customOrder))
         put("locked", JSONArray(locked.toList()))
@@ -38,8 +45,12 @@ data class AppCustomization(
     fun toggleFavorite(key: String): AppCustomization =
         if (key in favorites) copy(favorites = favorites - key) else copy(favorites = favorites + key)
 
+    fun toggleHome(key: String): AppCustomization =
+        if (key in homeApps) copy(homeApps = homeApps - key, homeInitialized = true) else copy(homeApps = homeApps + key, homeInitialized = true)
+
     /** Removes references to apps that are no longer installed. */
     fun pruned(installed: Set<String>): AppCustomization = copy(
+        homeApps = homeApps.filter { it in installed },
         favorites = favorites.filter { it in installed },
         hidden = hidden.filterTo(LinkedHashSet()) { it in installed },
         customOrder = customOrder.filter { it in installed },
@@ -50,6 +61,7 @@ data class AppCustomization(
     )
 
     companion object {
+        const val SCHEMA = 2
         val SORT_MODES = listOf("custom", "az", "za", "installed", "most_used", "recent")
 
         fun fromJson(o: JSONObject): AppCustomization {
@@ -57,9 +69,12 @@ data class AppCustomization(
             fun strMap(k: String): Map<String, String> = o.optJSONObject(k)?.let { m -> m.keys().asSequence().associateWith { m.optString(it) } } ?: emptyMap()
             fun intMap(k: String): Map<String, Int> = o.optJSONObject(k)?.let { m -> m.keys().asSequence().associateWith { m.optInt(it) } } ?: emptyMap()
             fun longMap(k: String): Map<String, Long> = o.optJSONObject(k)?.let { m -> m.keys().asSequence().associateWith { m.optLong(it) } } ?: emptyMap()
+            val legacy = o.optInt("v", 1) < 2
             return AppCustomization(
-                favorites = list("favorites").distinct(),
-                favoritesInitialized = o.optBoolean("favoritesInitialized", false),
+                // Schema 1: the single list was the Home grid -> becomes homeApps; Favorites start empty.
+                homeApps = (if (legacy) list("favorites") else list("homeApps")).distinct(),
+                homeInitialized = if (legacy) o.optBoolean("favoritesInitialized", false) else o.optBoolean("homeInitialized", false),
+                favorites = if (legacy) emptyList() else list("favorites").distinct(),
                 hidden = list("hidden").toSet(),
                 customOrder = list("customOrder").distinct(),
                 locked = list("locked").toSet(),

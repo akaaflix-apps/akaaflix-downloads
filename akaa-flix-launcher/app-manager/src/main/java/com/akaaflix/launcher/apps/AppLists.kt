@@ -9,7 +9,7 @@ import java.util.Locale
 
 /** Pure list logic (filtering, search, sorting, favourites) – unit tested on the JVM. */
 object AppLists {
-    /** Ordering preference used only to pick initial favourites among apps that ARE installed. */
+    /** Ordering preference used only to pick the initial Home apps among apps that ARE installed. */
     val PREFERRED_DEFAULT_PACKAGES = listOf(
         "com.akaaflix.player", "com.akaaflix.prime",
         "com.google.android.youtube.tv", "com.google.android.youtube", "com.netflix.ninja", "com.netflix.mediaclient",
@@ -19,9 +19,12 @@ object AppLists {
         "com.android.tv.settings", "com.android.settings", "com.google.android.apps.photos",
     )
 
+    /** Search normalisation: case, Arabic letter variants / diacritics and Latin accents (é → e). */
     fun normalize(s: String): String {
         val sb = StringBuilder(s.length)
-        for (c in s.lowercase(Locale.ROOT)) {
+        val decomposed = java.text.Normalizer.normalize(s.lowercase(Locale.ROOT), java.text.Normalizer.Form.NFD)
+        for (c in decomposed) {
+            if (Character.getType(c) == Character.NON_SPACING_MARK.toInt()) continue   // accents, harakat, hamza marks
             when (c) {
                 'أ', 'إ', 'آ', 'ٱ' -> sb.append('ا')
                 'ة' -> sb.append('ه')
@@ -71,9 +74,15 @@ object AppLists {
         }
     }
 
-    fun favorites(apps: List<AppEntry>, custom: AppCustomization): List<AppEntry> {
+    /** The user's Favorites (independent of the Home screen). */
+    fun favorites(apps: List<AppEntry>, custom: AppCustomization): List<AppEntry> = resolve(apps, custom, custom.favorites)
+
+    /** Apps placed on the Home screen (independent of Favorites). */
+    fun homeApps(apps: List<AppEntry>, custom: AppCustomization): List<AppEntry> = resolve(apps, custom, custom.homeApps)
+
+    private fun resolve(apps: List<AppEntry>, custom: AppCustomization, keys: List<String>): List<AppEntry> {
         val byKey = apps.associateBy { it.key }
-        return custom.favorites.mapNotNull { byKey[it] }.filter { it.key !in custom.hidden }
+        return keys.mapNotNull { byKey[it] }.filter { it.key !in custom.hidden }
     }
 
     fun recent(apps: List<AppEntry>, custom: AppCustomization, limit: Int): List<AppEntry> =
@@ -81,7 +90,8 @@ object AppLists {
             .sortedByDescending { custom.lastLaunched[it.key] ?: 0L }
             .take(limit)
 
-    fun defaultFavorites(apps: List<AppEntry>, limit: Int, locale: Locale = Locale.getDefault()): List<String> {
+    /** First-run Home apps: real installed apps only (never favourites, never invented entries). */
+    fun defaultHomeApps(apps: List<AppEntry>, limit: Int, locale: Locale = Locale.getDefault()): List<String> {
         val result = ArrayList<String>()
         for (pkg in PREFERRED_DEFAULT_PACKAGES) {
             apps.firstOrNull { it.packageName == pkg && !it.isWorkProfile }?.let { if (it.key !in result) result.add(it.key) }

@@ -13,8 +13,8 @@ object CustomizationSheets {
         val rowsOptions = listOf("1", "2", "3")
         val cols = listOf(0, 5, 6, 7, 8)
         val colLabels = cols.map { if (it == 0) c.getString(R.string.auto) else it.toString() }
-        val sizes = listOf("small", "medium", "large")
-        val sizeLabels = listOf(c.getString(R.string.size_small), c.getString(R.string.size_medium), c.getString(R.string.size_large))
+        val sizes = LauncherSettings.ICON_SIZES
+        val sizeLabels = listOf(c.getString(R.string.size_medium), c.getString(R.string.size_large))
         val start = listOf("home", "all_apps", "favorites")
         val startLabels = listOf(c.getString(R.string.nav_home), c.getString(R.string.nav_all_apps), c.getString(R.string.nav_favorites))
         val modes = listOf("auto", "tv", "touch")
@@ -31,7 +31,7 @@ object CustomizationSheets {
                 value = s.weatherCity.ifBlank { c.getString(R.string.row_weather_city_none) }) { chooseCity() },
             SettingRow.Header("h_layout", c.getString(R.string.row_layout_header)),
             SettingRow.Choice("cols", c.getString(R.string.row_grid_columns), icon = R.drawable.ic_apps, options = colLabels, selected = cols.indexOf(s.gridColumns).coerceAtLeast(0)) { i -> update { it.copy(gridColumns = cols[i]) } },
-            SettingRow.Choice("size", c.getString(R.string.row_icon_size), icon = R.drawable.ic_image, options = sizeLabels, selected = sizes.indexOf(s.iconSize).coerceAtLeast(1)) { i -> update { it.copy(iconSize = sizes[i]) } },
+            SettingRow.Choice("size", c.getString(R.string.row_icon_size), icon = R.drawable.ic_image, options = sizeLabels, selected = sizes.indexOf(s.iconSize).coerceAtLeast(0)) { i -> update { it.copy(iconSize = sizes[i]) } },
             SettingRow.Toggle("sidebarLabels", c.getString(R.string.row_sidebar_labels), icon = R.drawable.ic_sliders, checked = s.showSidebarLabels) { v -> update { it.copy(showSidebarLabels = v) } },
             SettingRow.Header("h_nav", c.getString(R.string.row_navigation_header)),
             SettingRow.Choice("start", c.getString(R.string.row_start_page), icon = R.drawable.ic_home, options = startLabels, selected = start.indexOf(s.startPage).coerceAtLeast(0)) { i -> update { it.copy(startPage = start[i]) } },
@@ -51,18 +51,20 @@ object CustomizationSheets {
         )
     }
 
-    fun apps(c: Context, s: LauncherSettings, update: ((LauncherSettings) -> LauncherSettings) -> Unit, editFavorites: () -> Unit, reorder: () -> Unit): List<SettingRow> {
-        val shapes = listOf("original", "rounded", "circle", "square")
-        val shapeLabels = listOf(R.string.icon_original, R.string.icon_rounded, R.string.icon_circle, R.string.icon_square).map { c.getString(it) }
+    fun apps(c: Context, s: LauncherSettings, update: ((LauncherSettings) -> LauncherSettings) -> Unit,
+             editHome: () -> Unit, reorderHome: () -> Unit, editFavorites: () -> Unit): List<SettingRow> {
+        val sizes = LauncherSettings.ICON_SIZES
+        val sizeLabels = listOf(c.getString(R.string.size_medium), c.getString(R.string.size_large))
         val cards = listOf("glass", "solid", "outline", "minimal")
         val cardLabels = listOf(R.string.card_glass, R.string.card_solid, R.string.card_outline, R.string.card_minimal).map { c.getString(it) }
         return listOf(
-            SettingRow.Choice("shape", c.getString(R.string.row_icon_style), icon = R.drawable.ic_apps, options = shapeLabels, selected = shapes.indexOf(s.iconShape).coerceAtLeast(0)) { i -> update { it.copy(iconShape = shapes[i]) } },
+            SettingRow.Choice("size", c.getString(R.string.row_icon_size), icon = R.drawable.ic_image, options = sizeLabels, selected = sizes.indexOf(s.iconSize).coerceAtLeast(0)) { i -> update { it.copy(iconSize = sizes[i]) } },
             SettingRow.Choice("card", c.getString(R.string.row_card_style), icon = R.drawable.ic_layers, options = cardLabels, selected = cards.indexOf(s.cardStyle).coerceAtLeast(0)) { i -> update { it.copy(cardStyle = cards[i]) } },
             SettingRow.Toggle("banners", c.getString(R.string.row_tv_banners), c.getString(R.string.row_tv_banners_sub), R.drawable.ic_tv, s.useTvBanners) { v -> update { it.copy(useTvBanners = v) } },
             SettingRow.Toggle("labels", c.getString(R.string.row_show_labels), icon = R.drawable.ic_text_size, checked = s.showAppLabels) { v -> update { it.copy(showAppLabels = v) } },
+            SettingRow.Action("home", c.getString(R.string.row_edit_home_apps), icon = R.drawable.ic_home) { editHome() },
+            SettingRow.Action("reorder", c.getString(R.string.row_reorder_home_apps), icon = R.drawable.ic_move) { reorderHome() },
             SettingRow.Action("favorites", c.getString(R.string.row_edit_favorites), icon = R.drawable.ic_star) { editFavorites() },
-            SettingRow.Action("reorder", c.getString(R.string.row_reorder_favorites), icon = R.drawable.ic_move) { reorder() },
         )
     }
 

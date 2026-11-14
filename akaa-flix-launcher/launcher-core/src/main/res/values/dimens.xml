@@ -9,7 +9,11 @@
     <dimen name="content_start">104dp</dimen>
     <dimen name="content_end">10dp</dimen>
     <dimen name="top_bar_height">92dp</dimen>
-    <dimen name="home_grid_top">188dp</dimen>
+    <dimen name="home_grid_top">134dp</dimen>
+    <!-- Space kept free under the Home grid (quick bar, weather widget, remote art). -->
+    <dimen name="home_bottom_reserve">92dp</dimen>
+    <dimen name="home_remote_decor_width">172dp</dimen>
+    <dimen name="home_remote_decor_height">84dp</dimen>
     <dimen name="page_top">96dp</dimen>
     <dimen name="glow_pad">6dp</dimen>
     <dimen name="card_radius">14dp</dimen>

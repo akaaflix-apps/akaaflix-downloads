@@ -13,7 +13,9 @@ cheap, hardware-accelerated primitives and can be scaled down per device.
 - Home page is created once and only hidden when other pages open, so returning Home is instant and focus
   is preserved; other pages are created on demand and destroyed when left.
 - Native Views instead of Compose (smaller runtime, faster first frame on low-end TV boxes).
-- R8 full minification and resource shrinking: release APK 3.08 MB, no native libraries.
+- R8 full minification and resource shrinking, no native libraries. The approved wallpaper collection adds
+  ~4.3 MB of WebP (native 1672×941, quality 90) – images are decoded once at screen size, so APK size does not
+  change memory use.
 
 ## Rendering
 
@@ -27,15 +29,22 @@ cheap, hardware-accelerated primitives and can be scaled down per device.
 - Wallpaper decoded once at screen size off the main thread (power-of-two sub-sampling + cover scaling):
   an 8K image never allocates more than ~2× the screen; imported images are stored as optimised ≤4K JPEGs.
   4K bundled wallpapers are 55–115 KB WebP files.
-- Animated wallpapers are ~30 fps procedural overlays that stop completely when the launcher is not visible;
-  video wallpapers pause in `onStop`.
+- Animated Neon Pulse: 7 polylines (57 points) stroked three times per frame at ~30 fps, preallocated
+  paint/path, no bitmaps or blur filters; it stops completely when the launcher is not visible and is replaced by
+  its static frame in lightweight mode. Video wallpapers pause in `onStop`.
+- Neon focus: drawn by the card's own drawable inside its bounds (glow rings within an 8 dp margin, border,
+  inner light), cross-faded by a ~150 ms animator only while focus changes; the halo is disabled on entry-tier
+  devices (border and inner light remain).
 
 ## No background work
 
-- No services, no WorkManager, no alarms. Clock updates come from the system `TIME_TICK` broadcast; Wi-Fi and
-  Bluetooth from callbacks; all are registered only while the launcher is visible.
-- Wallpaper rotation and weather refresh run only while visible (an overdue rotation happens on return).
-- Network only for weather (enabled by the user, ≥ 30 min apart) and manual update checks.
+- No long-running services, no WorkManager, no alarms. Clock updates come from the system `TIME_TICK`
+  broadcast; Wi-Fi from callbacks; all are registered only while the launcher is visible.
+- Weather: refreshed while Home is visible (≥ 30 min apart) and by one JobScheduler job (~hourly, network
+  required, battery not low, only when a weather city is set). Location is read once on request (and at most
+  every 12 h while visible for an auto-detected city) – never continuously.
+- Wallpaper rotation runs only while visible (an overdue rotation happens on return).
+- Network only for weather and update checks; startup never waits for the network (cached weather is shown).
 
 ## Device tiers and lightweight mode
 

@@ -8,11 +8,12 @@
     android:paddingLeft="@dimen/content_start"
     android:paddingTop="@dimen/page_top"
     android:paddingRight="@dimen/content_end"
-    android:paddingBottom="6dp">
+    android:paddingBottom="14dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="196dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:layoutDirection="ltr"
@@ -21,8 +22,9 @@
         <FrameLayout
             android:id="@+id/previewCard"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.43"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.47"
             android:padding="8dp">
 
             <com.akaaflix.launcher.home.ui.HomePreviewView
@@ -37,7 +39,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="12dp"
-            android:layout_weight="0.57"
+            android:layout_weight="0.53"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:columnCount="3"
@@ -69,77 +71,12 @@
         </GridLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="38dp"
-        android:layout_marginTop="8dp"
-        android:clipChildren="false"
-        android:gravity="center_vertical"
-        android:layoutDirection="ltr"
-        android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:drawableStart="@drawable/ic_image"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            android:text="@string/cust_featured"
-            android:textAppearance="@style/TextAppearance.Akaa.Section"
-            android:id="@+id/featuredTitle" />
-
-        <HorizontalScrollView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:fillViewport="true"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/featuredChips"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipChildren="false"
-                android:gravity="center_vertical|end"
-                android:layoutDirection="locale"
-                android:orientation="horizontal" />
-        </HorizontalScrollView>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="68dp"
-        android:layout_marginTop="4dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:gravity="center_vertical"
-        android:layoutDirection="ltr"
-        android:orientation="horizontal">
-
-        <ImageView android:id="@+id/stripPrev" android:layout_width="34dp" android:layout_height="34dp" android:contentDescription="@string/cd_previous_page" android:focusable="true" android:padding="8dp" android:src="@drawable/ic_chevron_left" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/strip"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:orientation="horizontal" />
-
-        <ImageView android:id="@+id/stripNext" android:layout_width="34dp" android:layout_height="34dp" android:contentDescription="@string/cd_next_page" android:focusable="true" android:padding="8dp" android:src="@drawable/ic_chevron_right" />
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="62dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="14dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:layoutDirection="ltr"
@@ -214,7 +151,7 @@
             <com.akaaflix.launcher.core.ui.NeonSwitch android:id="@+id/toggleFavBarSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" />
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/iconStyleCard"
+            android:id="@+id/iconSizeCard"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -224,16 +161,19 @@
             android:paddingStart="10dp"
             android:paddingEnd="10dp">
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:drawableStart="@drawable/ic_apps" android:drawablePadding="6dp" android:gravity="center_vertical" android:maxLines="1" android:text="@string/cust_icon_style" android:textAlignment="viewStart" android:textAppearance="@style/TextAppearance.Akaa.LabelBold" android:id="@+id/iconStyleTitle" />
+            <TextView android:id="@+id/iconSizeTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:drawableStart="@drawable/ic_apps" android:drawablePadding="6dp" android:gravity="center_vertical" android:maxLines="1" android:text="@string/row_icon_size" android:textAlignment="viewStart" android:textAppearance="@style/TextAppearance.Akaa.LabelBold" />
 
-            <LinearLayout android:id="@+id/iconStyles" android:layout_width="match_parent" android:layout_height="30dp" android:layout_marginTop="3dp" android:clipChildren="false" android:gravity="center" android:layoutDirection="ltr" android:orientation="horizontal" />
+            <LinearLayout android:id="@+id/iconSizes" android:layout_width="match_parent" android:layout_height="30dp" android:layout_marginTop="4dp" android:clipChildren="false" android:gravity="center" android:layoutDirection="locale" android:orientation="horizontal">
+                <TextView android:id="@+id/sizeMedium" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:clickable="true" android:focusable="true" android:gravity="center" android:maxLines="1" android:text="@string/size_medium" android:textAppearance="@style/TextAppearance.Akaa.LabelBold" android:textSize="12sp" />
+                <TextView android:id="@+id/sizeLarge" android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginStart="8dp" android:layout_weight="1" android:clickable="true" android:focusable="true" android:gravity="center" android:maxLines="1" android:text="@string/size_large" android:textAppearance="@style/TextAppearance.Akaa.LabelBold" android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="44dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="14dp"
         android:clipChildren="false"
         android:gravity="center"
         android:layoutDirection="ltr"

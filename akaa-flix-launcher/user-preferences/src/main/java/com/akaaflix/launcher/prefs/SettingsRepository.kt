@@ -91,6 +91,7 @@ class SettingsRepository private constructor(context: Context) {
             pinHash = cur.pinHash, pinSalt = cur.pinSalt, profileName = cur.profileName,
             profileAvatar = cur.profileAvatar, weatherCity = cur.weatherCity, weatherCountry = cur.weatherCountry,
             weatherLat = cur.weatherLat, weatherLon = cur.weatherLon, language = cur.language,
+            weatherLocationMode = cur.weatherLocationMode, weatherLocatedAt = cur.weatherLocatedAt,
         )
     }
 

@@ -58,4 +58,9 @@ sealed class SettingRow {
     data class Info(override val id: String, val title: CharSequence, val value: CharSequence?, @DrawableRes val icon: Int = 0) : SettingRow() {
         override fun contentKey() = "i|$title|$value|$icon"
     }
+
+    /** Centred brand block (About page): large artwork, title and caption lines. Not focusable. */
+    data class Hero(override val id: String, @DrawableRes val image: Int, val title: CharSequence, val lines: List<CharSequence>) : SettingRow() {
+        override fun contentKey() = "hero|$image|$title|${lines.joinToString("|")}"
+    }
 }

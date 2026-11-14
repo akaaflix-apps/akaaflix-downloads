@@ -58,6 +58,8 @@ interface SettingsActions {
     fun setAutoStart(enabled: Boolean)
     fun chooseWeatherCity()
     fun openWallpapers()
+    fun editHomeApps()
+    fun reorderHomeApps()
     fun editFavorites()
     fun reorderFavorites()
     fun editHidden()
@@ -77,6 +79,8 @@ interface SettingsActions {
     fun backup()
     fun restore()
     fun showText(title: Int, text: String)
+    fun openWebsite()
+    fun showDefaultLauncherGuide()
     fun exitSafeMode()
     fun system(which: String)
 }
@@ -106,7 +110,7 @@ object SettingsSections {
         val modes = listOf("auto", "tv", "touch")
         val start = listOf("home", "all_apps", "favorites")
         val cols = listOf(0, 5, 6, 7, 8)
-        val sizes = listOf("small", "medium", "large")
+        val sizes = LauncherSettings.ICON_SIZES
         val units = listOf("c", "f")
         return listOf(
             SettingRow.Header("h_general", c.s(R.string.row_general_header)),
@@ -115,13 +119,14 @@ object SettingsSections {
             SettingRow.Choice("start", c.s(R.string.row_start_page), icon = R.drawable.ic_home,
                 options = listOf(c.s(R.string.nav_home), c.s(R.string.nav_all_apps), c.s(R.string.nav_favorites)), selected = start.indexOf(s.startPage).coerceAtLeast(0)) { i -> a.edit { it.copy(startPage = start[i]) } },
             SettingRow.Action("default", c.s(R.string.row_default_launcher), c.s(if (st.isDefaultLauncher) R.string.row_default_launcher_yes else R.string.row_default_launcher_no), R.drawable.ic_home) { a.requestDefaultLauncher() },
+            SettingRow.Action("defaultGuide", c.s(R.string.row_default_guide), icon = R.drawable.ic_info) { a.showDefaultLauncherGuide() },
             SettingRow.Toggle("autostart", c.s(R.string.set_quick_autostart), c.s(R.string.row_autostart_sub), R.drawable.ic_power, s.autoStartOnBoot) { v -> a.setAutoStart(v) },
             SettingRow.Header("h_layout", c.s(R.string.row_layout_header)),
             SettingRow.Choice("rows", c.s(R.string.row_home_rows), icon = R.drawable.ic_apps, options = listOf("1", "2", "3"), selected = s.homeRows - 1) { i -> a.edit { it.copy(homeRows = i + 1) } },
             SettingRow.Choice("cols", c.s(R.string.row_grid_columns), icon = R.drawable.ic_apps, options = cols.map { if (it == 0) c.s(R.string.auto) else it.toString() },
                 selected = cols.indexOf(s.gridColumns).coerceAtLeast(0)) { i -> a.edit { it.copy(gridColumns = cols[i]) } },
-            SettingRow.Choice("size", c.s(R.string.row_icon_size), icon = R.drawable.ic_image, options = listOf(c.s(R.string.size_small), c.s(R.string.size_medium), c.s(R.string.size_large)),
-                selected = sizes.indexOf(s.iconSize).coerceAtLeast(1)) { i -> a.edit { it.copy(iconSize = sizes[i]) } },
+            SettingRow.Choice("size", c.s(R.string.row_icon_size), icon = R.drawable.ic_image, options = listOf(c.s(R.string.size_medium), c.s(R.string.size_large)),
+                selected = sizes.indexOf(s.iconSize).coerceAtLeast(0)) { i -> a.edit { it.copy(iconSize = sizes[i]) } },
             SettingRow.Toggle("labels", c.s(R.string.row_show_labels), icon = R.drawable.ic_text_size, checked = s.showAppLabels) { v -> a.edit { it.copy(showAppLabels = v) } },
             SettingRow.Toggle("sidebarLabels", c.s(R.string.row_sidebar_labels), icon = R.drawable.ic_sliders, checked = s.showSidebarLabels) { v -> a.edit { it.copy(showSidebarLabels = v) } },
             SettingRow.Toggle("logo", c.s(R.string.row_home_logo), icon = R.drawable.ic_logo_mark, checked = s.showHomeLogo) { v -> a.edit { it.copy(showHomeLogo = v) } },
@@ -130,7 +135,8 @@ object SettingsSections {
             SettingRow.Toggle("remoteDecor", c.s(R.string.row_remote_decor), icon = R.drawable.ic_remote, checked = s.showRemoteDecor) { v -> a.edit { it.copy(showRemoteDecor = v) } },
             SettingRow.Header("h_weather", c.s(R.string.row_weather)),
             SettingRow.Toggle("weather", c.s(R.string.row_weather), c.s(R.string.row_weather_sub), R.drawable.ic_weather_partly_day, s.weatherEnabled) { v -> a.edit { it.copy(weatherEnabled = v) } },
-            SettingRow.Action("city", c.s(R.string.row_weather_city), icon = R.drawable.ic_location, value = s.weatherCity.ifBlank { c.s(R.string.row_weather_city_none) }) { a.chooseWeatherCity() },
+            SettingRow.Action("city", c.s(R.string.row_weather_city), c.s(if (!s.hasWeatherLocation) R.string.weather_setup_cta else if (s.weatherLocationMode == "auto") R.string.weather_mode_auto else R.string.weather_mode_manual),
+                R.drawable.ic_location, value = s.weatherCity.ifBlank { c.s(R.string.row_weather_city_none) }) { a.chooseWeatherCity() },
             SettingRow.Choice("unit", c.s(R.string.row_weather_unit), icon = R.drawable.ic_sun_outline, options = listOf(c.s(R.string.unit_c), c.s(R.string.unit_f)),
                 selected = units.indexOf(s.weatherUnit).coerceAtLeast(0)) { i -> a.edit { it.copy(weatherUnit = units[i]) } },
         )
@@ -140,7 +146,6 @@ object SettingsSections {
         val presets = ThemeCatalog.presets
         val accents = ThemeCatalog.accents
         val intervals = LauncherSettings.ROTATION_INTERVALS
-        val shapes = listOf("original", "rounded", "circle", "square")
         val cards = listOf("glass", "solid", "outline", "minimal")
         val fonts = listOf("tajawal", "cairo", "system")
         val scales = listOf(0.9f, 1.0f, 1.12f, 1.25f)
@@ -162,8 +167,6 @@ object SettingsSections {
                 selected = presets.indexOfFirst { it.id == s.themeId }.coerceAtLeast(0)) { i -> a.edit { it.copy(themeId = presets[i].id) } },
             SettingRow.Colors("accent", c.s(R.string.row_accent), R.drawable.ic_palette, accents, accents.indexOf(s.accentColor).coerceAtLeast(0)) { i -> a.edit { it.copy(accentColor = accents[i]) } },
             SettingRow.Header("h_cards", c.s(R.string.row_cards_header)),
-            SettingRow.Choice("shape", c.s(R.string.row_icon_style), icon = R.drawable.ic_apps, options = listOf(R.string.icon_original, R.string.icon_rounded, R.string.icon_circle, R.string.icon_square).map { c.s(it) },
-                selected = shapes.indexOf(s.iconShape).coerceAtLeast(0)) { i -> a.edit { it.copy(iconShape = shapes[i]) } },
             SettingRow.Choice("card", c.s(R.string.row_card_style), icon = R.drawable.ic_layers, options = listOf(R.string.card_glass, R.string.card_solid, R.string.card_outline, R.string.card_minimal).map { c.s(it) },
                 selected = cards.indexOf(s.cardStyle).coerceAtLeast(0)) { i -> a.edit { it.copy(cardStyle = cards[i]) } },
             SettingRow.Toggle("banners", c.s(R.string.row_tv_banners), c.s(R.string.row_tv_banners_sub), R.drawable.ic_tv, s.useTvBanners) { v -> a.edit { it.copy(useTvBanners = v) } },
@@ -184,8 +187,13 @@ object SettingsSections {
         val labels = listOf(R.string.sort_custom, R.string.sort_az, R.string.sort_za, R.string.sort_installed, R.string.sort_most_used, R.string.sort_recent).map { c.s(it) }
         val hidden = st.custom.hidden.count { k -> st.apps.any { it.key == k } }
         return listOf(
+            SettingRow.Header("h_home_apps", c.s(R.string.row_home_header)),
+            SettingRow.Action("home", c.s(R.string.row_edit_home_apps), icon = R.drawable.ic_home) { a.editHomeApps() },
+            SettingRow.Action("reorderHome", c.s(R.string.row_reorder_home_apps), icon = R.drawable.ic_move) { a.reorderHomeApps() },
+            SettingRow.Header("h_fav_apps", c.s(R.string.nav_favorites)),
             SettingRow.Action("fav", c.s(R.string.row_edit_favorites), icon = R.drawable.ic_star) { a.editFavorites() },
             SettingRow.Action("reorder", c.s(R.string.row_reorder_favorites), icon = R.drawable.ic_move) { a.reorderFavorites() },
+            SettingRow.Header("h_manage", c.s(R.string.app_manage_header)),
             SettingRow.Action("hidden", c.s(R.string.row_hidden_apps), icon = R.drawable.ic_eye_off, value = c.str(R.string.row_hidden_apps_count, hidden)) { a.editHidden() },
             SettingRow.Action("locked", c.s(R.string.row_locked_apps), icon = R.drawable.ic_lock, value = st.custom.locked.size.toString()) { a.editLocked() },
             SettingRow.Choice("sort", c.s(R.string.row_default_sort), icon = R.drawable.ic_sort, options = labels, selected = modes.indexOf(st.custom.sortMode).coerceAtLeast(0)) { i -> a.setSort(modes[i]) },
@@ -278,7 +286,11 @@ object SettingsSections {
         val t = DateTextFormatter.format(System.currentTimeMillis(), TimeZone.getDefault(),
             DateConfig(use24, if (s.hijriMethod == "tabular") HijriCalendar.Method.TABULAR else HijriCalendar.Method.UMM_AL_QURA, s.hijriAdjust, s.numerals == "eastern"))
         return listOf(
-            SettingRow.Info("today", c.s(R.string.row_date_preview), "${t.gregorianAr}\n${t.gregorianEn}\n${t.hijriAr}\n${t.hijriEn}", R.drawable.ic_calendar),
+            SettingRow.Info("today", c.s(R.string.row_date_preview), run {
+                val lang = androidx.core.os.ConfigurationCompat.getLocales(c.resources.configuration)[0]?.language ?: "en"
+                val second = com.akaaflix.launcher.device.clock.DateTexts.secondaryLanguage(lang)
+                "${t.gregorian(lang)}\n${t.gregorian(second)}\n${t.hijriText(lang)}\n${t.hijriText(second)}"
+            }, R.drawable.ic_calendar),
             SettingRow.Header("h_clock", c.s(R.string.row_clock_header)),
             SettingRow.Toggle("show", c.s(R.string.set_quick_clock), icon = R.drawable.ic_clock, checked = s.showClockDate) { v -> a.edit { it.copy(showClockDate = v) } },
             SettingRow.Choice("format", c.s(R.string.row_clock_format), icon = R.drawable.ic_clock, options = listOf(c.s(R.string.system_default), c.s(R.string.clock_12), c.s(R.string.clock_24)),
@@ -298,9 +310,9 @@ object SettingsSections {
     }
 
     private fun languageRows(c: Context, s: LauncherSettings, a: SettingsActions): List<SettingRow> {
-        val langs = listOf("system", "ar", "en")
+        val langs = LauncherSettings.LANGUAGES
         return listOf(
-            SettingRow.Choice("lang", c.s(R.string.row_language), icon = R.drawable.ic_translate, options = listOf(c.s(R.string.lang_system), c.s(R.string.lang_ar), c.s(R.string.lang_en)),
+            SettingRow.Choice("lang", c.s(R.string.row_language), icon = R.drawable.ic_translate, options = listOf(c.s(R.string.lang_system), c.s(R.string.lang_ar), c.s(R.string.lang_en), c.s(R.string.lang_fr)),
                 selected = langs.indexOf(s.language).coerceAtLeast(0)) { i -> a.edit { it.copy(language = langs[i]) } },
             SettingRow.Action("system", c.s(R.string.row_system_language), icon = R.drawable.ic_open) { a.system("language") },
         )
@@ -331,6 +343,9 @@ object SettingsSections {
         val rows = mutableListOf<SettingRow>()
         if (s.safeMode) rows += SettingRow.Action("safe", c.s(R.string.row_safe_mode), c.s(R.string.row_safe_mode_sub), R.drawable.ic_shield) { a.exitSafeMode() }
         rows += listOf(
+            SettingRow.Hero("hero", R.drawable.akaa_logo, c.s(R.string.app_name), listOf(c.str(R.string.about_version_fmt, AppConfig.versionName), c.s(R.string.about_copyright))),
+            SettingRow.Action("website", c.s(R.string.about_website_label), c.s(R.string.about_website_url), R.drawable.ic_globe, value = c.s(R.string.about_website_text)) { a.openWebsite() },
+            SettingRow.Info("copyright", c.s(R.string.about_copyright), null, R.drawable.ic_shield),
             SettingRow.Header("h_about", c.s(R.string.row_about_header)),
             SettingRow.Info("version", c.s(R.string.row_version), "v" + AppConfig.versionName, R.drawable.ic_logo_mark),
             SettingRow.Info("build", c.s(R.string.row_build), "${AppConfig.versionCode} • ${if (AppConfig.isDebug) "debug" else "release"} • Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})", R.drawable.ic_cpu),

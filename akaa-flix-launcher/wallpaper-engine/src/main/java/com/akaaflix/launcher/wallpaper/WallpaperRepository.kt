@@ -19,7 +19,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -44,6 +46,17 @@ class WallpaperRepository private constructor(context: Context) {
     fun resolve(id: String?): Wallpaper =
         wallpapers.value.firstOrNull { it.id == id } ?: WallpaperCatalog.all(appContext, prefs.wallpapers.value).firstOrNull { it.id == id }
             ?: WallpaperCatalog.bundled[0]
+
+    init {
+        // v1.1 replaced the bundled collection: a stored id of a removed built-in wallpaper falls back
+        // to the default artwork, and favourites pointing to removed built-ins are dropped.
+        scope.launch {
+            prefs.loaded.first { it }
+            val id = prefs.settings.value.wallpaperId
+            if (id.startsWith("builtin:") && !WallpaperCatalog.isBundled(id)) prefs.update { it.copy(wallpaperId = LauncherSettings.DEFAULT_WALLPAPER) }
+            prefs.updateWallpapers { d -> d.copy(favorites = d.favorites.filterTo(LinkedHashSet()) { !it.startsWith("builtin:") || WallpaperCatalog.isBundled(it) }) }
+        }
+    }
 
     fun apply(id: String) = prefs.edit { it.copy(wallpaperId = id, lastRotationAt = System.currentTimeMillis()) }
 

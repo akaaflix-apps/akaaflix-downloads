@@ -8,7 +8,7 @@ import org.json.JSONObject
  */
 data class LauncherSettings(
     // General
-    val language: String = "ar",                 // system | ar | en
+    val language: String = "ar",                 // system | ar | en | fr
     val interfaceMode: String = "auto",          // auto | tv | touch
     val startPage: String = "home",              // home | all_apps | favorites
     val autoStartOnBoot: Boolean = false,
@@ -21,9 +21,9 @@ data class LauncherSettings(
     val cardStyle: String = "glass",             // glass | solid | outline | minimal
     val useTvBanners: Boolean = true,
     val showAppLabels: Boolean = true,
-    val iconSize: String = "medium",             // small | medium | large
+    val iconSize: String = "medium",             // medium | large
     val gridColumns: Int = 0,                    // 0 = automatic
-    val homeRows: Int = 2,
+    val homeRows: Int = 3,                       // 1..3 (three by default)
     val showHomeLogo: Boolean = true,
     val showFavoritesBar: Boolean = true,
     val showBottomBar: Boolean = true,
@@ -45,12 +45,15 @@ data class LauncherSettings(
     val hijriAdjust: Int = 0,                    // -2..+2 days
     val numerals: String = "western",            // western | eastern
     // Weather
-    val weatherEnabled: Boolean = false,
+    val weatherEnabled: Boolean = true,
     val weatherCity: String = "",
     val weatherCountry: String = "",
     val weatherLat: Double = Double.NaN,
     val weatherLon: Double = Double.NaN,
     val weatherUnit: String = "c",
+    /** "auto" = city detected from approximate device location, "manual" = typed by the user. */
+    val weatherLocationMode: String = "manual",
+    val weatherLocatedAt: Long = 0L,
     // Wallpaper
     val wallpaperId: String = DEFAULT_WALLPAPER,
     val animatedWallpaper: Boolean = true,
@@ -114,7 +117,7 @@ data class LauncherSettings(
         put("weatherEnabled", weatherEnabled); put("weatherCity", weatherCity); put("weatherCountry", weatherCountry)
         if (!weatherLat.isNaN()) put("weatherLat", weatherLat)
         if (!weatherLon.isNaN()) put("weatherLon", weatherLon)
-        put("weatherUnit", weatherUnit)
+        put("weatherUnit", weatherUnit); put("weatherLocationMode", weatherLocationMode); put("weatherLocatedAt", weatherLocatedAt)
         put("wallpaperId", wallpaperId); put("animatedWallpaper", animatedWallpaper)
         put("rotationEnabled", rotationEnabled); put("rotationIntervalMin", rotationIntervalMin)
         put("rotationSource", rotationSource); put("lastRotationAt", lastRotationAt)
@@ -129,7 +132,9 @@ data class LauncherSettings(
     }
 
     companion object {
-        const val SCHEMA = 1
+        const val SCHEMA = 2
+        val LANGUAGES = listOf("system", "ar", "en", "fr")
+        val ICON_SIZES = listOf("medium", "large")
         const val DEFAULT_WALLPAPER = "builtin:default_pyramids"
         val ROTATION_INTERVALS = intArrayOf(15, 30, 60, 180, 360, 720, 1440)
 
@@ -146,8 +151,11 @@ data class LauncherSettings(
             }
             fun l(k: String, def: Long) = if (o.has(k)) o.optLong(k, def) else def
             fun dbl(k: String) = if (o.has(k)) o.optDouble(k, Double.NaN) else Double.NaN
+            // Schema 1 -> 2: Home shows three rows by default, the Icon Style option was removed
+            // (shape back to the original icons) and the Small icon size no longer exists.
+            val legacy = o.has("v") && o.optInt("v", 1) < 2
             return LauncherSettings(
-                language = s("language", d.language, setOf("system", "ar", "en")),
+                language = s("language", d.language, LANGUAGES.toSet()),
                 interfaceMode = s("interfaceMode", d.interfaceMode, setOf("auto", "tv", "touch")),
                 startPage = s("startPage", d.startPage, setOf("home", "all_apps", "favorites")),
                 autoStartOnBoot = b("autoStartOnBoot", d.autoStartOnBoot),
@@ -155,13 +163,13 @@ data class LauncherSettings(
                 accentColor = i("accentColor", d.accentColor),
                 fontFamily = s("fontFamily", d.fontFamily, setOf("tajawal", "cairo", "system")),
                 fontScale = (if (o.has("fontScale")) o.optDouble("fontScale", 1.0) else 1.0).toFloat().coerceIn(0.8f, 1.4f),
-                iconShape = s("iconShape", d.iconShape, setOf("original", "rounded", "circle", "square")),
+                iconShape = if (legacy) "original" else s("iconShape", d.iconShape, setOf("original", "rounded", "circle", "square")),
                 cardStyle = s("cardStyle", d.cardStyle, setOf("glass", "solid", "outline", "minimal")),
                 useTvBanners = b("useTvBanners", d.useTvBanners),
                 showAppLabels = b("showAppLabels", d.showAppLabels),
-                iconSize = s("iconSize", d.iconSize, setOf("small", "medium", "large")),
+                iconSize = s("iconSize", d.iconSize, ICON_SIZES.toSet()),
                 gridColumns = i("gridColumns", d.gridColumns, 0..10),
-                homeRows = i("homeRows", d.homeRows, 1..3),
+                homeRows = if (legacy) 3 else i("homeRows", d.homeRows, 1..3),
                 showHomeLogo = b("showHomeLogo", d.showHomeLogo),
                 showFavoritesBar = b("showFavoritesBar", d.showFavoritesBar),
                 showBottomBar = b("showBottomBar", d.showBottomBar),
@@ -186,6 +194,8 @@ data class LauncherSettings(
                 weatherLat = dbl("weatherLat"),
                 weatherLon = dbl("weatherLon"),
                 weatherUnit = s("weatherUnit", d.weatherUnit, setOf("c", "f")),
+                weatherLocationMode = s("weatherLocationMode", d.weatherLocationMode, setOf("auto", "manual")),
+                weatherLocatedAt = l("weatherLocatedAt", d.weatherLocatedAt),
                 wallpaperId = s("wallpaperId", d.wallpaperId).ifBlank { DEFAULT_WALLPAPER },
                 animatedWallpaper = b("animatedWallpaper", d.animatedWallpaper),
                 rotationEnabled = b("rotationEnabled", d.rotationEnabled),

@@ -134,7 +134,7 @@
         android:src="@drawable/akaa_logo"
         android:visibility="gone" />
 
-    <!-- Status: clock, Wi-Fi, Bluetooth, settings + Gregorian/Hijri date pill -->
+    <!-- Status: clock, Wi-Fi, settings + Gregorian/Hijri date pill -->
     <LinearLayout
         android:id="@+id/statusArea"
         android:layout_width="wrap_content"
@@ -176,16 +176,6 @@
                 android:focusable="true"
                 android:padding="6dp"
                 android:src="@drawable/ic_wifi" />
-
-            <ImageView
-                android:id="@+id/btIcon"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:contentDescription="@string/cd_bluetooth"
-                android:focusable="true"
-                android:padding="7dp"
-                android:src="@drawable/ic_bluetooth" />
 
             <ImageView
                 android:id="@+id/gearButton"

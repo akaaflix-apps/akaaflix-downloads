@@ -256,8 +256,21 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         b.detailIcon.setImageResource(sec.icon)
         b.detailIcon.tint(LauncherUi.palette.accentLight)
         rowsAdapter.submitList(SettingsSections.build(requireContext(), sec, state(), this)) {
-            b.detailList.post { b.detailList.getChildAt(0)?.let { first -> (if (first.isFocusable) first else (first as? ViewGroup)?.let { g -> (0 until g.childCount).map { g.getChildAt(it) }.firstOrNull { it.isFocusable } } ?: first).requestFocus() } }
+            b.detailList.post { firstFocusableRow()?.requestFocus() ?: b.detailBack.requestFocus() }
         }
+    }
+
+    /** First row that can take focus (headers and the About logo block cannot). */
+    private fun firstFocusableRow(): View? {
+        val list = b.detailList
+        for (i in 0 until list.childCount) {
+            val child = list.getChildAt(i)
+            if (child.isFocusable && child.isShown) return child
+            val found = ArrayList<View>()
+            child.addFocusables(found, View.FOCUS_DOWN)
+            found.firstOrNull { it.isShown }?.let { return it }
+        }
+        return null
     }
 
     private fun closeDetail() {
@@ -320,8 +333,10 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
         }
     }
 
-    override fun chooseWeatherCity() = WeatherSetup.chooseCity(this)
+    override fun chooseWeatherCity() = WeatherSetup.open(this)
     override fun openWallpapers() { launcherHost?.navigate(LauncherPage.WALLPAPERS) }
+    override fun editHomeApps() = AppActions.editHomeApps(this)
+    override fun reorderHomeApps() { launcherHost?.navigate(LauncherPage.HOME, bundleOf(NavArgs.MOVE_MODE to true)) }
     override fun editFavorites() = AppActions.editFavorites(this)
     override fun reorderFavorites() { launcherHost?.navigate(LauncherPage.FAVORITES, bundleOf(NavArgs.MOVE_MODE to true)) }
 
@@ -330,7 +345,7 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
             val all = AppLists.sort(apps.apps.value, prefs.apps.value, "az")
             val custom = prefs.apps.value
             AppActions.pickApps(this, getString(R.string.picker_hidden_title), all, custom.hidden) { set ->
-                prefs.editApps { c -> c.copy(hidden = set, favorites = c.favorites.filter { it !in set }) }
+                prefs.editApps { c -> c.copy(hidden = set) }
             }
         }
         if (prefs.settings.value.protectHiddenApps) guarded(run) else run()
@@ -468,6 +483,21 @@ class SettingsFragment : Fragment(), BackHandler, LeaveGuard, SettingsActions {
     }
 
     override fun showText(title: Int, text: String) { Dialogs.info(requireContext(), getString(title), text) }
+
+    /** Official website in the user's browser (safe VIEW intent, BROWSABLE category only). */
+    override fun openWebsite() {
+        val ctx = requireContext()
+        val url = getString(R.string.about_website_url)
+        if (!SafeIntents.start(ctx, SafeIntents.browse(url))) Dialogs.info(ctx, getString(R.string.about_website_label), str(R.string.about_no_browser_fmt, url))
+    }
+
+    override fun showDefaultLauncherGuide() {
+        LauncherDialog(requireContext()).title(R.string.row_default_guide).icon(R.drawable.ic_home)
+            .message(R.string.default_launcher_steps)
+            .button(R.string.close)
+            .button(R.string.row_default_launcher, primary = true) { requestDefaultLauncher() }
+            .show()
+    }
 
     override fun exitSafeMode() { viewLifecycleOwner.lifecycleScope.launch { prefs.update { it.copy(safeMode = false) }; launcherHost?.recreateUi() } }
 

@@ -13,18 +13,16 @@ import com.akaaflix.launcher.core.ui.LauncherUi
 import com.akaaflix.launcher.core.ui.glass
 import com.akaaflix.launcher.core.ui.tint
 import com.akaaflix.launcher.device.clock.DateTexts
-import com.akaaflix.launcher.device.status.BluetoothState
 import com.akaaflix.launcher.device.status.NetworkState
 import com.akaaflix.launcher.home.databinding.ViewTopBarBinding
 
-/** Top bar of every page: brand pill, page title / logo, clock, status icons and date pill. */
+/** Top bar of every page: brand pill, page title / logo, clock, Wi-Fi status, settings and date pill. */
 class TopBarView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
     val b: ViewTopBarBinding = ViewTopBarBinding.inflate(LayoutInflater.from(context), this)
     private var arabicFirst = true
 
     var onBrandClick: (() -> Unit)? = null
     var onWifiClick: (() -> Unit)? = null
-    var onBluetoothClick: (() -> Unit)? = null
     var onSettingsClick: (() -> Unit)? = null
 
     init {
@@ -34,11 +32,10 @@ class TopBarView @JvmOverloads constructor(context: Context, attrs: AttributeSet
         b.brandIcon.glass(GlassDrawable.Variant.CIRCLE, 20f)
         b.datePill.glass(GlassDrawable.Variant.CHIP, 22f)
         b.gearButton.glass(GlassDrawable.Variant.CIRCLE, 19f, 2f)
-        listOf(b.wifiIcon, b.btIcon).forEach { it.glass(GlassDrawable.Variant.CIRCLE, 18f, 2f).cardStyle = "minimal" }
-        listOf(b.brandPill, b.wifiIcon, b.btIcon, b.gearButton).forEach { FocusEffects.attach(it, 1.08f) }
+        b.wifiIcon.glass(GlassDrawable.Variant.CIRCLE, 18f, 2f).cardStyle = "minimal"
+        listOf(b.brandPill, b.wifiIcon, b.gearButton).forEach { FocusEffects.attach(it, 1.08f) }
         b.brandPill.setOnClickListener { onBrandClick?.invoke() }
         b.wifiIcon.setOnClickListener { onWifiClick?.invoke() }
-        b.btIcon.setOnClickListener { onBluetoothClick?.invoke() }
         b.gearButton.setOnClickListener { onSettingsClick?.invoke() }
         refreshPalette()
     }
@@ -47,7 +44,7 @@ class TopBarView @JvmOverloads constructor(context: Context, attrs: AttributeSet
         val accent = LauncherUi.palette.accentLight
         b.titleIcon.tint(accent)
         b.dateIconA.tint(0xFFFFFFFF.toInt()); b.dateIconB.tint(0xFFFFFFFF.toInt())
-        listOf(b.brandPill, b.brandIcon, b.datePill, b.gearButton, b.wifiIcon, b.btIcon).forEach { it.background?.invalidateSelf() }
+        listOf(b.brandPill, b.brandIcon, b.datePill, b.gearButton, b.wifiIcon).forEach { it.background?.invalidateSelf() }
     }
 
     fun setHeader(h: PageHeader) {
@@ -82,18 +79,20 @@ class TopBarView @JvmOverloads constructor(context: Context, attrs: AttributeSet
 
     fun setStatusVisible(visible: Boolean) {
         val v = if (visible) View.VISIBLE else View.GONE
-        b.wifiIcon.visibility = v; b.btIcon.visibility = v
+        b.wifiIcon.visibility = v
     }
 
-    /** [arabicPrimary]: Arabic UI shows the Arabic line first and the Hijri block first (RTL order). */
-    fun bindDate(t: DateTexts, arabicPrimary: Boolean, bilingual: Boolean, showHijri: Boolean) {
+    /** [lang]: UI language; its text is the first line, the second language (bilingual) the second line. */
+    fun bindDate(t: DateTexts, lang: String, bilingual: Boolean, showHijri: Boolean) {
+        val arabicPrimary = lang == "ar"
+        val second = DateTexts.secondaryLanguage(lang)
         b.clockTime.text = t.time
         b.clockAmPm.text = t.amPm
         b.clockAmPm.visibility = if (t.amPm.isEmpty() || b.clockTime.visibility != View.VISIBLE) View.GONE else View.VISIBLE
-        val gPrimary = if (arabicPrimary) t.gregorianAr else t.gregorianEn
-        val gSecondary = if (arabicPrimary) t.gregorianEn else t.gregorianAr
-        val hPrimary = if (arabicPrimary) t.hijriAr else t.hijriEn
-        val hSecondary = if (arabicPrimary) t.hijriEn else t.hijriAr
+        val gPrimary = t.gregorian(lang)
+        val gSecondary = t.gregorian(second)
+        val hPrimary = t.hijriText(lang)
+        val hSecondary = t.hijriText(second)
         // Layout is LTR: block A is on the left. Arabic: Gregorian left, Hijri right (as in the design).
         b.dateA1.text = gPrimary; b.dateA2.text = gSecondary
         b.dateB1.text = hPrimary; b.dateB2.text = hSecondary
@@ -114,10 +113,5 @@ class TopBarView @JvmOverloads constructor(context: Context, attrs: AttributeSet
             else -> R.drawable.ic_wifi
         }
         b.wifiIcon.setImageResource(icon)
-    }
-
-    fun bindBluetooth(s: BluetoothState) {
-        b.btIcon.visibility = if (!s.supported || b.wifiIcon.visibility != View.VISIBLE) View.GONE else View.VISIBLE
-        b.btIcon.setImageResource(if (s.enabled) R.drawable.ic_bluetooth else R.drawable.ic_bluetooth_off)
     }
 }

@@ -210,16 +210,20 @@ class WallpapersFragment : Fragment(), BackHandler {
         val row = b.chipsRow
         val defs = mutableListOf<Triple<String, String, Int>>()
         defs += Triple("all", str(CoreR.string.wp_cat_all, list.size), CoreR.drawable.ic_apps)
-        defs += Triple(WallpaperCategory.CINEMATIC.name, getString(CoreR.string.wp_cat_cinematic), CoreR.drawable.ic_video)
-        defs += Triple(WallpaperCategory.SPACE.name, getString(CoreR.string.wp_cat_space), CoreR.drawable.ic_globe)
-        defs += Triple(WallpaperCategory.NATURE.name, getString(CoreR.string.wp_cat_nature), CoreR.drawable.ic_sun_outline)
-        defs += Triple(WallpaperCategory.LANDMARKS.name, getString(CoreR.string.wp_cat_landmarks), CoreR.drawable.ic_image)
-        defs += Triple(WallpaperCategory.ABSTRACT.name, getString(CoreR.string.wp_cat_abstract), CoreR.drawable.ic_sparkles)
-        defs += Triple(WallpaperCategory.ANIMATED.name, getString(CoreR.string.wp_cat_animated), CoreR.drawable.ic_play_box)
+        // Only categories that contain wallpapers are offered (no empty filters).
+        listOf(
+            Triple(WallpaperCategory.CINEMATIC, CoreR.string.wp_cat_cinematic, CoreR.drawable.ic_video),
+            Triple(WallpaperCategory.LANDMARKS, CoreR.string.wp_cat_landmarks, CoreR.drawable.ic_image),
+            Triple(WallpaperCategory.MOSQUES, CoreR.string.wp_cat_mosques, CoreR.drawable.ic_moon),
+            Triple(WallpaperCategory.NATURE, CoreR.string.wp_cat_nature, CoreR.drawable.ic_sun_outline),
+            Triple(WallpaperCategory.SPACE, CoreR.string.wp_cat_space, CoreR.drawable.ic_globe),
+            Triple(WallpaperCategory.ABSTRACT, CoreR.string.wp_cat_abstract, CoreR.drawable.ic_sparkles),
+            Triple(WallpaperCategory.ANIMATED, CoreR.string.wp_cat_animated, CoreR.drawable.ic_play_box),
+        ).forEach { (cat, label, icon) -> if (list.any { it.category == cat }) defs += Triple(cat.name, getString(label), icon) }
         defs += Triple("fav", getString(CoreR.string.wp_cat_favorites), CoreR.drawable.ic_star)
         if (list.any { it.category == WallpaperCategory.MINE }) defs += Triple(WallpaperCategory.MINE.name, getString(CoreR.string.wp_cat_mine), CoreR.drawable.ic_upload)
         val selectedKey = when { favoritesOnly -> "fav"; category != null -> category!!.name; else -> "all" }
-        if (row.childCount != defs.size) {
+        if (row.childCount != defs.size || (0 until row.childCount).any { row.getChildAt(it).tag != defs[it].first }) {
             row.removeAllViews()
             defs.forEach { (key, _, icon) ->
                 val chip = AppCompatTextView(requireContext(), null, 0).apply {

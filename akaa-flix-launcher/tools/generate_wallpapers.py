@@ -1,6 +1,7 @@
 """Renders the original procedural wallpapers bundled with the launcher (no third-party imagery).
 
-Usage: python3 tools/generate_wallpapers.py wallpaper-engine/src/main/res/raw 3840 2160 [name ...]
+Usage: python3 tools/generate_wallpapers.py design-assets/legacy-wallpapers 3840 2160 [name ...]
+(v1.1: only wp_neon_waves – the static frame of Animated Neon Pulse – is packaged, in wallpaper-engine/src/main/res/raw.)
 Requires numpy + Pillow.
 """
 import sys, os, numpy as np

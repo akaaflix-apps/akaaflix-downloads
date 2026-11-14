@@ -35,7 +35,8 @@ class ScreenshotTest {
     private fun settle(ms: Long = 1500) {
         val end = System.currentTimeMillis() + ms
         while (System.currentTimeMillis() < end) {
-            shadowOf(Looper.getMainLooper()).idle()
+            // Advance the (paused) Robolectric clock too, so animations such as the neon focus fade complete.
+            shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(40))
             Thread.sleep(40)
         }
         shadowOf(Looper.getMainLooper()).idle()
@@ -54,7 +55,8 @@ class ScreenshotTest {
         Thread.sleep(800)
         val prefs = SettingsRepository.get(ctx)
         prefs.awaitLoaded()
-        runBlocking { prefs.update { it.copy(language = lang, weatherEnabled = false) } }
+        // Robolectric reports no RAM (= entry tier, glow off); render the high-quality look of 2 GB+ devices.
+        runBlocking { prefs.update { it.copy(language = lang, performanceMode = "high") } }
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(lang))
         val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         settle(2500)
@@ -69,6 +71,20 @@ class ScreenshotTest {
         activity.navigate(LauncherPage.SETTINGS, android.os.Bundle().apply { putString("open_section", "datetime") })
         settle(1500)
         capture(root, "${prefix}_07_settings_datetime")
+        activity.navigate(LauncherPage.HOME)
+        settle(600)
+        activity.navigate(LauncherPage.SETTINGS, android.os.Bundle().apply { putString("open_section", "about") })
+        settle(1500)
+        capture(root, "${prefix}_08_settings_about")
+        // Neon focus on a Home card. Robolectric starts in touch mode (no focus is drawn there, as on a
+        // phone); requestFocusFromTouch leaves touch mode like the first D-pad press on a TV remote.
+        activity.navigate(LauncherPage.HOME)
+        settle(800)
+        val homeView = activity.supportFragmentManager.findFragmentByTag("page_home")!!.requireView()
+        val homeGrid = homeView.findViewById<androidx.recyclerview.widget.RecyclerView>(com.akaaflix.launcher.home.R.id.grid)
+        homeGrid.findViewHolderForAdapterPosition(1)?.itemView?.requestFocusFromTouch()
+        settle(900)
+        capture(root, "${prefix}_09_home_focus")
         controller.pause().stop().destroy()
     }
 
@@ -77,6 +93,9 @@ class ScreenshotTest {
 
     @Test @Config(qualifiers = "en-w960dp-h540dp-land-television-xhdpi")
     fun tv_english() = run("tv_en", "en", leanback = true)
+
+    @Test @Config(qualifiers = "fr-w960dp-h540dp-land-television-xhdpi")
+    fun tv_french() = run("tv_fr", "fr", leanback = true)
 
     @Test @Config(qualifiers = "ar-w411dp-h891dp-port-xxhdpi")
     fun phone_arabic() = run("phone_ar", "ar", leanback = false)
